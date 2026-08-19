@@ -15,47 +15,82 @@ export default function ProfileScreen() {
 
   if (!user) return <Screen><ScreenHeader title="Profile" /></Screen>;
 
+  const cleanEmail = user.email?.toLowerCase() ?? '';
+  const isAdmin = user.role === 'admin' || cleanEmail === 'admin@gmail.com';
+  const isCommercial = user.role === 'commercial' || cleanEmail === 'commercial@gmail.com';
+
+  const roleLabel = isAdmin ? 'ADMIN' : isCommercial ? 'COMMERCIAL VENDOR' : 'INDIVIDUAL BUYER';
+  const roleBadgeTone = isAdmin ? 'danger' : isCommercial ? 'accent' : 'info';
+
   const sections = [
+    ...(isAdmin
+      ? [
+          {
+            title: 'Admin Control Panel',
+            items: [
+              { icon: 'shield-outline', label: 'Admin dashboard', onPress: () => nav.navigate(Routes.AdminDashboard) },
+              { icon: 'business-outline', label: 'Vendor approvals queue', onPress: () => nav.navigate(Routes.AdminVendorApprovals) },
+              { icon: 'people-outline', label: 'User management', onPress: () => nav.navigate(Routes.AdminUsers) },
+              { icon: 'briefcase-outline', label: 'Listing approvals', onPress: () => nav.navigate(Routes.AdminListings) },
+              { icon: 'bar-chart-outline', label: 'System reports', onPress: () => nav.navigate(Routes.AdminReports) },
+            ],
+          },
+        ]
+      : []),
+
+    ...(isCommercial
+      ? [
+          {
+            title: 'Vendor Operations',
+            items: [
+              { icon: 'business-outline', label: 'Vendor dashboard', onPress: () => nav.navigate(Routes.VendorDashboard) },
+              { icon: 'home-outline', label: 'Company profile', onPress: () => nav.navigate(Routes.CompanyProfile) },
+              { icon: 'bar-chart-outline', label: 'Performance analytics', onPress: () => nav.navigate(Routes.Analytics) },
+              { icon: 'megaphone-outline', label: 'My leads inbox', onPress: () => nav.navigate(Routes.LeadsTab) },
+            ],
+          },
+        ]
+      : []),
+
     {
-      title: 'Account',
+      title: 'Account & Security',
       items: [
         { icon: 'person-outline', label: 'Edit profile', onPress: () => nav.navigate(Routes.EditProfile) },
         { icon: 'shield-checkmark-outline', label: 'KYC verification', onPress: () => nav.navigate(Routes.KYC), badge: user.kycStatus },
         { icon: 'key-outline', label: 'Change password', onPress: () => nav.navigate(Routes.ChangePassword) },
       ],
     },
+
+    ...(!isAdmin
+      ? [
+          {
+            title: 'Activity',
+            items: [
+              { icon: 'heart-outline', label: 'Favorites', onPress: () => nav.navigate(Routes.Favorites) },
+              { icon: 'git-compare-outline', label: 'Compare list', onPress: () => nav.navigate(Routes.Compare) },
+              { icon: 'megaphone-outline', label: isCommercial ? 'Inquiries sent' : 'My inquiries', onPress: () => nav.navigate(Routes.LeadsTab) },
+            ],
+          },
+        ]
+      : []),
+
     {
-      title: 'Activity',
-      items: [
-        { icon: 'heart-outline', label: 'Favorites', onPress: () => nav.navigate(Routes.Favorites) },
-        { icon: 'git-compare-outline', label: 'Compare list', onPress: () => nav.navigate(Routes.Compare) },
-        { icon: 'megaphone-outline', label: 'My leads', onPress: () => nav.navigate(Routes.LeadsTab) },
-      ],
-    },
-    {
-      title: 'Billing',
+      title: 'Billing & Subscriptions',
       items: [
         { icon: 'sparkles-outline', label: 'Subscription plans', onPress: () => nav.navigate(Routes.Plans) },
         { icon: 'cash-outline', label: 'Credits & top up', onPress: () => nav.navigate(Routes.Credits) },
         { icon: 'receipt-outline', label: 'Purchase history', onPress: () => nav.navigate(Routes.PurchaseHistory) },
       ],
     },
+
     {
-      title: 'Vendor',
-      items: [
-        { icon: 'business-outline', label: 'Vendor dashboard', onPress: () => nav.navigate(Routes.VendorDashboard) },
-        { icon: 'bar-chart-outline', label: 'Analytics', onPress: () => nav.navigate(Routes.Analytics) },
-      ],
-    },
-    {
-      title: 'Preferences & support',
+      title: 'Preferences & Support',
       items: [
         { icon: 'notifications-outline', label: 'Notifications', onPress: () => nav.navigate(Routes.NotificationSettings) },
-        { icon: 'lock-closed-outline', label: 'Privacy', onPress: () => nav.navigate(Routes.PrivacySettings) },
-        { icon: 'settings-outline', label: 'Settings', onPress: () => nav.navigate(Routes.Settings) },
+        { icon: 'lock-closed-outline', label: 'Privacy settings', onPress: () => nav.navigate(Routes.PrivacySettings) },
+        { icon: 'settings-outline', label: 'App settings', onPress: () => nav.navigate(Routes.Settings) },
         { icon: 'help-circle-outline', label: 'Help & support', onPress: () => nav.navigate(Routes.SupportTickets) },
         { icon: 'sparkles-outline', label: 'AI Assistant', onPress: () => nav.navigate(Routes.AIAssistant) },
-        { icon: 'shield-outline', label: 'Admin panel', onPress: () => nav.navigate(Routes.AdminDashboard) },
       ],
     },
   ];
@@ -69,17 +104,27 @@ export default function ProfileScreen() {
           <View style={{ flex: 1, marginLeft: spacing.md }}>
             <Text style={styles.name}>{user.name}</Text>
             <Text style={styles.subtitle}>{user.email}</Text>
-            <View style={{ flexDirection: 'row', gap: spacing.xs, marginTop: spacing.xs }}>
+            <View style={{ flexDirection: 'row', gap: spacing.xs, marginTop: spacing.xs, flexWrap: 'wrap' }}>
+              <Badge label={roleLabel} tone={roleBadgeTone} />
               <Badge label={user.plan.toUpperCase()} tone="accent" />
-              <Badge label={user.role.toUpperCase()} tone="info" />
             </View>
           </View>
         </Card>
 
         <View style={styles.statsRow}>
-          <Stat label="Credits" value={String(user.credits)} />
-          <Stat label="Plan" value={user.plan} />
-          <Stat label="KYC" value={user.kycStatus} />
+          {isAdmin ? (
+            <>
+              <Stat label="Role" value="Super Admin" />
+              <Stat label="Access" value="Full" />
+              <Stat label="Status" value="Active" />
+            </>
+          ) : (
+            <>
+              <Stat label="Credits" value={String(user.credits)} />
+              <Stat label="Plan" value={user.plan} />
+              <Stat label="KYC" value={user.kycStatus} />
+            </>
+          )}
         </View>
 
         {sections.map((sec) => (
