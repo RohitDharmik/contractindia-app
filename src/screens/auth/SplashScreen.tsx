@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Image, StyleSheet, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { colors } from '@/constants/colors';
 import { APP_NAME, APP_TAGLINE } from '@/constants/config';
@@ -13,7 +13,7 @@ export default function SplashScreen() {
   }, [nav]);
   return (
     <View style={styles.wrap}>
-      <Text style={styles.logo}>CI</Text>
+      <Image source={require('@/assets/icon.png')} style={styles.logo} resizeMode="contain" />
       <Text style={styles.name}>{APP_NAME}</Text>
       <Text style={styles.tag}>{APP_TAGLINE}</Text>
     </View>
@@ -22,7 +22,7 @@ export default function SplashScreen() {
 
 const styles = StyleSheet.create({
   wrap: { flex: 1, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' },
-  logo: { color: colors.accent, fontSize: 56, fontWeight: '800', letterSpacing: 4 },
+  logo: { width: 96, height: 96 },
   name: { color: colors.textInverse, fontSize: 26, fontWeight: '700', marginTop: 12 },
   tag: { color: '#B4C5DA', fontSize: 14, marginTop: 6 },
 });

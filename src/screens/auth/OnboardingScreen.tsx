@@ -11,17 +11,17 @@ const { width } = Dimensions.get('window');
 const slides = [
   {
     icon: 'search-outline' as const,
-    title: 'Discover trusted vendors',
+    title: 'Discover trust of our services',
     body: 'Architects, contractors, suppliers and consultants \u2014 verified and rated.',
   },
   {
     icon: 'cash-outline' as const,
     title: 'Pay only when you connect',
-    body: 'Browse for free. Spend credits to unlock contacts and premium documents.',
+    body: 'Browse and Spend credits to unlock contacts and premium documents.',
   },
   {
     icon: 'rocket-outline' as const,
-    title: 'Win more business',
+    title: 'More business',
     body: 'Vendors get qualified leads, premium positioning, and analytics.',
   },
 ];
@@ -48,6 +48,7 @@ export default function OnboardingScreen() {
         showsHorizontalScrollIndicator={false}
         data={slides}
         keyExtractor={(_, i) => String(i)}
+        getItemLayout={(_, itemIndex) => ({ length: width, offset: width * itemIndex, index: itemIndex })}
         onMomentumScrollEnd={(e) => setIndex(Math.round(e.nativeEvent.contentOffset.x / width))}
         renderItem={({ item }) => (
           <View style={[styles.slide, { width }]}>
