@@ -11,10 +11,21 @@ import { mockCategories, mockServices } from '@/services/mockData';
 import { useNotificationsStore } from '@/store/notificationsStore';
 import { CategoryChip } from '@/components';
 
+import AdminDashboardScreen from '@/screens/admin/AdminDashboardScreen';
+import VendorDashboardScreen from '@/screens/vendors/VendorDashboardScreen';
+
 export default function DashboardScreen() {
   const nav = useNavigation<any>();
   const user = useAuthStore((s) => s.user);
   const unread = useNotificationsStore((s) => s.unreadCount());
+
+  const email = user?.email?.toLowerCase();
+  if (email === 'admin@gmail.com' || user?.role === 'admin') {
+    return <AdminDashboardScreen />;
+  }
+  if (email === 'commercial@gmail.com' || user?.role === 'commercial') {
+    return <VendorDashboardScreen />;
+  }
 
   const featured = mockServices.filter((s) => s.featured);
 

@@ -47,7 +47,32 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   async signInWithPassword(email, _password) {
     await new Promise((r) => setTimeout(r, 400));
-    const user: User = { ...mockUser, email };
+    const cleanEmail = email.trim().toLowerCase();
+    let role: UserRole = 'individual';
+    let name = 'Individual User';
+    let plan: User['plan'] = 'premium';
+
+    if (cleanEmail === 'admin@gmail.com') {
+      role = 'admin';
+      name = 'Admin User';
+      plan = 'commercial_pro';
+    } else if (cleanEmail === 'commercial@gmail.com') {
+      role = 'commercial';
+      name = 'Commercial Vendor';
+      plan = 'commercial_pro';
+    } else if (cleanEmail === 'individual@gmail.com') {
+      role = 'individual';
+      name = 'Individual User';
+      plan = 'premium';
+    }
+
+    const user: User = {
+      ...mockUser,
+      email: cleanEmail,
+      role,
+      name,
+      plan,
+    };
     await AsyncStorage.multiSet([
       [K_TOKEN, 'mock.jwt.token'],
       [K_USER, JSON.stringify(user)],

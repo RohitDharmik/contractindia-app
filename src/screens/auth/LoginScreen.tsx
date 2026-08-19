@@ -90,9 +90,42 @@ export default function LoginScreen() {
               onChangeText={setPassword}
               leftIcon={<Ionicons name="lock-closed-outline" size={18} color={colors.textMuted} />}
             />
-            <Pressable onPress={() => nav.navigate(Routes.ForgotPassword)} style={{ alignSelf: 'flex-end', marginBottom: spacing.md }}>
+            <Pressable onPress={() => nav.navigate(Routes.ForgotPassword)} style={{ alignSelf: 'flex-end', marginBottom: spacing.sm }}>
               <Text style={styles.link}>Forgot password?</Text>
             </Pressable>
+
+            <View style={{ marginBottom: spacing.md }}>
+              <Text style={{ ...typography.small, color: colors.textMuted, marginBottom: spacing.xs }}>Quick demo logins:</Text>
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
+                <Pressable
+                  onPress={() => {
+                    setIdentifier('admin@gmail.com');
+                    setPassword('123456');
+                  }}
+                  style={styles.demoChip}
+                >
+                  <Text style={styles.demoChipText}>Admin</Text>
+                </Pressable>
+                <Pressable
+                  onPress={() => {
+                    setIdentifier('commercial@gmail.com');
+                    setPassword('123456');
+                  }}
+                  style={styles.demoChip}
+                >
+                  <Text style={styles.demoChipText}>Commercial</Text>
+                </Pressable>
+                <Pressable
+                  onPress={() => {
+                    setIdentifier('individual@gmail.com');
+                    setPassword('123456');
+                  }}
+                  style={styles.demoChip}
+                >
+                  <Text style={styles.demoChipText}>Individual</Text>
+                </Pressable>
+              </View>
+            </View>
           </>
         ) : (
           <Input
@@ -150,4 +183,6 @@ const styles = StyleSheet.create({
   submitButton: { minHeight: 52, borderRadius: 12 },
   footerRow: { flexDirection: 'row', justifyContent: 'center', marginTop: spacing.xxl },
   footerText: { ...typography.body, color: colors.textMuted },
+  demoChip: { backgroundColor: colors.surfaceAlt, borderRadius: 16, paddingHorizontal: 12, paddingVertical: 6, borderWidth: 1, borderColor: colors.border },
+  demoChipText: { ...typography.small, color: colors.primary, fontWeight: '600' },
 });

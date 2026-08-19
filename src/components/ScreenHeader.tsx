@@ -18,7 +18,7 @@ export default function ScreenHeader({ title, subtitle, showBack, right, style }
   return (
     <View style={[styles.wrap, style]}>
       <View style={styles.left}>
-        {showBack ? (
+        {showBack && navigation?.canGoBack?.() ? (
           <Pressable onPress={() => navigation.goBack()} hitSlop={10} style={{ marginRight: spacing.sm }}>
             <Ionicons name="chevron-back" size={26} color={colors.text} />
           </Pressable>
