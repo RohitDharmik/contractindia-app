@@ -44,7 +44,7 @@ export const mockCompanies: Company[] = [
     employees: '20-50',
     rating: 4.7,
     reviewsCount: 128,
-    certifications: ['COA Registered', 'IGBC Accredited', 'ISO 9001:2015'],
+    certifications: [],
     team: [
       { id: 't1', name: 'Anjali Rao', role: 'Principal Architect' },
       { id: 't2', name: 'Vikram Shah', role: 'Senior Designer' },
@@ -56,7 +56,7 @@ export const mockCompanies: Company[] = [
     ownerId: 'u3',
     name: 'BuildRight Contractors',
     description: 'End-to-end civil contracting from foundation to finishing. Specialists in G+4 residential builds.',
-    city: 'Bengaluru',
+    city: 'Bengaluru',  
     state: 'Karnataka',
     yearFounded: 2008,
     employees: '50-200',
@@ -347,7 +347,7 @@ export const mockFaqs: FaqItem[] = [
 export const mockUser: User = {
   id: 'u1',
   name: 'Demo User',
-  email: 'demo@contractindia.in',
+  email: 'demo@ContractsIndia.in',
   mobile: '+91 9000000000',
   role: 'individual',
   city: 'Pune',

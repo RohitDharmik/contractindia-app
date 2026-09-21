@@ -1,8 +1,8 @@
-export const APP_NAME = 'ContractIndia';
+export const APP_NAME = 'ContractsIndia';
 export const APP_TAGLINE = 'India\u2019s construction services marketplace';
 
-export const API_BASE_URL = 'https://api.contractindia.in';
-export const STORAGE_PREFIX = '@contractindia';
+export const API_BASE_URL = 'https://api.ContractsIndia.in';
+export const STORAGE_PREFIX = '@ContractsIndia';
 
 export const CREDIT_COSTS = {
   VIEW_CONTACT: 5,

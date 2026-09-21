@@ -8,7 +8,7 @@ import { radius, spacing, typography } from '@/constants/sizes';
 interface Msg { id: string; fromMe: boolean; text: string }
 
 const seed: Msg[] = [
-  { id: 'a1', fromMe: false, text: 'Hi! I\u2019m ContractIndia AI. I can recommend services, estimate budgets, and explain construction steps.' },
+  { id: 'a1', fromMe: false, text: 'Hi! I\u2019m ContractsIndia AI. I can recommend services, estimate budgets, and explain construction steps.' },
   { id: 'a2', fromMe: false, text: 'What are you working on? You can ask things like "Show me architects in Pune under \u20B91L" or "Estimate cost for a 1500 sqft G+1 build".' },
 ];
 
@@ -40,7 +40,7 @@ export default function AIAssistantScreen() {
 
   return (
     <Screen>
-      <ScreenHeader title="AI Assistant" subtitle="Powered by ContractIndia AI" showBack />
+      <ScreenHeader title="AI Assistant" subtitle="Powered by ContractsIndia AI" showBack />
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
         <FlatList
           data={messages}

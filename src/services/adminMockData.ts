@@ -132,7 +132,7 @@ export const adminPayments: Payment[] = [
 ];
 
 export const announcements: Announcement[] = [
-  { id: 'an1', title: 'New cities launched', body: 'ContractIndia is now live in Jaipur, Indore and Bhopal.', audience: 'all', channel: 'push', scheduledAt: '2026-06-15T10:00:00Z', status: 'sent', sentCount: 184209 },
+  { id: 'an1', title: 'New cities launched', body: 'ContractsIndia is now live in Jaipur, Indore and Bhopal.', audience: 'all', channel: 'push', scheduledAt: '2026-06-15T10:00:00Z', status: 'sent', sentCount: 184209 },
   { id: 'an2', title: 'Monsoon offer', body: '20% off on Premium subscription till June 30.', audience: 'individual', channel: 'in_app', status: 'scheduled', scheduledAt: '2026-06-16T09:00:00Z' },
   { id: 'an3', title: 'Vendor onboarding webinar', body: 'Join us this Saturday to learn how to grow leads.', audience: 'commercial', channel: 'email', status: 'draft' },
 ];

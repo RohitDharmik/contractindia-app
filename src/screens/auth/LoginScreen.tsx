@@ -150,7 +150,7 @@ export default function LoginScreen() {
         />
 
         <View style={styles.footerRow}>
-          <Text style={styles.footerText}>New to ContractIndia?</Text>
+          <Text style={styles.footerText}>New to ContractsIndia?</Text>
           <Pressable onPress={() => nav.navigate(Routes.Register)}>
             <Text style={[styles.link, { marginLeft: 4 }]}>Create an account</Text>
           </Pressable>

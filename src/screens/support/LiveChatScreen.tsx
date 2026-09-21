@@ -8,7 +8,7 @@ import { radius, spacing, typography } from '@/constants/sizes';
 interface Msg { id: string; fromMe: boolean; text: string }
 
 const seed: Msg[] = [
-  { id: '1', fromMe: false, text: 'Hi! You are connected with ContractIndia Support. How can we help?' },
+  { id: '1', fromMe: false, text: 'Hi! You are connected with ContractsIndia Support. How can we help?' },
 ];
 
 export default function LiveChatScreen() {

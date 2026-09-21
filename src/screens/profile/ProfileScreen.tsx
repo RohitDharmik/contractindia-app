@@ -148,7 +148,7 @@ export default function ProfileScreen() {
           { text: 'Sign out', style: 'destructive', onPress: () => signOut() },
         ])} fullWidth style={{ marginTop: spacing.xl }} />
 
-        <Text style={styles.version}>ContractIndia v1.0.0</Text>
+        <Text style={styles.version}>ContractsIndia v1.0.0</Text>
       </ScrollView>
     </Screen>
   );

@@ -52,7 +52,7 @@ export default function AdminDashboardScreen() {
 
   return (
     <Screen>
-      <ScreenHeader title="Admin panel" subtitle="ContractIndia Super Admin" showBack />
+      <ScreenHeader title="Admin panel" subtitle="ContractsIndia Super Admin" showBack />
       <ScrollView contentContainerStyle={{ padding: spacing.lg, paddingBottom: spacing.xxxl }}>
         <View style={styles.grid}>
           {kpis.map((k) => (
