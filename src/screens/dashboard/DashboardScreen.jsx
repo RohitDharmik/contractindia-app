@@ -16,12 +16,12 @@ export default function DashboardScreen() {
     const nav = useNavigation();
     const user = useAuthStore((s) => s.user);
     const unread = useNotificationsStore((s) => s.unreadCount());
-    const email = user?.email?.toLowerCase();
-    if (email === 'admin@gmail.com' || user?.role === 'admin') {
-        return <AdminDashboardScreen />;
-    }
-    if (email === 'commercial@gmail.com' || user?.role === 'commercial') {
+    const userType = String(user?.userType ?? '').trim().toLowerCase();
+    if (userType == '2' || userType == 'commercial' || user?.role == 'commercial') {
         return <VendorDashboardScreen />;
+    }
+    if (userType == '0' || userType == 'admin' || user?.role == 'admin') {
+      return <AdminDashboardScreen />;
     }
     const featured = mockServices.filter((s) => s.featured);
     return (<Screen>
@@ -62,6 +62,10 @@ export default function DashboardScreen() {
           <QuickAction icon="heart-outline" label="Favorites" onPress={() => nav.navigate(Routes.Favorites)}/>
           <QuickAction icon="git-compare-outline" label="Compare" onPress={() => nav.navigate(Routes.Compare)}/>
           <QuickAction icon="sparkles-outline" label="AI Help" onPress={() => nav.navigate(Routes.AIAssistant)}/>
+        </View>
+        <View style={styles.quickRow}>
+          <QuickAction icon="briefcase-outline" label="My services" onPress={() => nav.navigate(Routes.IndividualServices)}/>
+          <QuickAction icon="calendar-outline" label="Subscriptions" onPress={() => nav.navigate(Routes.SubscriptionHistory)}/>
         </View>
 
         {/* Categories */}

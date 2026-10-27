@@ -40,13 +40,14 @@ export default function VendorDashboardScreen() {
 
         <SectionHeader title="Quick actions"/>
         <View style={styles.actions}>
-          <ActionTile icon="add-circle-outline" label="New listing" onPress={() => { }}/>
-          <ActionTile icon="cloud-upload-outline" label="Upload portfolio" onPress={() => { }}/>
-          <ActionTile icon="people-outline" label="Team" onPress={() => { }}/>
+          <ActionTile icon="briefcase-outline" label="My services" onPress={() => nav.navigate(Routes.VendorServices)}/>
+          <ActionTile icon="person-circle-outline" label="Company profile" onPress={() => nav.navigate(Routes.VendorProfileWizard)}/>
+          <ActionTile icon="people-outline" label="Clients" onPress={() => nav.navigate(Routes.ClientHistory)}/>
+          <ActionTile icon="receipt-outline" label="Invoices" onPress={() => nav.navigate(Routes.Invoices)}/>
           <ActionTile icon="star-outline" label="Boost" onPress={() => nav.navigate(Routes.Plans)}/>
         </View>
 
-        <SectionHeader title="My services" onPress={() => { }}/>
+        <SectionHeader title="My services" onPress={() => nav.navigate(Routes.VendorServices)}/>
         {mockServices.slice(0, 3).map((s) => (<Card key={s.id} style={{ marginBottom: spacing.sm }}>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
               <View style={{ flex: 1 }}>

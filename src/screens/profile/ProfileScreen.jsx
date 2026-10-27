@@ -24,7 +24,6 @@ import { radius, spacing, typography } from "@/constants/sizes";
 export default function ProfileScreen() {
   const nav = useNavigation();
   const user = useAuthStore((s) => s.user);
-  console.log(user, "user");
 
   const signOut = useAuthStore((s) => s.signOut);
   if (!user)
@@ -33,10 +32,8 @@ export default function ProfileScreen() {
         <ScreenHeader title="Profile" />
       </Screen>
     );
-  const cleanEmail = user.email?.toLowerCase() ?? "";
-  const isAdmin = cleanEmail === "admin@gmail.com";
-  const isCommercial =
-    user.role === "commercial" || cleanEmail === "commercial@gmail.com";
+  const isAdmin = user.role === "admin";
+  const isCommercial = user.role === "commercial";
   const roleLabel = isAdmin
     ? "ADMIN"
     : isCommercial
@@ -44,69 +41,43 @@ export default function ProfileScreen() {
       : "INDIVIDUAL BUYER";
   const roleBadgeTone = isAdmin ? "danger" : isCommercial ? "accent" : "info";
   const sections = [
-    ...(isAdmin
-      ? [
-          {
-            title: "Admin Control Panel",
-            items: [
-              {
-                icon: "shield-outline",
-                label: "Admin dashboard",
-                onPress: () => nav.navigate(Routes.AdminDashboard),
-              },
-              {
-                icon: "business-outline",
-                label: "Vendor approvals queue",
-                onPress: () => nav.navigate(Routes.AdminVendorApprovals),
-              },
-              {
-                icon: "people-outline",
-                label: "User management",
-                onPress: () => nav.navigate(Routes.AdminUsers),
-              },
-              {
-                icon: "briefcase-outline",
-                label: "Listing approvals",
-                onPress: () => nav.navigate(Routes.AdminListings),
-              },
-              {
-                icon: "bar-chart-outline",
-                label: "System reports",
-                onPress: () => nav.navigate(Routes.AdminReports),
-              },
-            ],
-          },
-        ]
-      : []),
-    ...(isCommercial
-      ? [
-          {
-            title: "Vendor Operations",
-            items: [
-              {
-                icon: "business-outline",
-                label: "Vendor dashboard",
-                onPress: () => nav.navigate(Routes.VendorDashboard),
-              },
-              {
-                icon: "home-outline",
-                label: "Company profile",
-                onPress: () => nav.navigate(Routes.CompanyProfile),
-              },
-              {
-                icon: "bar-chart-outline",
-                label: "Performance analytics",
-                onPress: () => nav.navigate(Routes.Analytics),
-              },
-              {
-                icon: "megaphone-outline",
-                label: "My leads inbox",
-                onPress: () => nav.navigate(Routes.LeadsTab),
-              },
-            ],
-          },
-        ]
-      : []),
+    {
+      title: "Admin workspace",
+      items: [
+        { icon: "shield-outline", label: "Admin dashboard", onPress: () => nav.navigate(Routes.AdminDashboard) },
+        { icon: "shield-checkmark-outline", label: "User verification", onPress: () => nav.navigate(Routes.AdminUserVerification) },
+        { icon: "business-outline", label: "Vendor approvals", onPress: () => nav.navigate(Routes.AdminVendorApprovals) },
+        { icon: "people-outline", label: "User management", onPress: () => nav.navigate(Routes.AdminUsers) },
+        { icon: "briefcase-outline", label: "Listing approvals", onPress: () => nav.navigate(Routes.AdminListings) },
+        { icon: "construct-outline", label: "Service management", onPress: () => nav.navigate(Routes.AdminServiceManagement) },
+        { icon: "folder-open-outline", label: "Document subcategories", onPress: () => nav.navigate(Routes.AdminDocumentSubcategories) },
+        { icon: "lock-closed-outline", label: "Security", onPress: () => nav.navigate(Routes.AdminSecurity) },
+        { icon: "sparkles-outline", label: "Plans management", onPress: () => nav.navigate(Routes.AdminPlans) },
+        { icon: "cash-outline", label: "Payment records", onPress: () => nav.navigate(Routes.AdminPayments) },
+        { icon: "bar-chart-outline", label: "System reports", onPress: () => nav.navigate(Routes.AdminReports) },
+        { icon: "document-text-outline", label: "Form builder", onPress: () => nav.navigate(Routes.AdminFormBuilder) },
+        { icon: "megaphone-outline", label: "Announcements", onPress: () => nav.navigate(Routes.AdminAnnouncements) },
+      ],
+    },
+    {
+      title: "Commercial workspace",
+      items: [
+        { icon: "business-outline", label: "Vendor dashboard", onPress: () => nav.navigate(Routes.VendorDashboard) },
+        { icon: "home-outline", label: "Company profile", onPress: () => nav.navigate(Routes.VendorProfileWizard) },
+        { icon: "briefcase-outline", label: "My services", onPress: () => nav.navigate(Routes.VendorServices) },
+        { icon: "people-outline", label: "Client history", onPress: () => nav.navigate(Routes.ClientHistory) },
+        { icon: "receipt-outline", label: "Invoices", onPress: () => nav.navigate(Routes.Invoices) },
+        { icon: "bar-chart-outline", label: "Performance analytics", onPress: () => nav.navigate(Routes.Analytics) },
+      ],
+    },
+    {
+      title: "Individual workspace",
+      items: [
+        { icon: "briefcase-outline", label: "My services", onPress: () => nav.navigate(Routes.IndividualServices) },
+        { icon: "calendar-outline", label: "Subscription history", onPress: () => nav.navigate(Routes.SubscriptionHistory) },
+        { icon: "grid-outline", label: "Marketplace", onPress: () => nav.navigate(Routes.MarketplaceTab) },
+      ],
+    },
     {
       title: "Account & Security",
       items: [
@@ -123,30 +94,14 @@ export default function ProfileScreen() {
         },
       ],
     },
-    ...(!isAdmin
-      ? [
-          {
-            title: "Activity",
-            items: [
-              {
-                icon: "heart-outline",
-                label: "Favorites",
-                onPress: () => nav.navigate(Routes.Favorites),
-              },
-              {
-                icon: "git-compare-outline",
-                label: "Compare list",
-                onPress: () => nav.navigate(Routes.Compare),
-              },
-              {
-                icon: "megaphone-outline",
-                label: isCommercial ? "Inquiries sent" : "My inquiries",
-                onPress: () => nav.navigate(Routes.LeadsTab),
-              },
-            ],
-          },
-        ]
-      : []),
+    {
+      title: "Activity",
+      items: [
+        { icon: "heart-outline", label: "Favorites", onPress: () => nav.navigate(Routes.Favorites) },
+        { icon: "git-compare-outline", label: "Compare list", onPress: () => nav.navigate(Routes.Compare) },
+        { icon: "megaphone-outline", label: isCommercial ? "Inquiries sent" : "My inquiries", onPress: () => nav.navigate(Routes.LeadsTab) },
+      ],
+    },
     {
       title: "Billing & Subscriptions",
       items: [

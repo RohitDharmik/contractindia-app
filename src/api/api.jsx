@@ -1,4 +1,5 @@
-import api from "./apiInterceptor";
+import { api } from "./client";
+
 
 export const authentication = async (payload) => {
   return await api.post("/Authentication/authenticate", payload);
@@ -272,3 +273,9 @@ export const userServicesdetailsGetByParam = async (Param) => {
 export const CheckValidityGet = async (params) => {
   return await api.get(`/UserSubscriptionDetail/checkvalidity?${params}`);
 };
+export const getUserPaymentHistory = async () =>
+  api.get("/UserPaymentHistory/get");
+export const getUserServices = async (userId) =>
+    api.get(`/ServiceMaster/getuserservices?userId=${encodeURIComponent(userId)}`);
+export const getSubscriptionHistory = async (userId) =>
+    api.get(`/UserSubscriptionDetail/get?userId=${encodeURIComponent(userId)}`);

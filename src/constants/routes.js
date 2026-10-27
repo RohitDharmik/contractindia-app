@@ -30,9 +30,15 @@ export const Routes = {
     VendorProfile: 'VendorProfile',
     CompanyProfile: 'CompanyProfile',
     VendorDashboard: 'VendorDashboard',
+    VendorServices: 'VendorServices',
+    VendorProfileWizard: 'VendorProfileWizard',
+    ClientHistory: 'ClientHistory',
+    Invoices: 'Invoices',
     // Leads
     LeadInbox: 'LeadInbox',
     LeadDetail: 'LeadDetail',
+    IndividualServices: 'IndividualServices',
+    SubscriptionHistory: 'SubscriptionHistory',
     // Chat
     ChatList: 'ChatList',
     ChatRoom: 'ChatRoom',
@@ -66,6 +72,12 @@ export const Routes = {
     AIAssistant: 'AIAssistant',
     // Admin
     AdminDashboard: 'AdminDashboard',
+    AdminUserVerification: 'AdminUserVerification',
+    AdminUserAction: 'AdminUserAction',
+    BusinessPlansScreen: 'BusinessPlansScreen',
+    AdminServiceManagement: 'ServiceManagement',
+    AdminSecurity: 'AdminSecurity',
+    AdminDocumentSubcategories: 'AdminDocumentSubcategories',
     AdminVendorApprovals: 'AdminVendorApprovals',
     AdminUsers: 'UserManagementScreen',
     AdminListings: 'ListingApprovalsScreen',

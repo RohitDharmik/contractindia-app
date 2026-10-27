@@ -63,59 +63,78 @@ const activity = [
 ];
 const modules = [
   {
-    icon: "people-outline",
-    label: "User management",
-    body: "Create, edit, suspend, delete",
-    route: Routes.AdminUsers,
+    icon: "shield-checkmark-outline",
+    label: "User verification",
+    body: "Review registration verification requests",
+    route: Routes.AdminUserVerification,
   },
   {
-    icon: "business-outline",
-    label: "Vendor approvals",
-    body: "KYC & document review queue",
-    route: Routes.AdminVendorApprovals,
-  },
-  {
-    icon: "briefcase-outline",
-    label: "Listings",
-    body: "Approve, feature, archive",
-    route: Routes.AdminListings,
-  },
-  {
-    icon: "grid-outline",
-    label: "Categories",
-    body: "Activate & feature categories",
-    route: Routes.AdminCategories,
-  },
-  {
-    icon: "sparkles-outline",
-    label: "Plans & pricing",
-    body: "Subscription tiers",
-    route: Routes.AdminPlans,
-  },
-  {
+    icon: "construct-outline",
+    label: "Service management",
+    body: "Manage service catalog records",
+    route: Routes.AdminServiceManagement,
+  },{
     icon: "cash-outline",
     label: "Payments",
     body: "Razorpay/Stripe reconciliation",
     route: Routes.AdminPayments,
+  },  {
+    icon: "sparkles-outline",
+    label: "Plans & pricing",
+    body: "Subscription tiers",
+    route: Routes.BusinessPlansScreen,
   },
-  {
-    icon: "bar-chart-outline",
-    label: "Reports & exports",
-    body: "Revenue, users, vendors",
-    route: Routes.AdminReports,
-  },
-  {
-    icon: "document-text-outline",
-    label: "Forms engine",
-    body: "Design dynamic forms",
-    route: Routes.AdminFormBuilder,
-  },
-  {
-    icon: "megaphone-outline",
-    label: "Announcements",
-    body: "Push, in-app, email",
-    route: Routes.AdminAnnouncements,
-  },
+  // {
+  //   icon: "people-outline",
+  //   label: "User management",
+  //   body: "Create, edit, suspend, delete",
+  //   route: Routes.AdminUsers,
+  // },
+  // {
+  //   icon: "business-outline",
+  //   label: "Vendor approvals",
+  //   body: "KYC & document review queue",
+  //   route: Routes.AdminVendorApprovals,
+  // },
+  // {
+  //   icon: "briefcase-outline",
+  //   label: "Listings",
+  //   body: "Approve, feature, archive",
+  //   route: Routes.AdminListings,
+  // },
+  // {
+  //   icon: "grid-outline",
+  //   label: "Categories",
+  //   body: "Activate & feature categories",
+  //   route: Routes.AdminCategories,
+  // },
+
+  
+  // {
+  //   icon: "bar-chart-outline",
+  //   label: "Reports & exports",
+  //   body: "Revenue, users, vendors",
+  //   route: Routes.AdminReports,
+  // },
+  // {
+  //   icon: "document-text-outline",
+  //   label: "Forms engine",
+  //   body: "Design dynamic forms",
+  //   route: Routes.AdminFormBuilder,
+  // },
+  // {
+  //   icon: "folder-open-outline",
+  //   label: "Document subcategories",
+  //   body: "Manage document taxonomy",
+  //   route: Routes.AdminDocumentSubcategories,
+  // },
+  
+  // {
+  //   icon: "megaphone-outline",
+  //   label: "Announcements",
+  //   body: "Push, in-app, email",
+  //   route: Routes.AdminAnnouncements,
+  // },
 ];
 export default function AdminDashboardScreen() {
   const nav = useNavigation();
