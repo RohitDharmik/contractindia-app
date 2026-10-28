@@ -1,6 +1,5 @@
-import React from "react";
+import React, { useState } from "react";
 import {
-  Alert,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -16,6 +15,7 @@ import {
   Avatar,
   Badge,
   Button,
+  AlertBox,
 } from "@/components";
 import { useAuthStore } from "@/store/authStore";
 import { Routes } from "@/constants/routes";
@@ -26,6 +26,7 @@ export default function ProfileScreen() {
   const user = useAuthStore((s) => s.user);
 
   const signOut = useAuthStore((s) => s.signOut);
+  const [showSignOutAlert, setShowSignOutAlert] = useState(false);
   if (!user)
     return (
       <Screen>
@@ -44,38 +45,126 @@ export default function ProfileScreen() {
     {
       title: "Admin workspace",
       items: [
-        { icon: "shield-outline", label: "Admin dashboard", onPress: () => nav.navigate(Routes.AdminDashboard) },
-        { icon: "shield-checkmark-outline", label: "User verification", onPress: () => nav.navigate(Routes.AdminUserVerification) },
-        { icon: "business-outline", label: "Vendor approvals", onPress: () => nav.navigate(Routes.AdminVendorApprovals) },
-        { icon: "people-outline", label: "User management", onPress: () => nav.navigate(Routes.AdminUsers) },
-        { icon: "briefcase-outline", label: "Listing approvals", onPress: () => nav.navigate(Routes.AdminListings) },
-        { icon: "construct-outline", label: "Service management", onPress: () => nav.navigate(Routes.AdminServiceManagement) },
-        { icon: "folder-open-outline", label: "Document subcategories", onPress: () => nav.navigate(Routes.AdminDocumentSubcategories) },
-        { icon: "lock-closed-outline", label: "Security", onPress: () => nav.navigate(Routes.AdminSecurity) },
-        { icon: "sparkles-outline", label: "Plans management", onPress: () => nav.navigate(Routes.AdminPlans) },
-        { icon: "cash-outline", label: "Payment records", onPress: () => nav.navigate(Routes.AdminPayments) },
-        { icon: "bar-chart-outline", label: "System reports", onPress: () => nav.navigate(Routes.AdminReports) },
-        { icon: "document-text-outline", label: "Form builder", onPress: () => nav.navigate(Routes.AdminFormBuilder) },
-        { icon: "megaphone-outline", label: "Announcements", onPress: () => nav.navigate(Routes.AdminAnnouncements) },
+        {
+          icon: "shield-outline",
+          label: "Admin dashboard",
+          onPress: () => nav.navigate(Routes.AdminDashboard),
+        },
+        {
+          icon: "shield-checkmark-outline",
+          label: "User verification",
+          onPress: () => nav.navigate(Routes.AdminUserVerification),
+        },
+        {
+          icon: "business-outline",
+          label: "Vendor approvals",
+          onPress: () => nav.navigate(Routes.AdminVendorApprovals),
+        },
+        {
+          icon: "people-outline",
+          label: "User management",
+          onPress: () => nav.navigate(Routes.AdminUsers),
+        },
+        {
+          icon: "briefcase-outline",
+          label: "Listing approvals",
+          onPress: () => nav.navigate(Routes.AdminListings),
+        },
+        {
+          icon: "construct-outline",
+          label: "Service management",
+          onPress: () => nav.navigate(Routes.ServiceManagement),
+        },
+        {
+          icon: "folder-open-outline",
+          label: "Document subcategories",
+          onPress: () => nav.navigate(Routes.AdminDocumentSubcategories),
+        },
+        {
+          icon: "lock-closed-outline",
+          label: "Security",
+          onPress: () => nav.navigate(Routes.AdminSecurity),
+        },
+        {
+          icon: "sparkles-outline",
+          label: "Plans management",
+          onPress: () => nav.navigate(Routes.AdminPlans),
+        },
+        {
+          icon: "cash-outline",
+          label: "Payment records",
+          onPress: () => nav.navigate(Routes.AdminPayments),
+        },
+        {
+          icon: "bar-chart-outline",
+          label: "System reports",
+          onPress: () => nav.navigate(Routes.AdminReports),
+        },
+        {
+          icon: "document-text-outline",
+          label: "Form builder",
+          onPress: () => nav.navigate(Routes.AdminFormBuilder),
+        },
+        {
+          icon: "megaphone-outline",
+          label: "Announcements",
+          onPress: () => nav.navigate(Routes.AdminAnnouncements),
+        },
       ],
     },
     {
       title: "Commercial workspace",
       items: [
-        { icon: "business-outline", label: "Vendor dashboard", onPress: () => nav.navigate(Routes.VendorDashboard) },
-        { icon: "home-outline", label: "Company profile", onPress: () => nav.navigate(Routes.VendorProfileWizard) },
-        { icon: "briefcase-outline", label: "My services", onPress: () => nav.navigate(Routes.VendorServices) },
-        { icon: "people-outline", label: "Client history", onPress: () => nav.navigate(Routes.ClientHistory) },
-        { icon: "receipt-outline", label: "Invoices", onPress: () => nav.navigate(Routes.Invoices) },
-        { icon: "bar-chart-outline", label: "Performance analytics", onPress: () => nav.navigate(Routes.Analytics) },
+        {
+          icon: "business-outline",
+          label: "Vendor dashboard",
+          onPress: () => nav.navigate(Routes.VendorDashboard),
+        },
+        {
+          icon: "home-outline",
+          label: "Company profile",
+          onPress: () => nav.navigate(Routes.VendorProfileWizard),
+        },
+        {
+          icon: "briefcase-outline",
+          label: "My services",
+          onPress: () => nav.navigate(Routes.VendorServices),
+        },
+        {
+          icon: "people-outline",
+          label: "Client history",
+          onPress: () => nav.navigate(Routes.ClientHistory),
+        },
+        {
+          icon: "receipt-outline",
+          label: "Invoices",
+          onPress: () => nav.navigate(Routes.Invoices),
+        },
+        {
+          icon: "bar-chart-outline",
+          label: "Performance analytics",
+          onPress: () => nav.navigate(Routes.Analytics),
+        },
       ],
     },
     {
       title: "Individual workspace",
       items: [
-        { icon: "briefcase-outline", label: "My services", onPress: () => nav.navigate(Routes.IndividualServices) },
-        { icon: "calendar-outline", label: "Subscription history", onPress: () => nav.navigate(Routes.SubscriptionHistory) },
-        { icon: "grid-outline", label: "Marketplace", onPress: () => nav.navigate(Routes.MarketplaceTab) },
+        {
+          icon: "briefcase-outline",
+          label: "My services",
+          onPress: () => nav.navigate(Routes.IndividualServices),
+        },
+        {
+          icon: "calendar-outline",
+          label: "Subscription history",
+          onPress: () => nav.navigate(Routes.SubscriptionHistory),
+        },
+        {
+          icon: "grid-outline",
+          label: "Marketplace",
+          onPress: () => nav.navigate(Routes.MarketplaceTab),
+        },
       ],
     },
     {
@@ -97,9 +186,21 @@ export default function ProfileScreen() {
     {
       title: "Activity",
       items: [
-        { icon: "heart-outline", label: "Favorites", onPress: () => nav.navigate(Routes.Favorites) },
-        { icon: "git-compare-outline", label: "Compare list", onPress: () => nav.navigate(Routes.Compare) },
-        { icon: "megaphone-outline", label: isCommercial ? "Inquiries sent" : "My inquiries", onPress: () => nav.navigate(Routes.LeadsTab) },
+        {
+          icon: "heart-outline",
+          label: "Favorites",
+          onPress: () => nav.navigate(Routes.Favorites),
+        },
+        {
+          icon: "git-compare-outline",
+          label: "Compare list",
+          onPress: () => nav.navigate(Routes.Compare),
+        },
+        {
+          icon: "megaphone-outline",
+          label: isCommercial ? "Inquiries sent" : "My inquiries",
+          onPress: () => nav.navigate(Routes.LeadsTab),
+        },
       ],
     },
     {
@@ -249,22 +350,26 @@ export default function ProfileScreen() {
         <Button
           title="Sign out"
           variant="danger"
-          onPress={() =>
-            Alert.alert("Sign out?", "You will need to sign in again.", [
-              { text: "Cancel", style: "cancel" },
-              {
-                text: "Sign out",
-                style: "destructive",
-                onPress: () => signOut(),
-              },
-            ])
-          }
+          onPress={() => setShowSignOutAlert(true)}
           fullWidth
           style={{ marginTop: spacing.xl }}
         />
 
         <Text style={styles.version}>ContractsIndia v1.0.0</Text>
       </ScrollView>
+      <AlertBox
+        visible={showSignOutAlert}
+        title="Sign out?"
+        message="You will need to sign in again."
+        confirmLabel="Sign out"
+        cancelLabel="Cancel"
+        destructive
+        onConfirm={() => {
+          setShowSignOutAlert(false);
+          void signOut();
+        }}
+        onCancel={() => setShowSignOutAlert(false)}
+      />
     </Screen>
   );
 }

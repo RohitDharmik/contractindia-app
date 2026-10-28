@@ -75,7 +75,7 @@ export const Routes = {
     AdminUserVerification: 'AdminUserVerification',
     AdminUserAction: 'AdminUserAction',
     BusinessPlansScreen: 'BusinessPlansScreen',
-    AdminServiceManagement: 'ServiceManagement',
+    ServiceManagement: 'ServiceManagement',
     AdminSecurity: 'AdminSecurity',
     AdminDocumentSubcategories: 'AdminDocumentSubcategories',
     AdminVendorApprovals: 'AdminVendorApprovals',

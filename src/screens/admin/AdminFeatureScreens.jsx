@@ -123,7 +123,7 @@ export function ServiceManagementScreen() {
         : error
             ? <EmptyState icon="cloud-offline-outline" title="Catalog unavailable" body={error} action={<Pressable onPress={() => loadServices()} style={styles.retry}><Ionicons name="refresh-outline" size={16} color={colors.primary}/><Text style={styles.retryText}>Try again</Text></Pressable>}/>
             : <EmptyState icon="construct-outline" title="No services found" body={query ? 'Try another search term or filter.' : 'No service records were returned.'}/>;
-    return <AdminPage title="Service management" subtitle="Service catalog" >
+    return <AdminPage title="Service  " subtitle="Service catalog" >
         <FlatList
             data={filteredServices}
             keyExtractor={(item, index) => String(item?.ServiceID ?? item?.serviceId ?? item?.ID ?? item?.id ?? index)}

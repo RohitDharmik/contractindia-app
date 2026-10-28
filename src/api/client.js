@@ -9,12 +9,6 @@ export const api = axios.create({
         'Content-Type': 'application/json',
     },
 });
-export const getUserServices = async (userId) =>
-    api.get(`/ServiceMaster/getuserservices?userId=${encodeURIComponent(userId)}`);
-export const getSubscriptionHistory = async (userId) =>
-    api.get(`/UserSubscriptionDetail/get?userId=${encodeURIComponent(userId)}`);
-export const getServiceCatalog = async () =>
-    api.get('/ServiceMaster/get');
 
 api.interceptors.request.use((config) => {
     if (!API_BASE_URL) {

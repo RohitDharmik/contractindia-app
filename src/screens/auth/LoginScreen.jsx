@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import {
-  Alert,
   Image,
   KeyboardAvoidingView,
   Platform,
@@ -32,39 +31,16 @@ export default function LoginScreen() {
     if (!password) return setError("Enter your password");
     setLoading(true);
     try {
-      const { challengeId, mobile, remark } = await signInWithPassword(
+      const { challengeId, mobile } = await signInWithPassword(
         identifier,
         password,
       );
-      
-      
-      const openOtpScreen = () =>
-        nav.navigate(Routes.OTP, {
-          challengeId,
-          mobile,
-          email: identifier.trim(),
-          activationCode: challengeId,
-        });
-      // if (remark) {
-      Alert.alert("OTP", remark, [
-        {
-          text: "Copy",
-          onPress: async () => {
-            try {
-              await navigator.clipboard.writeText(String(remark ?? ""));
-            } catch (error) {
-              console.log("Copy failed:", error);
-            }
-          },
-        },
-        {
-          text: "Continue",
-          onPress: openOtpScreen,
-        },
-      ]);
-      // } else {
-      openOtpScreen();
-      // }
+      nav.navigate(Routes.OTP, {
+        challengeId,
+        mobile,
+        email: identifier.trim(),
+        activationCode: challengeId,
+      });
     } catch (e) {
       setError(e?.message ?? "Login failed");
     } finally {

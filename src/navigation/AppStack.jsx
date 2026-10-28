@@ -54,9 +54,12 @@ import VendorApprovalsScreen from '@/screens/admin/VendorApprovalsScreen';
 import VendorApprovalDetailScreen from '@/screens/admin/VendorApprovalDetailScreen';
 import UserVerificationScreen from '../screens/admin/UserVerificationScreen';
 import BusinessPlansScreen from '../screens/admin/BusinessPlansScreen';
+import ServiceManagement from '../screens/admin/ServiceManagement';
 const Stack = createNativeStackNavigator();
 
 export default function AppStack() {
+  console.log(useAuthStore.user,"useAuthStore");
+  
     return (<Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name={Routes.MainTabs} component={MainTabs}/>
 
@@ -120,7 +123,7 @@ export default function AppStack() {
 
       <Stack.Screen name={Routes.AdminDashboard} component={AdminDashboardScreen}/>
       <Stack.Screen name={Routes.AdminUserAction} component={UserReviewScreen}/>
-      <Stack.Screen name={Routes.AdminServiceManagement} component={ServiceManagementScreen}/>
+      <Stack.Screen name={Routes.ServiceManagement} component={ServiceManagement}/>
       <Stack.Screen name={Routes.AdminSecurity} component={SecurityScreen}/>
       <Stack.Screen name={Routes.AdminDocumentSubcategories} component={DocumentSubcategoriesScreen}/>
       <Stack.Screen name={Routes.AdminVendorApprovals} component={VendorApprovalsScreen}/>

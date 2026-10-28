@@ -10,11 +10,12 @@ import {
   verifyEmail,
   verifyMobile,
 } from "@/api/auth";
-import { clearAuthTokens } from "@/api/authSession";
+import { clearAuthTokens, setAuthTokens } from "@/api/authSession";
 const K_ONB = `${STORAGE_PREFIX}:onboarded`;
+const K_USER = `${STORAGE_PREFIX}:auth-user`;
 
 function isSuccessful(result) {
-  const status = result?.status;
+  const status = result?.isLoginSuccessful ?? result?.status;
   return (
     status === true ||
     status === 1 ||
@@ -23,7 +24,9 @@ function isSuccessful(result) {
 }
 
 function roleForUserType(role) {
-  const userType = String(role ?? "").trim().toLowerCase();
+  const userType = String(role ?? "")
+    .trim()
+    .toLowerCase();
   if (["0", "admin"].includes(userType)) return "admin";
   if (["1", "individual"].includes(userType)) return "individual";
   if (["2", "commercial"].includes(userType)) return "commercial";
@@ -37,8 +40,29 @@ export const useAuthStore = create((set, get) => ({
   hasOnboarded: false,
   async hydrate() {
     try {
-      const onb = await AsyncStorage.getItem(K_ONB);
-      set({ hasOnboarded: onb === "1" });
+      const [onb, savedUser] = await Promise.all([
+        AsyncStorage.getItem(K_ONB),
+        AsyncStorage.getItem(K_USER),
+      ]);
+      let user = null;
+      if (savedUser) {
+        try {
+          const parsedUser = JSON.parse(savedUser);
+          if (
+            parsedUser?.isLoginSuccessbyOtp === true &&
+            (roleForUserType(parsedUser?.userType) ||
+              roleForUserType(parsedUser?.role))
+          ) {
+            user = parsedUser;
+            setAuthTokens(user.authToken, user.refreshToken);
+          }
+        } catch {
+          await AsyncStorage.removeItem(K_USER);
+        }
+      }
+      set({ hasOnboarded: onb === "1", user });
+    } catch {
+      set({ hasOnboarded: false, user: null });
     } finally {
       set({ hydrated: true });
     }
@@ -54,15 +78,14 @@ export const useAuthStore = create((set, get) => ({
       );
     }
     const role =
-      roleForUserType(response?.primaryRole) ??
       roleForUserType(response?.userType) ??
+      roleForUserType(response?.primaryRole) ??
       roleForUserType(response?.userRole);
     if (!response?.value || !role) {
       throw new Error(
         "The login response is missing a verification challenge or supported user role",
       );
     }
-    // setAuthTokens(response?.authToken, response?.refreshToken);
     const pendingLogin = {
       id: String(response?.value),
       activationCode: response?.activationCode || String(response?.value),
@@ -71,13 +94,15 @@ export const useAuthStore = create((set, get) => ({
       role,
       userId: response?.userId,
       userName: response?.userName,
-      authToken: response?.authToken,
       userRole: response?.userRole,
       remark: response?.remark,
       userType: response?.userType,
+      primaryRole: response?.primaryRole,
       isLoginSuccessful: response?.isLoginSuccessful,
-      // refreshToken: response?.refreshToken,
-      // refreshTokenExpiryTime: response?.refreshTokenExpiryTime,
+      isLoginSuccessbyOtp: false,
+      authToken: response?.authToken,
+      refreshToken: response?.refreshToken,
+      refreshTokenExpiryTime: response?.refreshTokenExpiryTime,
     };
     set({ pendingLogin });
     return {
@@ -101,8 +126,7 @@ export const useAuthStore = create((set, get) => ({
           "The verification code is incorrect",
       );
     }
-    set({
-      user: {
+    const user = {
         id: pendingLogin.id,
         email: pendingLogin.email,
         mobile: pendingLogin.mobile,
@@ -111,11 +135,21 @@ export const useAuthStore = create((set, get) => ({
         userName: pendingLogin.userName,
         userRole: pendingLogin.userRole,
         remark: pendingLogin.remark,
-        userType: pendingLogin.userType,
+        userType:
+          pendingLogin.userType ?? pendingLogin.primaryRole ?? pendingLogin.role,
+        primaryRole: pendingLogin.primaryRole,
         isLoginSuccessful: pendingLogin.isLoginSuccessful,
-      },
-      pendingLogin: null,
-    });
+        isLoginSuccessbyOtp: true,
+        authToken: response?.authToken ?? pendingLogin.authToken,
+        refreshToken: response?.refreshToken ?? pendingLogin.refreshToken,
+        refreshTokenExpiryTime:
+          response?.refreshTokenExpiryTime ?? pendingLogin.refreshTokenExpiryTime,
+      };
+    set({ user, pendingLogin: null });
+    setAuthTokens(user.authToken, user.refreshToken);
+    try {
+      await AsyncStorage.setItem(K_USER, JSON.stringify(user));
+    } catch {}
   },
   async resendOtp(challengeId) {
     const response = await resendMobileOtp(String(challengeId));
@@ -192,6 +226,7 @@ export const useAuthStore = create((set, get) => ({
   async signOut() {
     clearAuthTokens();
     set({ user: null, pendingLogin: null });
+    await AsyncStorage.removeItem(K_USER).catch(() => {});
   },
   async completeOnboarding() {
     await AsyncStorage.setItem(K_ONB, "1");
@@ -199,5 +234,11 @@ export const useAuthStore = create((set, get) => ({
   },
   setUser(u) {
     set({ user: u });
+    if (u) {
+      AsyncStorage.setItem(K_USER, JSON.stringify(u)).catch(() => {});
+    } else {
+      AsyncStorage.removeItem(K_USER).catch(() => {});
+      clearAuthTokens();
+    }
   },
 }));

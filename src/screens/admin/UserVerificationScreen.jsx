@@ -31,6 +31,7 @@ import {
 import AppHeader from "../../components/AppHeader";
 import { useNavigation } from "@react-navigation/native";
 import { Routes } from "@/constants/routes";
+import ScreenHeader from "../../components/ScreenHeader";
 
 /* ------------------------------------------------------------------ */
 /* Design tokens                                                       */
@@ -805,7 +806,14 @@ export default function UserVerificationScreen() {
           <IconButton icon="refresh-outline" label="Refresh" onPress={refresh} tint={COLORS.primary} bg={COLORS.primaryLight} />
         )}
       </View> */}
-      <AppHeader title="User verification" showBack onBack={handleBack} />
+      <ScreenHeader
+        title="User verification"
+        subtitle="Manage registration requests"
+        icon="shield-checkmark"
+        showBack={handleBack}
+        // onBack={handleBack}
+      />
+
       {/* Hero banner */}
       <View style={styles.heroBanner}>
         <View style={styles.heroIcon}>

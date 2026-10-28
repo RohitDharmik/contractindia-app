@@ -72,8 +72,8 @@ const modules = [
     icon: "construct-outline",
     label: "Service management",
     body: "Manage service catalog records",
-    route: Routes.AdminServiceManagement,
-  },{
+    route: Routes.ServiceManagement,
+  },{ 
     icon: "cash-outline",
     label: "Payments",
     body: "Razorpay/Stripe reconciliation",

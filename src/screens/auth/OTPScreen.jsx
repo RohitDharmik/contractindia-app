@@ -35,7 +35,7 @@ export default function OTPScreen() {
 
   // Supports typing one digit or pasting a complete OTP into any box.
   const onChange = (index, value) => {
-    const pastedDigits = value.replace(/\\D/g, '');
+    const pastedDigits = value.replace(/\D/g, '');
 
     if (pastedDigits.length > 1) {
       const otp = pastedDigits.slice(0, LEN).split('');

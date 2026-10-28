@@ -27,8 +27,8 @@ import {
   planMasterUpdate,
   membershipType,
   userType,
-} from "../../api/api";
-import AppHeader from "../../components/AppHeader";
+} from "../../api/api"; 
+import ScreenHeader from "../../components/ScreenHeader";
 /* ------------------------------------------------------------------ */
 /* Design tokens                                                       */
 /* ------------------------------------------------------------------ */
@@ -869,12 +869,12 @@ export default function BusinessPlansScreen() {
     <SafeAreaView style={styles.safe}>
       <StatusBar barStyle="dark-content" backgroundColor={COLORS.canvas} />
 
-      <AppHeader
+      <ScreenHeader
         title="Business Plans"
         subtitle="Manage plan master entries"
         icon="briefcase"
-        showBack={!!onBack}
-        onBack={handleBack}
+        showBack={handleBack}
+        // onBack={handleBack}
         actions={headerActions}
       />
 

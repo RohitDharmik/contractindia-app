@@ -29,7 +29,7 @@ export default function PlansManagementScreen() {
     };
     const toggleActive = (id) => setPlans((all) => all.map((p) => p.id === id ? { ...p, active: !p.active } : p));
     return (<Screen>
-      <ScreenHeader title="Plans & pricing" showBack/>
+      <ScreenHeader title="Plans & pricing" />
       <ScrollView contentContainerStyle={{ padding: spacing.lg, paddingBottom: spacing.xxxl }}>
         {plans.map((p) => (<Card key={p.id} style={{ marginBottom: spacing.md }}>
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>

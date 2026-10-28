@@ -279,3 +279,5 @@ export const getUserServices = async (userId) =>
     api.get(`/ServiceMaster/getuserservices?userId=${encodeURIComponent(userId)}`);
 export const getSubscriptionHistory = async (userId) =>
     api.get(`/UserSubscriptionDetail/get?userId=${encodeURIComponent(userId)}`);
+export const getServiceCatalog = async () =>
+    api.get('/ServiceMaster/get');

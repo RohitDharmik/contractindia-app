@@ -2,11 +2,11 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Badge, Card, EmptyState, Screen, ScreenHeader } from '@/components';
-import { useAuthStore } from '@/store/authStore';
-import { getSubscriptionHistory, getUserServices } from '@/api/client';
+import { useAuthStore } from '@/store/authStore'; 
 import { colors } from '@/constants/colors';
 import { spacing, typography } from '@/constants/sizes';
 import { formatINR } from '@/utils/formatters';
+import { getSubscriptionHistory, getUserServices } from '../../api/api';
 
 const CONFIG = {
     services: {
