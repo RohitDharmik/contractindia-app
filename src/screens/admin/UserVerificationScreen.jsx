@@ -27,8 +27,7 @@ import {
   userType,
   UserVerificationGet,
   verifyUserRegistration,
-} from "../../api/api";
-import AppHeader from "../../components/AppHeader";
+} from "../../api/api"; 
 import { useNavigation } from "@react-navigation/native";
 import { Routes } from "@/constants/routes";
 import ScreenHeader from "../../components/ScreenHeader";
