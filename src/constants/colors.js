@@ -18,3 +18,33 @@ export const colors = {
     rating: '#F5A524',
     badgeBg: '#FEF3C7',
 };
+export const COLORS = {
+  primary: "#4F46E5",
+  heroDark: "#1E1B4B",
+  ink: "#0F172A",
+  slate: "#1E293B",
+  muted: "#64748B",
+  faint: "#94A3B8",
+  line: "#E2E8F0",
+  surface: "#FFFFFF",
+  canvas: "#F8FAFC",
+  slateLight: "#F1F5F9",
+  indigoLight: "#EEF2FF",
+  indigoLine: "#C7D2FE",
+  indigo: "#6366F1",
+  green: "#059669",
+  greenLight: "#ECFDF5",
+  greenLine: "#A7F3D0",
+  amber: "#F59E0B",
+  amberLight: "#FFFBEB",
+  amberLine: "#FDE68A",
+};
+
+// Stable fallback tones. The web version picked a random gradient on each
+// render, which made the fallback change between renders. This does not.
+export const FALLBACK_PALETTE = [
+  { bg: "#DBEAFE", fg: "#2563EB" },
+  { bg: "#EDE9FE", fg: "#7C3AED" },
+  { bg: "#D1FAE5", fg: "#059669" },
+  { bg: "#FEF3C7", fg: "#D97706" },
+];

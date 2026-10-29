@@ -92,4 +92,7 @@ export const Routes = {
   PlansAndSubscriptionsScreen: "PlansAndSubscriptionsScreen",
   // Individual Services
   IndividualMyServicesScreen: "IndividualMyServicesScreen",
+  CompanySubServices: "CompanySubServices",
+  CompanyListScreen: "CompanyListScreen",
+  CompanyDetailScreen: "CompanyDetailScreen",
 };

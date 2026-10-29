@@ -1,7 +1,7 @@
 import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { useAuthStore } from "@/store/authStore";
-import MainTabs from "./MainTabs";
+import AppDrawer from "@/components/navigation/AppDrawer";
 import { Routes } from "@/constants/routes";
 // Detail screens
 import ServiceDetailScreen from "@/screens/marketplace/ServiceDetailScreen";
@@ -69,6 +69,9 @@ import BusinessPlansScreen from "../screens/admin/BusinessPlansScreen";
 import ServiceManagement from "../screens/admin/ServiceManagement";
 import PlansAndSubscriptionsScreen from "../screens/plans/PlansAndSubscriptionsScreen";
 import IndividualMyServicesScreen from "../screens/Individual/IndividualMyServices";
+import CompanySubServices from "../screens/public/CompanySubServices";
+import CompanyListScreen from "../screens/companies/CompanyListScreen";
+import CompanyDetailScreen from "../screens/companies/CompanyDetailScreen";
 const Stack = createNativeStackNavigator();
 
 export default function AppStack() {
@@ -76,7 +79,7 @@ export default function AppStack() {
 
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name={Routes.MainTabs} component={MainTabs} />
+      <Stack.Screen name={Routes.MainTabs} component={AppDrawer} />
 
       {/* Marketplace */}
       <Stack.Screen name={Routes.Categories} component={CategoriesScreen} />
@@ -119,6 +122,8 @@ export default function AppStack() {
         name={Routes.VendorDashboard}
         component={VendorDashboardScreen}
       />
+      <Stack.Screen name="CompanyList" component={CompanyListScreen} />
+      <Stack.Screen name="CompanyDetail" component={CompanyDetailScreen} />
       <Stack.Screen
         name={Routes.VendorServices}
         component={AccountRecordsScreen}
@@ -152,6 +157,11 @@ export default function AppStack() {
         name={Routes.IndividualMyServicesScreen}
         component={IndividualMyServicesScreen}
         initialParams={{ type: "IndividualMyServicesScreen" }}
+      />
+      <Stack.Screen
+        name={Routes.CompanySubServices}
+        component={CompanySubServices}
+        initialParams={{ type: "CompanySubServices" }}
       />
 
       {/* Leads & Chat */}

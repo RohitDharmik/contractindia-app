@@ -1,11 +1,5 @@
 import React, { useState } from "react";
-import {
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import {
@@ -45,66 +39,38 @@ export default function ProfileScreen() {
     {
       title: "Admin workspace",
       items: [
-        {
-          icon: "shield-outline",
-          label: "Admin dashboard",
-          onPress: () => nav.navigate(Routes.AdminDashboard),
-        },
-        {
-          icon: "shield-checkmark-outline",
-          label: "User verification",
-          onPress: () => nav.navigate(Routes.AdminUserVerification),
-        },
-        {
-          icon: "business-outline",
-          label: "Vendor approvals",
-          onPress: () => nav.navigate(Routes.AdminVendorApprovals),
-        },
-        {
-          icon: "people-outline",
-          label: "User management",
-          onPress: () => nav.navigate(Routes.AdminUsers),
-        },
-        {
-          icon: "briefcase-outline",
-          label: "Listing approvals",
-          onPress: () => nav.navigate(Routes.AdminListings),
-        },
-        {
-          icon: "construct-outline",
-          label: "Service management",
-          onPress: () => nav.navigate(Routes.ServiceManagement),
-        },
-        {
-          icon: "folder-open-outline",
-          label: "Document subcategories",
-          onPress: () => nav.navigate(Routes.AdminDocumentSubcategories),
-        },
-        {
-          icon: "lock-closed-outline",
-          label: "Security",
-          onPress: () => nav.navigate(Routes.AdminSecurity),
-        },
-        {
-          icon: "sparkles-outline",
-          label: "Plans management",
-          onPress: () => nav.navigate(Routes.AdminPlans),
-        },
+        // {
+        //   icon: "business-outline",
+        //   label: "Vendor approvals",
+        //   onPress: () => nav.navigate(Routes.AdminVendorApprovals),
+        // },
+       
+        ...(isAdmin
+          ? [
+              {
+                icon: "shield-checkmark-outline",
+                label: "User verification",
+                onPress: () => nav.navigate(Routes.AdminUserVerification),
+              },
+              {
+                icon: "construct-outline",
+                label: "Service management",
+                onPress: () => nav.navigate(Routes.ServiceManagement),
+              },
+              {
+                icon: "sparkles-outline",
+                label: "Plans management",
+                onPress: () => nav.navigate(Routes.AdminPlans),
+              },
+            ]
+          : []),
+
         {
           icon: "cash-outline",
           label: "Payment records",
           onPress: () => nav.navigate(Routes.AdminPayments),
         },
-        {
-          icon: "bar-chart-outline",
-          label: "System reports",
-          onPress: () => nav.navigate(Routes.AdminReports),
-        },
-        {
-          icon: "document-text-outline",
-          label: "Form builder",
-          onPress: () => nav.navigate(Routes.AdminFormBuilder),
-        },
+
         {
           icon: "megaphone-outline",
           label: "Announcements",
@@ -115,11 +81,7 @@ export default function ProfileScreen() {
     {
       title: "Commercial workspace",
       items: [
-        {
-          icon: "business-outline",
-          label: "Vendor dashboard",
-          onPress: () => nav.navigate(Routes.VendorDashboard),
-        },
+        
         {
           icon: "home-outline",
           label: "Company profile",
@@ -135,16 +97,6 @@ export default function ProfileScreen() {
           label: "Client history",
           onPress: () => nav.navigate(Routes.ClientHistory),
         },
-        {
-          icon: "receipt-outline",
-          label: "Invoices",
-          onPress: () => nav.navigate(Routes.Invoices),
-        },
-        {
-          icon: "bar-chart-outline",
-          label: "Performance analytics",
-          onPress: () => nav.navigate(Routes.Analytics),
-        },
       ],
     },
     {
@@ -159,11 +111,6 @@ export default function ProfileScreen() {
           icon: "calendar-outline",
           label: "Subscription history",
           onPress: () => nav.navigate(Routes.SubscriptionHistory),
-        },
-        {
-          icon: "grid-outline",
-          label: "Marketplace",
-          onPress: () => nav.navigate(Routes.MarketplaceTab),
         },
       ],
     },
@@ -183,26 +130,7 @@ export default function ProfileScreen() {
         },
       ],
     },
-    {
-      title: "Activity",
-      items: [
-        {
-          icon: "heart-outline",
-          label: "Favorites",
-          onPress: () => nav.navigate(Routes.Favorites),
-        },
-        {
-          icon: "git-compare-outline",
-          label: "Compare list",
-          onPress: () => nav.navigate(Routes.Compare),
-        },
-        {
-          icon: "megaphone-outline",
-          label: isCommercial ? "Inquiries sent" : "My inquiries",
-          onPress: () => nav.navigate(Routes.LeadsTab),
-        },
-      ],
-    },
+
     {
       title: "Billing & Subscriptions",
       items: [
@@ -223,42 +151,42 @@ export default function ProfileScreen() {
         },
       ],
     },
-    {
-      title: "Preferences & Support",
-      items: [
-        {
-          icon: "shield-checkmark-outline",
-          label: "KYC verification",
-          onPress: () => nav.navigate(Routes.KYC),
-          badge: user.kycStatus,
-        },
-        {
-          icon: "notifications-outline",
-          label: "Notifications",
-          onPress: () => nav.navigate(Routes.NotificationSettings),
-        },
-        {
-          icon: "lock-closed-outline",
-          label: "Privacy settings",
-          onPress: () => nav.navigate(Routes.PrivacySettings),
-        },
-        {
-          icon: "settings-outline",
-          label: "App settings",
-          onPress: () => nav.navigate(Routes.Settings),
-        },
-        {
-          icon: "help-circle-outline",
-          label: "Help & support",
-          onPress: () => nav.navigate(Routes.SupportTickets),
-        },
-        {
-          icon: "sparkles-outline",
-          label: "AI Assistant",
-          onPress: () => nav.navigate(Routes.AIAssistant),
-        },
-      ],
-    },
+    // {
+    //   title: "Preferences & Support",
+    //   items: [
+    //     {
+    //       icon: "shield-checkmark-outline",
+    //       label: "KYC verification",
+    //       onPress: () => nav.navigate(Routes.KYC),
+    //       badge: user.kycStatus,
+    //     },
+    //     {
+    //       icon: "notifications-outline",
+    //       label: "Notifications",
+    //       onPress: () => nav.navigate(Routes.NotificationSettings),
+    //     },
+    //     {
+    //       icon: "lock-closed-outline",
+    //       label: "Privacy settings",
+    //       onPress: () => nav.navigate(Routes.PrivacySettings),
+    //     },
+    //     {
+    //       icon: "settings-outline",
+    //       label: "App settings",
+    //       onPress: () => nav.navigate(Routes.Settings),
+    //     },
+    //     {
+    //       icon: "help-circle-outline",
+    //       label: "Help & support",
+    //       onPress: () => nav.navigate(Routes.SupportTickets),
+    //     },
+    //     {
+    //       icon: "sparkles-outline",
+    //       label: "AI Assistant",
+    //       onPress: () => nav.navigate(Routes.AIAssistant),
+    //     },
+    //   ],
+    // },
   ];
   return (
     <Screen>
