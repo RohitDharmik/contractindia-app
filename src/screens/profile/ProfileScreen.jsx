@@ -44,7 +44,7 @@ export default function ProfileScreen() {
         //   label: "Vendor approvals",
         //   onPress: () => nav.navigate(Routes.AdminVendorApprovals),
         // },
-       
+
         ...(isAdmin
           ? [
               {
@@ -62,58 +62,72 @@ export default function ProfileScreen() {
                 label: "Plans management",
                 onPress: () => nav.navigate(Routes.AdminPlans),
               },
+              {
+                icon: "cash-outline",
+                label: "Payment records",
+                onPress: () => nav.navigate(Routes.AdminPayments),
+              },
             ]
           : []),
 
-        {
-          icon: "cash-outline",
-          label: "Payment records",
-          onPress: () => nav.navigate(Routes.AdminPayments),
-        },
-
-        {
-          icon: "megaphone-outline",
-          label: "Announcements",
-          onPress: () => nav.navigate(Routes.AdminAnnouncements),
-        },
+        // {
+        //   icon: "megaphone-outline",
+        //   label: "Announcements",
+        //   onPress: () => nav.navigate(Routes.AdminAnnouncements),
+        // },
       ],
     },
-    {
-      title: "Commercial workspace",
-      items: [
-        
-        {
-          icon: "home-outline",
-          label: "Company profile",
-          onPress: () => nav.navigate(Routes.VendorProfileWizard),
-        },
-        {
-          icon: "briefcase-outline",
-          label: "My services",
-          onPress: () => nav.navigate(Routes.VendorServices),
-        },
-        {
-          icon: "people-outline",
-          label: "Client history",
-          onPress: () => nav.navigate(Routes.ClientHistory),
-        },
-      ],
-    },
-    {
-      title: "Individual workspace",
-      items: [
-        {
-          icon: "briefcase-outline",
-          label: "My services",
-          onPress: () => nav.navigate(Routes.IndividualServices),
-        },
-        {
-          icon: "calendar-outline",
-          label: "Subscription history",
-          onPress: () => nav.navigate(Routes.SubscriptionHistory),
-        },
-      ],
-    },
+    ...(user?.userType == 2
+      ? [
+          {
+            title: "Commercial workspace",
+            items: [
+              {
+                icon: "home-outline",
+                label: "Company profile",
+                onPress: () => nav.navigate(Routes.VendorProfileWizard),
+              },
+              {
+                icon: "briefcase-outline",
+                label: "My services",
+                onPress: () => nav.navigate(Routes.VendorServices),
+              },
+              {
+                icon: "people-outline",
+                label: "Client history",
+                onPress: () => nav.navigate(Routes.ClientHistory),
+              },
+              {
+                icon: "cash-outline",
+                label: "Payment records",
+                onPress: () => nav.navigate(Routes.AdminPayments),
+              },
+            ],
+          },
+        ]
+      : []),
+    ...(!isAdmin
+      ? [
+          {
+            title:
+              user?.userType == 1
+                ? "Individual workspace"
+                : "Commercial workspace",
+            items: [
+              {
+                icon: "briefcase-outline",
+                label: "My services",
+                onPress: () => nav.navigate(Routes.IndividualServices),
+              },
+              {
+                icon: "calendar-outline",
+                label: "Subscription history",
+                onPress: () => nav.navigate(Routes.SubscriptionHistory),
+              },
+            ],
+          },
+        ]
+      : []),
     {
       title: "Account & Security",
       items: [
@@ -149,6 +163,13 @@ export default function ProfileScreen() {
           label: "Purchase history",
           onPress: () => nav.navigate(Routes.PurchaseHistory),
         },
+        !isAdmin && (
+          {
+            icon: "cash-outline",
+            label: "Payment records",
+            onPress: () => nav.navigate(Routes.AdminPayments),
+          }
+        ),
       ],
     },
     // {
@@ -230,7 +251,12 @@ export default function ProfileScreen() {
             <>
               <Stat label="Credits" value={String(user.credits)} />
               <Stat label="Plan" value={user.plan} />
-              <Stat label="KYC" value={user.kycStatus} />
+
+              {user?.userType == 2 ? (
+                <Stat label="KYC" value={user.kycStatus} />
+              ) : (
+                <></>
+              )}
             </>
           )}
         </View>

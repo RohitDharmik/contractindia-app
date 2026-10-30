@@ -196,7 +196,7 @@ export default function AppDrawerContent({ navigation, state }) {
       <View style={styles.tabs}>
         {[
           { key: "menu", label: "Menu", icon: "menu-outline" },
-          { key: "categories", label: "Categories", icon: "layers-outline" },
+          { key: "Services", label: "Services", icon: "layers-outline" },
         ].map((t) => {
           const on = tab === t.key;
           return (

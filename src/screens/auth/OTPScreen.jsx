@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { Button } from '@/components';
 import { colors } from '@/constants/colors';
@@ -12,7 +12,7 @@ const LEN = 6;
 export default function OTPScreen() {
   const nav = useNavigation();
   const route = useRoute();
-  const { challengeId, mobile, email, flow = 'login-mobile' } = route.params ?? {};
+  const { challengeId, mobile, email, remark, flow = 'login-mobile' } = route.params ?? {};
 
   const verifyOtp = useAuthStore((s) => s.verifyOtp);
   const resendOtp = useAuthStore((s) => s.resendOtp);
@@ -26,6 +26,12 @@ export default function OTPScreen() {
   const [resending, setResending] = useState(false);
   const [error, setError] = useState('');
   const refs = useRef([]);
+
+  useEffect(() => {
+    if (typeof remark === 'string' && remark.trim()) {
+      Alert.alert('Message', remark.trim());
+    }
+  }, [remark]);
 
   useEffect(() => {
     if (seconds <= 0) return undefined;

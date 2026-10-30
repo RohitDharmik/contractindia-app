@@ -200,14 +200,17 @@ function ActionBtn({ icon, label, variant = "ghost", onPress, disabled }) {
     >
       <Ionicons
         name={icon}
-        size={15}
-        color={isPrimary ? "#fff" : COLORS.muted}
+        size={19}
+        color={isPrimary ? "#fff" : COLORS.primary}
       />
       <Text
         style={[styles.actionText, { color: isPrimary ? "#fff" : COLORS.ink }]}
       >
         {label}
       </Text>
+      {isPrimary && (
+        <Ionicons name="arrow-forward" size={18} color="#FFFFFF" />
+      )}
     </Pressable>
   );
 }
@@ -224,7 +227,7 @@ function IconBtn({ icon, label, onPress }) {
         pressed && { transform: [{ scale: 0.92 }] },
       ]}
     >
-      <Ionicons name={icon} size={17} color={COLORS.primary} />
+      <Ionicons name={icon} size={28} color={COLORS.primary} />
     </Pressable>
   );
 }
@@ -986,11 +989,7 @@ export default function PlansAndSubscriptionsScreen({ onBack }) {
 
   const listData = isTabLoading ? [] : tab === "plans" ? plans : subs;
   const handleBack = () => {
-    if (nav.canGoBack()) {
-      nav.goBack();
-    } else {
-      nav.navigate(Routes.AdminDashboard);
-    }
+    onBack?.();
   };
   return (
     <SafeAreaView style={styles.safe}>
@@ -1100,28 +1099,31 @@ const styles = StyleSheet.create({
 
   segment: {
     flexDirection: "row",
-    padding: 4,
-    borderRadius: 14,
-    backgroundColor: COLORS.slateLight,
+    padding: 5,
+    borderRadius: 18,
+    backgroundColor: "#EEF2FF",
+    borderWidth: 1,
+    borderColor: "#E0E7FF",
   },
   segmentItem: {
     flex: 1,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    gap: 6,
-    height: 38,
-    borderRadius: 11,
+    gap: 8,
+    minHeight: 50,
+    paddingHorizontal: 8,
+    borderRadius: 14,
   },
   segmentActive: {
     backgroundColor: COLORS.surface,
-    elevation: 2,
-    shadowColor: "#0F172A",
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 1 },
+    elevation: 3,
+    shadowColor: COLORS.primary,
+    shadowOpacity: 0.12,
+    shadowRadius: 7,
+    shadowOffset: { width: 0, height: 3 },
   },
-  segmentText: { color: COLORS.muted, fontSize: 12, fontWeight: "700" },
+  segmentText: { color: COLORS.muted, fontSize: 13, fontWeight: "800" },
 
   sectionHead: {
     flexDirection: "row",
@@ -1150,32 +1152,36 @@ const styles = StyleSheet.create({
   /* Cards */
   card: {
     backgroundColor: COLORS.surface,
-    borderRadius: 18,
-    padding: 14,
-    marginTop: 12,
+    borderRadius: 22,
+    padding: 18,
+    marginTop: 14,
     borderWidth: 1,
-    borderColor: COLORS.line,
-    elevation: 1,
+    borderColor: "#E0E7FF",
+    elevation: 3,
+    shadowColor: "#64748B",
+    shadowOpacity: 0.09,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 5 },
   },
-  cardTop: { flexDirection: "row", alignItems: "center", gap: 12 },
+  cardTop: { flexDirection: "row", alignItems: "center", gap: 14 },
   cardIcon: {
-    width: 42,
-    height: 42,
-    borderRadius: 14,
+    width: 54,
+    height: 54,
+    borderRadius: 18,
     backgroundColor: COLORS.primaryLight,
     alignItems: "center",
     justifyContent: "center",
   },
-  cardTitle: { color: COLORS.ink, fontSize: 15, fontWeight: "800" },
-  cardSub: { color: COLORS.muted, fontSize: 11, marginTop: 2 },
+  cardTitle: { color: "#172554", fontSize: 17, fontWeight: "900" },
+  cardSub: { color: COLORS.muted, fontSize: 12, marginTop: 4, fontWeight: "500" },
 
   priceRow: {
     flexDirection: "row",
     alignItems: "flex-end",
     gap: 4,
-    marginTop: 14,
+    marginTop: 18,
   },
-  price: { color: COLORS.primary, fontSize: 24, fontWeight: "800" },
+  price: { color: COLORS.primaryDark, fontSize: 30, fontWeight: "900" },
   priceUnit: {
     color: COLORS.muted,
     fontSize: 12,
@@ -1186,9 +1192,9 @@ const styles = StyleSheet.create({
   chipRow: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: 6,
-    marginTop: 10,
-    marginBottom: 14,
+    gap: 8,
+    marginTop: 14,
+    marginBottom: 18,
   },
   chip: {
     flexDirection: "row",
@@ -1230,30 +1236,40 @@ const styles = StyleSheet.create({
   subMetaText: { color: COLORS.muted, fontSize: 12, fontWeight: "600" },
 
   iconBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 12,
-    backgroundColor: COLORS.primaryLight,
+    width: 56,
+    height: 56,
+    borderRadius: 17,
     alignItems: "center",
     justifyContent: "center",
+    backgroundColor: COLORS.primaryLight,
+    borderWidth: 1,
+    borderColor: "#DCE3FF",
   },
-
   actionBtn: {
     flex: 1,
+    minHeight: 56,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    gap: 6,
-    height: 44,
-    borderRadius: 13,
+    gap: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    borderRadius: 16,
   },
-  actionPrimary: { backgroundColor: COLORS.primary },
+  actionPrimary: {
+    backgroundColor: COLORS.primary,
+    elevation: 5,
+    shadowColor: COLORS.primary,
+    shadowOpacity: 0.24,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+  },
   actionGhost: {
-    backgroundColor: COLORS.surface,
+    backgroundColor: "#F8FAFF",
     borderWidth: 1,
-    borderColor: COLORS.line,
+    borderColor: "#D8DEFF",
   },
-  actionText: { fontSize: 13, fontWeight: "800" },
+  actionText: { fontSize: 14, fontWeight: "800", letterSpacing: 0.2 },
 
   /* Empty / loading */
   centerState: {

@@ -1,11 +1,11 @@
 import React, { useEffect, useRef } from "react";
 import {
   Animated,
-  Pressable,
   StyleSheet,
   Text,
   View,
   Platform,
+  Pressable,
 } from "react-native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
@@ -149,7 +149,7 @@ function TabButton({ label, isFocused, onPress, routeName, badge }) {
         </Text>
       </Animated.View>
       {/* active indicator dot */}
-      <Animated.View style={[styles.activeDot, { opacity: dotOpacity }]} />
+      {/* <Animated.View style={[styles.activeDot, { opacity: dotOpacity }]} /> */}
     </Pressable>
   );
 }
@@ -400,4 +400,5 @@ const styles = StyleSheet.create({
   fabLabelActive: {
     color: C.purple,
   },
+
 });

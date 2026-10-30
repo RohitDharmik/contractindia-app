@@ -61,7 +61,7 @@ const flattenVisible = (nodes, expanded, depth = 0, out = []) => {
   return out;
 };
 
-function CategoryRow({ node, depth, activeId, onPress }) {
+function CategoryRow({ node, depth, activeId, expanded, onPress, onToggle }) {
   const hasKids = (node.children?.length ?? 0) > 0;
   const isActive = node.ServiceID === activeId;
   const isAncestor = !isActive && subtreeHasActive(node, activeId);
@@ -69,11 +69,8 @@ function CategoryRow({ node, depth, activeId, onPress }) {
   const dot = Math.max(6, 9 - depth);
 
   return (
-    <Pressable
-      onPress={() => onPress(node)}
-      accessibilityRole="button"
-      accessibilityLabel={node.ServiceName}
-      style={({ pressed }) => [
+    <View
+      style={[
         styles.row,
         {
           marginLeft: depth * 14,
@@ -83,41 +80,51 @@ function CategoryRow({ node, depth, activeId, onPress }) {
               ? c.softBg
               : "transparent",
         },
-        pressed && { opacity: 0.8 },
       ]}
     >
-      <View
-        style={{
-          width: dot,
-          height: dot,
-          borderRadius: dot / 2,
-          backgroundColor: isActive ? "#fff" : c.dot,
-        }}
-      />
-      <Text
-        numberOfLines={2}
-        style={[
-          styles.rowText,
-          {
-            fontSize: Math.max(12, 13 - depth * 0.5),
-            color: isActive ? "#fff" : isAncestor ? c.softText : "#475569",
-          },
-        ]}
+      <Pressable
+        onPress={() => onPress(node)}
+        accessibilityRole="button"
+        accessibilityLabel={node.ServiceName}
+        style={({ pressed }) => [styles.rowMain, pressed && { opacity: 0.8 }]}
       >
-        {node.ServiceName}
-      </Text>
-      {hasKids && (
-        <Ionicons
-          name={
-            useCategoryStore.getState().expandedIds.has(node.ServiceID)
-              ? "chevron-down"
-              : "chevron-forward"
-          }
-          size={14}
-          color={isActive ? "rgba(255,255,255,0.85)" : C.faint}
+        <View
+          style={{
+            width: dot,
+            height: dot,
+            borderRadius: dot / 2,
+            backgroundColor: isActive ? "#fff" : c.dot,
+          }}
         />
+        <Text
+          numberOfLines={2}
+          style={[
+            styles.rowText,
+            {
+              fontSize: Math.max(12, 13 - depth * 0.5),
+              color: isActive ? "#fff" : isAncestor ? c.softText : "#475569",
+            },
+          ]}
+        >
+          {node.ServiceName}
+        </Text>
+      </Pressable>
+      {hasKids && (
+        <Pressable
+          onPress={() => onToggle(node.ServiceID)}
+          accessibilityRole="button"
+          accessibilityLabel={`${expanded ? "Collapse" : "Expand"} ${node.ServiceName}`}
+          hitSlop={8}
+          style={styles.rowToggle}
+        >
+          <Ionicons
+            name={expanded ? "chevron-down" : "chevron-forward"}
+            size={14}
+            color={isActive ? "rgba(255,255,255,0.85)" : C.faint}
+          />
+        </Pressable>
       )}
-    </Pressable>
+    </View>
   );
 }
 
@@ -157,8 +164,9 @@ function MembershipMini({ hasActivePlan, activeSub, onPress }) {
   );
 }
 
-export default function CategorySidebar() {
-  const navigation = useNavigation();
+export default function CategorySidebar({ navigation: drawerNavigation }) {
+  const contextNavigation = useNavigation();
+  const navigation = drawerNavigation ?? contextNavigation;
   const [query, setQuery] = useState("");
   const term = query.trim().toLowerCase();
 
@@ -208,21 +216,15 @@ export default function CategorySidebar() {
 
   const openCategory = useCallback(
     (node) => {
-      const hasKids = (node.children?.length ?? 0) > 0;
       select(node.ServiceID, [...getAncestorIds(fullTree, node.ServiceID)]);
-      if (hasKids) toggle(node.ServiceID);
-
-      // Re-target the contractor screen. Navigating to the same route
-      // updates its params.
       navigation.navigate("CompanySubServices", {
         serviceId: node.ServiceID,
         serviceName: node.ServiceName,
       });
-
-      // Leaves are final choices, so close the drawer after picking one.
-      if (!hasKids) navigation.dispatch(DrawerActions.closeDrawer());
+      if (typeof navigation.closeDrawer === "function") navigation.closeDrawer();
+      else navigation.dispatch(DrawerActions.closeDrawer());
     },
-    [fullTree, select, toggle, navigation],
+    [fullTree, select, navigation],
   );
 
   const expandAll = () => setExpanded(allIds(fullTree));
@@ -233,15 +235,15 @@ export default function CategorySidebar() {
       <View style={styles.head}>
         <View style={styles.headTop}>
           <Ionicons name="grid-outline" size={16} color={C.primary} />
-          <Text style={styles.headTitle}>Categories</Text>
+          <Text style={styles.headTitle}>Services</Text>
           <View style={styles.countPill}>
             <Text style={styles.countText}>{totalNodes}</Text>
           </View>
           <View style={{ flex: 1 }} />
-          <Pressable onPress={expandAll} hitSlop={8} accessibilityLabel="Expand all" style={styles.iconBtn}>
+          <Pressable onPress={expandAll} hitSlop={8} accessibilityRole="button" accessibilityLabel="Expand all" style={styles.iconBtn}>
             <Ionicons name="expand-outline" size={15} color={C.muted} />
           </Pressable>
-          <Pressable onPress={collapseAll} hitSlop={8} accessibilityLabel="Collapse all" style={styles.iconBtn}>
+          <Pressable onPress={collapseAll} hitSlop={8} accessibilityRole="button" accessibilityLabel="Collapse all" style={styles.iconBtn}>
             <Ionicons name="contract-outline" size={15} color={C.muted} />
           </Pressable>
         </View>
@@ -294,7 +296,9 @@ export default function CategorySidebar() {
               node={item.node}
               depth={item.depth}
               activeId={activeId}
+              expanded={expandedIds.has(item.node.ServiceID)}
               onPress={openCategory}
+              onToggle={toggle}
             />
           )}
           extraData={[activeId, expandedIds]}
@@ -364,11 +368,23 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 10,
     paddingVertical: 9,
     paddingHorizontal: 10,
     borderRadius: 12,
     marginBottom: 2,
+  },
+  rowMain: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    minHeight: 24,
+  },
+  rowToggle: {
+    width: 28,
+    height: 28,
+    alignItems: "center",
+    justifyContent: "center",
   },
   rowText: { flex: 1, fontWeight: "600", lineHeight: 17 },
 

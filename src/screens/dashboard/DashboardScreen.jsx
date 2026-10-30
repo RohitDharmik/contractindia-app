@@ -1,7 +1,7 @@
 import React from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
+import { DrawerActions, useNavigation } from "@react-navigation/native";
 import {
   Screen,
   ScreenHeader,
@@ -63,6 +63,17 @@ export default function DashboardScreen() {
       <ScreenHeader
         title={`Hi, ${user?.name?.split(" ")[0] ?? "there"} \u{1F44B}`}
         subtitle={`${user?.city ?? "India"} \u00B7 ${user?.plan?.toUpperCase()}`}
+        left={
+          <Pressable
+            onPress={() => nav.dispatch(DrawerActions.toggleDrawer())}
+            hitSlop={10}
+            accessibilityRole="button"
+            accessibilityLabel="Open navigation menu"
+            style={styles.drawerToggle}
+          >
+            <Ionicons name="menu" size={22} color={colors.primary} />
+          </Pressable>
+        }
         right={
           <View style={{ flexDirection: "row", gap: spacing.md }}>
             <Pressable onPress={() => nav.navigate(Routes.Notifications)}>
@@ -250,6 +261,17 @@ const styles = StyleSheet.create({
     height: 8,
     borderRadius: 4,
     backgroundColor: colors.danger,
+  },
+  drawerToggle: {
+    width: 40,
+    height: 40,
+    marginRight: spacing.sm,
+    borderRadius: radius.md,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   searchBar: {
     flexDirection: "row",

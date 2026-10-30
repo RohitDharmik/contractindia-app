@@ -31,13 +31,14 @@ export default function LoginScreen() {
     if (!password) return setError("Enter your password");
     setLoading(true);
     try {
-      const { challengeId, mobile } = await signInWithPassword(
+      const { challengeId, mobile, remark } = await signInWithPassword(
         identifier,
         password,
       );
       nav.navigate(Routes.OTP, {
         challengeId,
         mobile,
+        remark,
         email: identifier.trim(),
         activationCode: challengeId,
       });

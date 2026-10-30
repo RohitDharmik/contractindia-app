@@ -161,7 +161,7 @@ export default function AdminDashboardScreen() {
         }}
       >
         <View style={styles.grid}>
-          {kpis.map((k) => (
+          {kpis?.map((k) => (
             <Card key={k.label} style={styles.kpi}>
               <Text style={styles.kpiValue}>{k.value}</Text>
               <Text style={styles.kpiLabel}>{k.label}</Text>
@@ -170,7 +170,7 @@ export default function AdminDashboardScreen() {
           ))}
         </View>
 
-        <Text style={styles.section}>Action required</Text>
+        {/* <Text style={styles.section}>Action required</Text>
         <View style={styles.actionRow}>
           <Pressable
             onPress={() => nav.navigate(Routes.AdminVendorApprovals)}
@@ -204,7 +204,7 @@ export default function AdminDashboardScreen() {
             <Text style={styles.actionValue}>{failedPayments}</Text>
             <Text style={styles.actionLabel}>Payment failures</Text>
           </Pressable>
-        </View>
+        </View> */}
 
         {/*  <Text style={styles.section}>System health</Text>
         <Card>
@@ -214,7 +214,7 @@ export default function AdminDashboardScreen() {
             </View>))}
         </Card> */}
 
-        <Text style={styles.section}>Recent activity</Text>
+        {/* <Text style={styles.section}>Recent activity</Text>
         {activity.map((a) => (
           <Card
             key={a.id}
@@ -242,11 +242,11 @@ export default function AdminDashboardScreen() {
               </Text>
             </View>
           </Card>
-        ))}
+        ))} */}
 
         <Text style={[styles.section, { marginTop: spacing.lg }]}>Modules</Text>
         <View style={styles.grid}>
-          {modules.map((m) => (
+          {modules?.map((m) => (
             <Pressable
               key={m.label}
               onPress={() => nav.navigate(m.route)}
