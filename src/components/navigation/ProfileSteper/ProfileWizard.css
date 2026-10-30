@@ -1,0 +1,500 @@
+.profileWizard {
+  --pw-ink: #172a40;
+  --pw-muted: #68798d;
+  --pw-faint: #91a0b2;
+  --pw-line: #dce4ed;
+  --pw-canvas: #f3f6fa;
+  --pw-surface: #ffffff;
+  --pw-brand: #0b2545;
+  --pw-brand-soft: #edf3f8;
+  --pw-accent: #d99a36;
+  --pw-focus: #3879a8;
+  min-height: 100vh;
+  overflow-x: hidden;
+  color: var(--pw-ink);
+  background: var(--pw-canvas);
+  font-family: Roboto, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.profileWizard *,
+.profileWizard *::before,
+.profileWizard *::after {
+  box-sizing: border-box;
+}
+
+.profileWizard__main {
+  width: min(100%, 1160px);
+  min-height: 100vh;
+  margin: 0 auto;
+  padding: 22px clamp(16px, 3.2vw, 36px) 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.profileWizard .pw-overview,
+.profileWizard .pw-stepper,
+.profileWizard .pw-panel {
+  background: var(--pw-surface);
+  border: 1px solid var(--pw-line);
+  box-shadow: 0 8px 26px rgba(18, 38, 63, 0.045);
+}
+
+.profileWizard .pw-overview {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 18px;
+  min-height: 104px;
+  padding: 18px 22px;
+  border-radius: 16px;
+}
+
+.profileWizard .pw-progress-ring {
+  width: 68px;
+  height: 68px;
+}
+
+.profileWizard .pw-overview-copy {
+  flex: 1;
+  min-width: 0;
+}
+
+.profileWizard .pw-kicker {
+  margin: 0 0 4px;
+  color: var(--pw-muted);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.profileWizard .pw-welcome {
+  margin: 0;
+  color: var(--pw-ink);
+  font-family: Roboto, "Segoe UI", sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.profileWizard .pw-status {
+  flex: 0 0 auto;
+  padding: 7px 10px;
+  border: 1px solid #e8d7b8;
+  border-radius: 999px;
+  background: #fbf6ed;
+  color: #825a20;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.profileWizard .pw-skip {
+  min-height: 44px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--pw-brand);
+  box-shadow: 0 4px 10px rgba(11, 37, 69, 0.14);
+  color: white;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+  transition: background-color 160ms ease, transform 160ms ease;
+}
+
+.profileWizard .pw-skip:hover {
+  background: #153a60;
+}
+
+.profileWizard .pw-skip:active {
+  transform: translateY(1px);
+}
+
+.profileWizard .pw-stepper {
+  padding: 15px 18px 13px;
+  border-radius: 14px;
+}
+
+.profileWizard .pw-step-list {
+  display: flex;
+  align-items: flex-start;
+  min-width: 710px;
+  padding: 0 4px;
+}
+
+.profileWizard .pw-step-button {
+  min-width: 82px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--pw-muted);
+  cursor: pointer;
+  font: inherit;
+}
+
+.profileWizard .pw-step-icon {
+  width: 38px;
+  height: 38px;
+  margin: 0 auto 7px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--pw-line);
+  border-radius: 11px;
+  background: #f7f9fc;
+  color: var(--pw-faint);
+  transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease;
+}
+
+.profileWizard .pw-ring-track {
+  stroke: #e7edf3;
+}
+
+.profileWizard .pw-ring-progress {
+  stroke: var(--pw-accent);
+  stroke-linecap: round;
+}
+
+.profileWizard .pw-ring-value {
+  color: var(--pw-ink);
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.profileWizard .pw-ring-label {
+  color: var(--pw-muted);
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.profileWizard .pw-step-button[aria-current="step"] .pw-step-icon {
+  border-color: var(--pw-brand);
+  background: var(--pw-brand);
+  color: #fff;
+}
+
+.profileWizard .pw-step-button[data-complete="true"] .pw-step-icon {
+  border-color: #c9d8e6;
+  background: var(--pw-brand-soft);
+  color: var(--pw-brand);
+}
+
+.profileWizard .pw-step-label {
+  display: block;
+  color: inherit;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.25;
+  text-align: center;
+}
+
+.profileWizard .pw-connector {
+  flex: 1;
+  min-width: 18px;
+  height: 2px;
+  margin: 18px 7px 0;
+  overflow: hidden;
+  background: #e8edf3;
+}
+
+.profileWizard .pw-connector-fill {
+  height: 100%;
+  background: var(--pw-accent);
+}
+
+.profileWizard .pw-content {
+  min-width: 0;
+}
+
+.profileWizard .pw-panel {
+  padding: clamp(18px, 3vw, 30px);
+  border-radius: 16px;
+}
+
+.profileWizard .pw-panel-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--pw-line);
+}
+
+.profileWizard .pw-panel-step {
+  margin: 0 0 4px;
+  color: var(--pw-muted);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.profileWizard .pw-panel-title {
+  margin: 0;
+  color: var(--pw-ink);
+  font-family: Roboto, "Segoe UI", sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.profileWizard .pw-verified {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 10px;
+  border: 1px solid #e8d7b8;
+  border-radius: 9px;
+  background: #fbf6ed;
+  color: #825a20;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.profileWizardStep {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  color: var(--pw-ink);
+}
+
+.profileWizardStep .pw-section-panel {
+  padding: clamp(16px, 2.4vw, 22px);
+  border: 1px solid var(--pw-line);
+  border-radius: 13px;
+  background: #f7f9fc;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.profileWizardField {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.profileWizardField label {
+  color: #46576c;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.profileWizardField input,
+.profileWizardField textarea {
+  min-height: 46px;
+  padding: 11px 13px;
+  border: 1px solid #d5dee8;
+  border-radius: 10px;
+  outline: none;
+  background: #fff;
+  color: var(--pw-ink);
+  font: inherit;
+  font-size: 13px;
+}
+
+.profileWizardField input:focus,
+.profileWizardField textarea:focus {
+  border-color: var(--pw-focus);
+  box-shadow: 0 0 0 3px rgba(56, 121, 168, 0.12);
+}
+
+.profileWizardStep p {
+  line-height: 1.55;
+}
+
+.profileWizardStep label {
+  display: block;
+  margin-bottom: 2px;
+  color: #46576c;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.015em;
+}
+
+.profileWizardStep input:not([type="checkbox"]):not([type="radio"]),
+.profileWizardStep select,
+.profileWizardStep textarea {
+  width: 100%;
+  min-height: 46px;
+  padding: 11px 13px;
+  border: 1px solid #d5dee8;
+  border-radius: 10px;
+  outline: none;
+  background: #fff;
+  box-shadow: none;
+  color: var(--pw-ink);
+  font: inherit;
+  font-size: 13px;
+  transition: border-color 150ms ease, box-shadow 150ms ease, background-color 150ms ease;
+}
+
+.profileWizardStep textarea {
+  min-height: 92px;
+  resize: vertical;
+}
+
+.profileWizardStep input::placeholder,
+.profileWizardStep textarea::placeholder {
+  color: #9aa8b7;
+}
+
+.profileWizardStep input:focus,
+.profileWizardStep select:focus,
+.profileWizardStep textarea:focus {
+  border-color: var(--pw-focus);
+  box-shadow: 0 0 0 3px rgba(56, 121, 168, 0.12);
+}
+
+.profileWizardStep input:disabled,
+.profileWizardStep select:disabled,
+.profileWizardStep textarea:disabled {
+  background: #f2f5f8;
+  color: #718096;
+  cursor: not-allowed;
+}
+
+.profileWizardStep button {
+  min-height: 44px;
+  font-family: inherit;
+  transition: transform 150ms ease, background-color 150ms ease, box-shadow 150ms ease;
+}
+
+.profileWizardStep button:active {
+  transform: translateY(1px);
+}
+
+.profileWizardStep button[class*="from-blue-"],
+.profileWizardStep button[class*="from-indigo-"] {
+  border: 1px solid var(--pw-brand);
+  border-radius: 10px;
+  background: var(--pw-brand);
+  box-shadow: 0 4px 10px rgba(11, 37, 69, 0.12);
+  color: #fff;
+}
+
+.profileWizardStep button[class*="from-blue-"]:hover,
+.profileWizardStep button[class*="from-indigo-"]:hover {
+  background: #153a60;
+}
+
+.profileWizardStep button:disabled {
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.profileWizardStep--selection > [class*="grid"] {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 205px), 1fr));
+}
+
+.profileWizardStep--selection [data-wizard-choice] {
+  min-height: 148px;
+  padding: 16px;
+  border: 1px solid var(--pw-line);
+  border-radius: 13px;
+  background: #fff;
+  box-shadow: 0 3px 10px rgba(18, 38, 63, 0.035);
+  transition: border-color 150ms ease, box-shadow 150ms ease, transform 150ms ease;
+}
+
+.profileWizardStep--selection [data-wizard-choice]:hover {
+  border-color: #b7c8d8;
+  box-shadow: 0 8px 18px rgba(18, 38, 63, 0.08);
+}
+
+.profileWizardStep--selection [data-wizard-choice][aria-pressed="true"] {
+  border-color: var(--pw-brand);
+  background: #f2f6fa;
+  box-shadow: 0 0 0 2px rgba(11, 37, 69, 0.08);
+}
+
+.profileWizardStep > div:last-child[class*="justify-between"],
+.profileWizardStep > div:last-child[class*="justify-end"] {
+  margin-top: 6px;
+  padding-top: 18px;
+  border-top: 1px solid var(--pw-line);
+}
+
+.profileWizardStep > div:last-child > button {
+  min-width: 120px;
+  justify-content: center;
+}
+
+@media (max-width: 640px) {
+  .profileWizard__main {
+    padding: 12px 12px 28px;
+    gap: 12px;
+  }
+
+  .profileWizard .pw-overview {
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 14px;
+  }
+
+  .profileWizard .pw-progress-ring {
+    width: 58px;
+    height: 58px;
+  }
+
+  .profileWizard .pw-welcome {
+    font-size: 16px;
+  }
+
+  .profileWizard .pw-skip {
+    width: 100%;
+    min-height: 40px;
+    padding: 0 11px;
+    font-size: 11px;
+  }
+
+  .profileWizard .pw-stepper {
+    padding: 12px 10px;
+  }
+
+  .profileWizard .pw-step-list {
+    min-width: 650px;
+  }
+
+  .profileWizard .pw-panel-heading {
+    margin-bottom: 18px;
+    padding-bottom: 14px;
+  }
+
+  .profileWizard .pw-panel-title {
+    font-size: 19px;
+  }
+
+  .profileWizard .pw-verified {
+    padding: 6px 8px;
+    font-size: 9px;
+  }
+
+  .profileWizardStep > div:last-child[class*="justify-between"],
+  .profileWizardStep > div:last-child[class*="justify-end"] {
+    gap: 10px;
+  }
+
+  .profileWizardStep > div:last-child > button {
+    min-width: 0;
+    flex: 1;
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .profileWizard *,
+  .profileWizard *::before,
+  .profileWizard *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
