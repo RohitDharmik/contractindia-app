@@ -275,6 +275,9 @@ export const CheckValidityGet = async (params) => {
 };
 export const getUserPaymentHistory = async () =>
   api.get("/UserPaymentHistory/get");
+export const UserPaymentHistoryGetId = async (params) => 
+    api.get(`/UserPaymentHistory/get?${params}`);
+
 export const getUserServices = async (userId) =>
     api.get(`/ServiceMaster/getuserservices?userId=${encodeURIComponent(userId)}`);
 export const getSubscriptionHistory = async (userId) =>

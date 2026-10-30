@@ -7,7 +7,6 @@ import {
   Modal,
   Pressable,
   RefreshControl,
-  SafeAreaView,
   ScrollView,
   StatusBar,
   StyleSheet,
@@ -30,6 +29,7 @@ import {
 } from "../../api/api"; 
 import { useNavigation } from "@react-navigation/native";
 import { Routes } from "@/constants/routes";
+import { Screen } from "@/components";
 import ScreenHeader from "../../components/ScreenHeader";
 
 /* ------------------------------------------------------------------ */
@@ -805,14 +805,6 @@ export default function UserVerificationScreen() {
           <IconButton icon="refresh-outline" label="Refresh" onPress={refresh} tint={COLORS.primary} bg={COLORS.primaryLight} />
         )}
       </View> */}
-      <ScreenHeader
-        title="User verification"
-        subtitle="Manage registration requests"
-        icon="shield-checkmark"
-        showBack={handleBack}
-        // onBack={handleBack}
-      />
-
       {/* Hero banner */}
       <View style={styles.heroBanner}>
         <View style={styles.heroIcon}>
@@ -993,8 +985,27 @@ export default function UserVerificationScreen() {
   );
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <Screen>
       <StatusBar barStyle="dark-content" backgroundColor={COLORS.canvas} />
+
+      <ScreenHeader
+        title="User verification"
+        subtitle="Manage registration requests"
+        icon="shield-checkmark"
+        showBack
+        onBack={handleBack}
+        right={
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Refresh applications"
+            onPress={refresh}
+            disabled={current?.isRefetching}
+            style={styles.refreshButton}
+          >
+            <Ionicons name="refresh-outline" size={20} color={COLORS.ink} />
+          </Pressable>
+        }
+      />
 
       <FlatList
         key={`cols-${columns}`}
@@ -1092,7 +1103,7 @@ export default function UserVerificationScreen() {
           </Pressable>
         </View>
       )}
-    </SafeAreaView>
+    </Screen>
   );
 }
 
@@ -1101,8 +1112,13 @@ export default function UserVerificationScreen() {
 /* ------------------------------------------------------------------ */
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: COLORS.canvas },
   list: { flex: 1, width: "100%", maxWidth: 1180, alignSelf: "center" },
+  refreshButton: {
+    width: 40,
+    height: 40,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   listContent: { paddingHorizontal: 16, paddingTop: 12, paddingBottom: 40 },
   columnWrap: { gap: 12 },
   cardWrap: { flex: 1 },

@@ -1,5 +1,6 @@
-// screens/individual/CompanySubServicesScreen.jsx
+// screens/individual/CompanySubServices.jsx
 import React, {
+  memo,
   useCallback,
   useEffect,
   useMemo,
@@ -8,6 +9,7 @@ import React, {
 } from "react";
 import {
   ActivityIndicator,
+  Animated,
   FlatList,
   Image,
   KeyboardAvoidingView,
@@ -16,7 +18,6 @@ import {
   Platform,
   Pressable,
   RefreshControl,
-  SafeAreaView,
   ScrollView,
   StatusBar,
   StyleSheet,
@@ -24,9 +25,10 @@ import {
   View,
   useWindowDimensions,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
 import dayjs from "dayjs";
+import { useNavigation } from "@react-navigation/native";
 import {
   CheckValidityGet,
   getUserRegistrationbyParam,
@@ -39,17 +41,15 @@ import {
   userSubscriptionDetailSave,
 } from "../../api/api";
 import { useAuthStore } from "@/store/authStore";
-import ScreenHeader from "../../components/ScreenHeader";
-import { openRazorpay } from "../../utils/razorpayCheckout";
-import { useNavigation } from "@react-navigation/native";
 import { useCategoryStore } from "../../store/categoryStore";
-// import AppHeader from "../../components/common/AppHeader";
+import ScreenHeader from "../../components/ScreenHeader";
+import { Screen } from "@/components";
+import { openRazorpay } from "../../utils/razorpayCheckout";
 
 /* ------------------------------------------------------------------ */
 /* Config                                                              */
 /* ------------------------------------------------------------------ */
 
-// Set these in your .env file (Expo loads EXPO_PUBLIC_* automatically).
 const API_URL = process.env.EXPO_PUBLIC_API_URL || "";
 const RAZORPAY_KEY =
   process.env.EXPO_PUBLIC_RAZORPAY_KEY || "rzp_test_TBIngVA6fjYaLH";
@@ -61,72 +61,72 @@ const FALLBACK_IMAGES = [
 ];
 
 /* ------------------------------------------------------------------ */
-/* Design tokens (matches the web palette)                             */
+/* Design tokens                                                       */
 /* ------------------------------------------------------------------ */
 
-const COLORS = {
-  primary: "#4F46E5",
-  brand: "#492A78",
+const T = {
+  brand: "#4F46E5",
+  brandDeep: "#312E81",
+  brandSoft: "#EEF2FF",
+  brandLine: "#C7D2FE",
   ink: "#0F172A",
-  slate: "#1E293B",
+  body: "#334155",
   muted: "#64748B",
   faint: "#94A3B8",
   line: "#E2E8F0",
   surface: "#FFFFFF",
-  canvas: "#F8FAFC",
-  indigoLight: "#EEF2FF",
-  indigoLine: "#C7D2FE",
-  green: "#059669",
-  greenLight: "#ECFDF5",
-  greenLine: "#A7F3D0",
-  amber: "#D97706",
-  amberLight: "#FFFBEB",
-  amberLine: "#FDE68A",
-  red: "#DC2626",
-  redLight: "#FEF2F2",
-  redLine: "#FECACA",
-  slateLight: "#F1F5F9",
+  canvas: "#F6F7FB",
+  slateSoft: "#F1F5F9",
+  success: "#059669",
+  successSoft: "#ECFDF5",
+  successLine: "#A7F3D0",
+  warning: "#D97706",
+  warningSoft: "#FFFBEB",
+  warningLine: "#FDE68A",
+  danger: "#DC2626",
+  dangerSoft: "#FEF2F2",
 };
 
-const PALETTE = [
-  {
-    activeBg: "#4f46e5",
-    softBg: "#eef2ff",
-    softText: "#4338ca",
-    dot: "#6366f1",
-  },
-  {
-    activeBg: "#0e7490",
-    softBg: "#ecfeff",
-    softText: "#0e7490",
-    dot: "#0891b2",
-  },
-  {
-    activeBg: "#047857",
-    softBg: "#ecfdf5",
-    softText: "#047857",
-    dot: "#059669",
-  },
-  {
-    activeBg: "#b45309",
-    softBg: "#fffbeb",
-    softText: "#b45309",
-    dot: "#d97706",
-  },
-  {
-    activeBg: "#be123c",
-    softBg: "#fff1f2",
-    softText: "#be123c",
-    dot: "#e11d48",
-  },
-  {
-    activeBg: "#6d28d9",
-    softBg: "#f5f3ff",
-    softText: "#6d28d9",
-    dot: "#7c3aed",
-  },
+const RADIUS = { sm: 10, md: 14, lg: 18, xl: 24, pill: 999 };
+
+const SHADOW = {
+  shadowColor: "#0F172A",
+  shadowOpacity: 0.06,
+  shadowRadius: 12,
+  shadowOffset: { width: 0, height: 4 },
+  elevation: 2,
+};
+
+// Category accents. Each depth level gets one, so breadcrumbs and tree stay readable.
+const ACCENTS = [
+  { solid: "#4F46E5", soft: "#EEF2FF", ink: "#3730A3", dot: "#6366F1" },
+  { solid: "#0E7490", soft: "#ECFEFF", ink: "#155E75", dot: "#06B6D4" },
+  { solid: "#047857", soft: "#ECFDF5", ink: "#065F46", dot: "#10B981" },
+  { solid: "#B45309", soft: "#FFFBEB", ink: "#92400E", dot: "#F59E0B" },
+  { solid: "#BE123C", soft: "#FFF1F2", ink: "#9F1239", dot: "#F43F5E" },
+  { solid: "#6D28D9", soft: "#F5F3FF", ink: "#5B21B6", dot: "#8B5CF6" },
 ];
-const col = (depth) => PALETTE[depth % PALETTE.length];
+const accentAt = (depth) => ACCENTS[depth % ACCENTS.length];
+
+// Trade icon by service name. First match wins.
+const TRADE_ICONS = [
+  [/electr|power|solar|wire/i, { lib: "mci", name: "lightning-bolt-outline" }],
+  [/arch|interior|design/i, { lib: "mci", name: "office-building-outline" }],
+  [/civil|construct|build|infra|epc/i, { lib: "mci", name: "crane" }],
+  [/plumb|water|sanitar/i, { lib: "mci", name: "pipe-wrench" }],
+  [/hvac|air|cool/i, { lib: "mci", name: "air-conditioner" }],
+  [/fire/i, { lib: "mci", name: "fire-alert" }],
+  [/legal|law|contract|audit|tender/i, { lib: "mci", name: "scale-balance" }],
+  [/material|steel|cement|supply/i, { lib: "mci", name: "cube-outline" }],
+  [/paint|finish/i, { lib: "mci", name: "format-paint" }],
+  [/market|brand|advert/i, { lib: "mci", name: "bullhorn-outline" }],
+];
+
+const tradeIconFor = (name = "") =>
+  TRADE_ICONS.find(([re]) => re.test(name))?.[1] ?? {
+    lib: "ion",
+    name: "construct-outline",
+  };
 
 /* ------------------------------------------------------------------ */
 /* Helpers                                                             */
@@ -176,6 +176,9 @@ const callNumber = (num) => {
   if (!num) return;
   Linking.openURL(`tel:${String(num).replace(/\s+/g, "")}`).catch(() => {});
 };
+
+const contractorName = (c) => c?.CompanyName || c?.Name || "Contractor";
+const contractorPhone = (c) => c?.MobileNo || c?.PhoneNo || "";
 
 const buildTree = (flat) => {
   if (!Array.isArray(flat) || !flat.length) return [];
@@ -231,12 +234,6 @@ const getAncestorIds = (tree, targetId) => {
   return new Set(path.filter((id) => id !== targetId));
 };
 
-const subtreeHasActive = (node, activeId) => {
-  if (!activeId) return false;
-  if (node?.ServiceID === activeId) return true;
-  return (node?.children ?? []).some((c) => subtreeHasActive(c, activeId));
-};
-
 /* ------------------------------------------------------------------ */
 /* API helpers                                                         */
 /* ------------------------------------------------------------------ */
@@ -264,7 +261,100 @@ const fetchRegistration = async (userId) =>
   unwrap(await getUserRegistrationbyParam(`?userId=${userId}`));
 
 /* ------------------------------------------------------------------ */
-/* Shared UI pieces                                                    */
+/* Icon                                                                */
+/* ------------------------------------------------------------------ */
+
+function Icon({ spec, size = 18, color = T.ink }) {
+  if (spec.lib === "mci") {
+    return <MaterialCommunityIcons name={spec.name} size={size} color={color} />;
+  }
+  return <Ionicons name={spec.name} size={size} color={color} />;
+}
+
+const ico = (name) => ({ lib: "ion", name });
+
+/* ------------------------------------------------------------------ */
+/* Motion                                                              */
+/* ------------------------------------------------------------------ */
+
+function FadeIn({ delay = 0, style, children }) {
+  const progress = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    Animated.timing(progress, {
+      toValue: 1,
+      duration: 380,
+      delay,
+      useNativeDriver: true,
+    }).start();
+  }, [progress, delay]);
+
+  return (
+    <Animated.View
+      style={[
+        {
+          opacity: progress,
+          transform: [
+            {
+              translateY: progress.interpolate({
+                inputRange: [0, 1],
+                outputRange: [12, 0],
+              }),
+            },
+          ],
+        },
+        style,
+      ]}
+    >
+      {children}
+    </Animated.View>
+  );
+}
+
+function Pulse({ style }) {
+  const opacity = useRef(new Animated.Value(0.5)).current;
+  useEffect(() => {
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(opacity, { toValue: 1, duration: 650, useNativeDriver: true }),
+        Animated.timing(opacity, { toValue: 0.5, duration: 650, useNativeDriver: true }),
+      ]),
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [opacity]);
+  return <Animated.View style={[style, { opacity }]} />;
+}
+
+/* A press-feedback surface: scales slightly on press. */
+function Pressy({ onPress, disabled, style, children, label, hitSlop }) {
+  const scale = useRef(new Animated.Value(1)).current;
+  const to = (v) =>
+    Animated.spring(scale, {
+      toValue: v,
+      useNativeDriver: true,
+      speed: 40,
+      bounciness: 0,
+    }).start();
+  return (
+    <Animated.View style={[{ transform: [{ scale }] }, style]}>
+      <Pressable
+        onPress={onPress}
+        disabled={disabled}
+        onPressIn={() => to(0.97)}
+        onPressOut={() => to(1)}
+        accessibilityRole="button"
+        accessibilityLabel={label}
+        accessibilityState={{ disabled: !!disabled }}
+        hitSlop={hitSlop}
+      >
+        {children}
+      </Pressable>
+    </Animated.View>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Shared UI                                                           */
 /* ------------------------------------------------------------------ */
 
 function Toast({ toast, onHide }) {
@@ -277,15 +367,10 @@ function Toast({ toast, onHide }) {
   if (!toast) return null;
   const ok = toast.type === "success";
   return (
-    <View
-      style={[
-        styles.toast,
-        { backgroundColor: ok ? COLORS.green : COLORS.red },
-      ]}
-    >
+    <View style={[styles.toast, { backgroundColor: ok ? T.success : T.danger }]}>
       <Ionicons
         name={ok ? "checkmark-circle" : "alert-circle"}
-        size={18}
+        size={20}
         color="#fff"
       />
       <Text style={styles.toastText} numberOfLines={2}>
@@ -295,45 +380,35 @@ function Toast({ toast, onHide }) {
   );
 }
 
-function Btn({
-  label,
-  icon,
-  onPress,
-  variant = "ghost",
-  disabled,
-  loading,
-  flex = 1,
-}) {
-  const bg = {
-    primary: COLORS.primary,
-    dark: COLORS.ink,
-    success: COLORS.green,
-    ghost: COLORS.surface,
-  }[variant];
+function Button({ label, icon, onPress, variant = "ghost", disabled, loading, style }) {
   const filled = variant !== "ghost";
-  const tint = filled ? "#fff" : COLORS.slate;
+  const tint = variant === "primary" ? "#fff" : variant === "success" ? "#fff" : T.ink;
+  const bg =
+    variant === "primary" ? T.brand : variant === "success" ? T.success : T.surface;
 
   return (
-    <Pressable
+    <Pressy
       onPress={onPress}
       disabled={disabled || loading}
-      accessibilityRole="button"
-      accessibilityLabel={label}
-      style={({ pressed }) => [
-        styles.btn,
-        { flex, backgroundColor: bg },
-        !filled && { borderWidth: 1, borderColor: COLORS.line },
-        pressed && { opacity: 0.85, transform: [{ scale: 0.98 }] },
-        (disabled || loading) && { opacity: 0.5 },
-      ]}
+      label={label}
+      style={[{ flex: 1 }, style]}
     >
-      {loading ? (
-        <ActivityIndicator size="small" color={tint} />
-      ) : icon ? (
-        <Ionicons name={icon} size={15} color={tint} />
-      ) : null}
-      <Text style={[styles.btnText, { color: tint }]}>{label}</Text>
-    </Pressable>
+      <View
+        style={[
+          styles.button,
+          { backgroundColor: bg },
+          !filled && styles.buttonGhost,
+          (disabled || loading) && { opacity: 0.5 },
+        ]}
+      >
+        {loading ? (
+          <ActivityIndicator size="small" color={tint} />
+        ) : icon ? (
+          <Ionicons name={icon} size={17} color={tint} />
+        ) : null}
+        <Text style={[styles.buttonText, { color: tint }]}>{label}</Text>
+      </View>
+    </Pressy>
   );
 }
 
@@ -346,7 +421,7 @@ function Sheet({
   subtitle,
   footer,
   children,
-  maxHeight = "90%",
+  maxHeight = "88%",
 }) {
   const handleClose = () => {
     if (dismissable) onClose?.();
@@ -365,17 +440,17 @@ function Sheet({
       >
         <Pressable style={styles.backdrop} onPress={handleClose} />
         <View style={[styles.sheet, { maxHeight }]}>
-          <View style={styles.sheetHandle} />
+          <View style={styles.sheetGrip} />
           <View style={styles.sheetHead}>
             <View style={styles.sheetIcon}>
-              <Ionicons name={icon} size={18} color="#fff" />
+              <Ionicons name={icon} size={20} color={T.brand} />
             </View>
             <View style={{ flex: 1, minWidth: 0 }}>
               <Text style={styles.sheetTitle} numberOfLines={1}>
                 {title}
               </Text>
               {!!subtitle && (
-                <Text style={styles.sheetSub} numberOfLines={1}>
+                <Text style={styles.sheetSub} numberOfLines={2}>
                   {subtitle}
                 </Text>
               )}
@@ -383,11 +458,12 @@ function Sheet({
             {dismissable && (
               <Pressable
                 onPress={handleClose}
-                hitSlop={8}
-                style={styles.closeBtn}
+                hitSlop={10}
+                style={styles.sheetClose}
+                accessibilityRole="button"
                 accessibilityLabel="Close"
               >
-                <Ionicons name="close" size={18} color={COLORS.slate} />
+                <Ionicons name="close" size={18} color={T.muted} />
               </Pressable>
             )}
           </View>
@@ -400,85 +476,8 @@ function Sheet({
 }
 
 /* ------------------------------------------------------------------ */
-/* Category tree (sidebar on tablets, sheet on phones)                 */
+/* Breadcrumb                                                          */
 /* ------------------------------------------------------------------ */
-
-function TreeRow({ node, depth, activeId, expandedIds, onSelect, onToggle }) {
-  const hasKids = (node.children?.length ?? 0) > 0;
-  const isActive = node.ServiceID === activeId;
-  const isOpen = expandedIds.has(node.ServiceID);
-  const isAncestor = !isActive && subtreeHasActive(node, activeId);
-  const c = col(depth);
-  const fontSize = Math.max(12, 13 - depth * 0.5);
-  const dot = Math.max(6, 9 - depth);
-
-  return (
-    <View>
-      <Pressable
-        onPress={() => {
-          onSelect(node);
-          if (hasKids) onToggle(node.ServiceID);
-        }}
-        accessibilityRole="button"
-        accessibilityLabel={node.ServiceName}
-        style={({ pressed }) => [
-          styles.treeRow,
-          {
-            marginLeft: depth * 14,
-            backgroundColor: isActive
-              ? c.activeBg
-              : isAncestor
-                ? c.softBg
-                : "transparent",
-          },
-          pressed && { opacity: 0.8 },
-        ]}
-      >
-        <View
-          style={{
-            width: dot,
-            height: dot,
-            borderRadius: dot / 2,
-            backgroundColor: isActive ? "#fff" : c.dot,
-          }}
-        />
-        <Text
-          numberOfLines={2}
-          style={[
-            styles.treeText,
-            {
-              fontSize,
-              color: isActive ? "#fff" : isAncestor ? c.softText : "#475569",
-            },
-          ]}
-        >
-          {node.ServiceName}
-        </Text>
-        {hasKids && (
-          <Ionicons
-            name={isOpen ? "chevron-down" : "chevron-forward"}
-            size={14}
-            color={isActive ? "rgba(255,255,255,0.85)" : COLORS.faint}
-          />
-        )}
-      </Pressable>
-
-      {hasKids &&
-        isOpen &&
-        node.children.map((child) => (
-          <TreeRow
-            key={child.ServiceID}
-            node={child}
-            depth={depth + 1}
-            activeId={activeId}
-            expandedIds={expandedIds}
-            onSelect={onSelect}
-            onToggle={onToggle}
-          />
-        ))}
-    </View>
-  );
-}
 
 function Breadcrumb({ tree, activeId, onSelect }) {
   const path = useMemo(() => {
@@ -502,28 +501,27 @@ function Breadcrumb({ tree, activeId, onSelect }) {
     <ScrollView
       horizontal
       showsHorizontalScrollIndicator={false}
-      style={{ flexGrow: 0 }}
+      style={styles.crumbScroll}
       contentContainerStyle={styles.crumbRow}
     >
       {path.map((node, i) => {
         const last = i === path.length - 1;
-        const c = col(i);
+        const a = accentAt(i);
         return (
-          <View key={node.ServiceID} style={styles.crumbItem}>
+          <View key={String(node.ServiceID)} style={styles.crumbItem}>
             {i > 0 && (
-              <Ionicons name="chevron-forward" size={11} color={COLORS.faint} />
+              <Ionicons name="chevron-forward" size={12} color={T.faint} />
             )}
             <Pressable
               disabled={last}
               onPress={() => onSelect(node)}
-              style={[styles.crumbChip, last && { backgroundColor: c.softBg }]}
+              accessibilityRole="button"
+              accessibilityState={{ disabled: last, selected: last }}
+              style={[styles.crumbChip, last && { backgroundColor: a.soft }]}
             >
               <Text
                 numberOfLines={1}
-                style={[
-                  styles.crumbText,
-                  { color: last ? c.softText : COLORS.faint },
-                ]}
+                style={[styles.crumbText, { color: last ? a.ink : T.muted }]}
               >
                 {node.ServiceName}
               </Text>
@@ -539,92 +537,107 @@ function Breadcrumb({ tree, activeId, onSelect }) {
 /* Membership card                                                     */
 /* ------------------------------------------------------------------ */
 
-function MembershipCard({ hasActivePlan, activeSub, onAction }) {
+const MembershipCard = memo(function MembershipCard({
+  hasActivePlan,
+  activeSub,
+  onAction,
+}) {
   return (
-    <View
-      style={[
-        styles.member,
-        hasActivePlan ? styles.memberOn : styles.memberOff,
-      ]}
-    >
-      <View
-        style={[
-          styles.memberIcon,
-          { backgroundColor: hasActivePlan ? "#EDE9FE" : COLORS.amberLight },
-        ]}
-      >
-        <Ionicons
-          name={hasActivePlan ? "ribbon" : "alert-circle"}
-          size={18}
-          color={hasActivePlan ? COLORS.brand : COLORS.amber}
-        />
-      </View>
-      <View style={{ flex: 1, minWidth: 0 }}>
-        <Text
+    <View style={styles.member}>
+      <View style={styles.memberGlow} />
+      <View style={styles.memberTop}>
+        <View style={styles.memberIcon}>
+          <Ionicons
+            name={hasActivePlan ? "ribbon" : "lock-closed"}
+            size={18}
+            color="#fff"
+          />
+        </View>
+        <View style={{ flex: 1, minWidth: 0 }}>
+          <Text style={styles.memberEyebrow}>
+            {hasActivePlan ? "ACTIVE MEMBERSHIP" : "MEMBERSHIP REQUIRED"}
+          </Text>
+          <Text style={styles.memberTitle} numberOfLines={1}>
+            {hasActivePlan ? activeSub?.PlanName ?? "Plan" : "No active plan"}
+          </Text>
+        </View>
+        <View
           style={[
-            styles.memberEyebrow,
-            { color: hasActivePlan ? COLORS.muted : COLORS.amber },
+            styles.statusChip,
+            hasActivePlan ? styles.statusChipOn : styles.statusChipOff,
           ]}
         >
-          {hasActivePlan ? "Active membership" : "Membership required"}
-        </Text>
-        <Text style={styles.memberTitle} numberOfLines={1}>
-          {hasActivePlan ? (activeSub?.PlanName ?? "Plan") : "No active plan"}
-        </Text>
-        <Text style={styles.memberSub} numberOfLines={2}>
-          {hasActivePlan
-            ? `Expires on ${activeSub?.ExpiryDate ?? "—"}`
-            : "Purchase a plan to unlock contractor details"}
-        </Text>
+          <View
+            style={[
+              styles.statusDot,
+              { backgroundColor: hasActivePlan ? T.success : T.warning },
+            ]}
+          />
+          <Text style={styles.statusChipText}>
+            {hasActivePlan ? "Active" : "Inactive"}
+          </Text>
+        </View>
       </View>
+
+      <Text style={styles.memberSub} numberOfLines={2}>
+        {hasActivePlan
+          ? `Expires on ${activeSub?.ExpiryDate ?? "—"}`
+          : "Purchase a plan to unlock contractor details and direct calls."}
+      </Text>
+
       <Pressable
         onPress={onAction}
         accessibilityRole="button"
-        style={({ pressed }) => [
-          styles.memberBtn,
-          pressed && { opacity: 0.85 },
-        ]}
+        accessibilityLabel={hasActivePlan ? "Upgrade plan" : "Buy plan"}
+        style={({ pressed }) => [styles.memberBtn, pressed && { opacity: 0.85 }]}
       >
+        <Ionicons
+          name={hasActivePlan ? "arrow-up-circle-outline" : "card-outline"}
+          size={16}
+          color={T.brand}
+        />
         <Text style={styles.memberBtnText}>
-          {hasActivePlan ? "Upgrade" : "Buy plan"}
+          {hasActivePlan ? "Upgrade plan" : "Buy plan"}
         </Text>
       </Pressable>
     </View>
   );
-}
+});
 
 /* ------------------------------------------------------------------ */
 /* Contractor card                                                     */
 /* ------------------------------------------------------------------ */
 
-function ContractorCard({ item, idx, onView, disabled }) {
+const ContractorCard = memo(function ContractorCard({ item, idx, onView, disabled }) {
   const [imgFailed, setImgFailed] = useState(false);
 
-  const company = item?.CompanyName || item?.Name || "Contractor";
+  const company = contractorName(item);
   const location = item?.CityName || item?.StateName || "India";
-  const phone = item?.MobileNo || item?.PhoneNo || "";
+  const phone = contractorPhone(item);
   const status = item?.Status || "";
   const rating =
     typeof item?.Rating === "number" ? item.Rating : 4.5 + (idx % 5) * 0.1;
-  const fallback = FALLBACK_IMAGES[idx % FALLBACK_IMAGES.length];
   const remote = API_URL
     ? `${API_URL}/UserDocumentStore/image?userId=${item?.UserID}&documentCategoryId=7&documentSubCategoryId=10`
     : null;
-  const source = { uri: remote && !imgFailed ? remote : fallback };
+  const source = {
+    uri: remote && !imgFailed ? remote : FALLBACK_IMAGES[idx % FALLBACK_IMAGES.length],
+  };
   const viewed = Number(item?.IsActive) === 1;
+  const approved = status === "Approved";
 
   return (
-    <View style={styles.cCard}>
-      <View style={styles.cImageWrap}>
+    <View style={styles.card}>
+      <View style={styles.cardMedia}>
         <Image
           source={source}
-          style={styles.cImage}
+          style={styles.cardImage}
           onError={() => setImgFailed(true)}
         />
-        <View style={styles.cShade} />
+        <View style={styles.cardShade} />
 
-        <View style={styles.ratingBadge}>
-          <Ionicons name="star" size={10} color="#FACC15" />
+        <View style={styles.ratingChip}>
+          <Ionicons name="star" size={11} color="#FBBF24" />
           <Text style={styles.ratingText}>{rating.toFixed(1)}</Text>
         </View>
 
@@ -632,87 +645,88 @@ function ContractorCard({ item, idx, onView, disabled }) {
           <View
             style={[
               styles.statusBadge,
-              {
-                backgroundColor:
-                  status === "Approved"
-                    ? "rgba(16,185,129,0.92)"
-                    : "rgba(251,191,36,0.92)",
-              },
+              { backgroundColor: approved ? T.success : T.warning },
             ]}
           >
+            <Ionicons
+              name={approved ? "shield-checkmark" : "time"}
+              size={11}
+              color="#fff"
+            />
             <Text style={styles.statusBadgeText}>{status}</Text>
           </View>
         )}
       </View>
 
-      <View style={styles.cBody}>
-        <Text style={styles.cName} numberOfLines={1}>
+      <View style={styles.cardBody}>
+        <Text style={styles.cardName} numberOfLines={1}>
           {company}
         </Text>
-        <View style={styles.cLocRow}>
-          <Ionicons name="location-outline" size={12} color={COLORS.faint} />
-          <Text style={styles.cLoc} numberOfLines={1}>
+        <View style={styles.cardLocRow}>
+          <Ionicons name="location" size={13} color={T.faint} />
+          <Text style={styles.cardLoc} numberOfLines={1}>
             {location}
           </Text>
         </View>
 
-        <View style={styles.cActions}>
-          <Pressable
+        <View style={styles.cardActions}>
+          <Pressy
             onPress={() => onView(item)}
             disabled={disabled}
-            accessibilityRole="button"
-            accessibilityLabel={viewed ? "Viewed" : "View details"}
-            style={({ pressed }) => [
-              styles.viewBtn,
-              { backgroundColor: viewed ? COLORS.ink : COLORS.amber },
-              pressed && { opacity: 0.85, transform: [{ scale: 0.97 }] },
-              disabled && { opacity: 0.5 },
-            ]}
+            label={viewed ? "Viewed" : "View details"}
+            style={{ flex: 1 }}
           >
-            <Ionicons
-              name={viewed ? "checkmark-circle-outline" : "eye-outline"}
-              size={14}
-              color="#fff"
-            />
-            <Text style={styles.viewBtnText}>
-              {viewed ? "Viewed" : "View details"}
-            </Text>
-          </Pressable>
-
-          {!!phone && !!item?.IsActive && (
-            <Pressable
-              onPress={() => callNumber(phone)}
-              accessibilityRole="button"
-              accessibilityLabel="Call contractor"
-              style={({ pressed }) => [
-                styles.callBtn,
-                pressed && { opacity: 0.8 },
+            <View
+              style={[
+                styles.primaryAction,
+                viewed ? styles.primaryActionDone : styles.primaryActionOpen,
+                disabled && { opacity: 0.5 },
               ]}
             >
-              <Ionicons name="call-outline" size={14} color={COLORS.green} />
-              <Text style={styles.callBtnText}>Call</Text>
-            </Pressable>
+              <Ionicons
+                name={viewed ? "checkmark-circle" : "eye"}
+                size={16}
+                color={viewed ? T.body : "#fff"}
+              />
+              <Text
+                style={[
+                  styles.primaryActionText,
+                  { color: viewed ? T.body : "#fff" },
+                ]}
+              >
+                {viewed ? "Viewed" : "View details"}
+              </Text>
+            </View>
+          </Pressy>
+
+          {!!phone && viewed && (
+            <Pressy onPress={() => callNumber(phone)} label="Call contractor">
+              <View style={styles.callAction}>
+                <Ionicons name="call" size={16} color={T.success} />
+              </View>
+            </Pressy>
           )}
         </View>
       </View>
     </View>
   );
-}
+});
 
 function CardSkeleton() {
   return (
-    <View style={[styles.cCard, { opacity: 0.6 }]}>
-      <View style={[styles.cImageWrap, { backgroundColor: COLORS.slateLight }]} />
-      <View style={styles.cBody}>
-        <View style={[styles.skel, { width: "70%" }]} />
-        <View style={[styles.skel, { width: "45%", marginTop: 8, marginBottom: 12 }]} />
-        <View style={[styles.skel, { height: 38 }]} />
+    <View style={styles.card}>
+      <Pulse style={styles.skelMedia} />
+      <View style={styles.cardBody}>
+        <Pulse style={[styles.skelLine, { width: "70%" }]} />
+        <Pulse style={[styles.skelLine, { width: "45%", marginTop: 8 }]} />
+        <Pulse style={[styles.skelBtn, { marginTop: 14 }]} />
       </View>
     </View>
   );
 }
+
 /* ------------------------------------------------------------------ */
-/* Plan card and sheets                                                */
+/* Plan card                                                           */
 /* ------------------------------------------------------------------ */
 
 function PlanCard({ plan, busy, onSelect }) {
@@ -727,57 +741,60 @@ function PlanCard({ plan, busy, onSelect }) {
           {plan?.PlanName}
         </Text>
         {active && (
-          <View style={styles.activePill}>
-            <Text style={styles.activePillText}>Active</Text>
+          <View style={styles.planActive}>
+            <Text style={styles.planActiveText}>Current</Text>
           </View>
         )}
       </View>
 
-      <Text style={styles.planPrice}>{free ? "Free" : formatINR(price)}</Text>
-      <Text style={styles.planPer}>
-        {free
-          ? "No payment required"
-          : `per ${(plan?.DurationType || "month").toLowerCase()}`}
-      </Text>
-
-      <View style={styles.bulletRow}>
-        <Ionicons name="checkmark-circle" size={16} color={COLORS.green} />
-        <Text style={styles.bulletText}>
-          Up to {plan?.maxNoofServices ?? "unlimited"} services
-        </Text>
-      </View>
-      <View style={styles.bulletRow}>
-        <Ionicons name="checkmark-circle" size={16} color={COLORS.green} />
-        <Text style={styles.bulletText} numberOfLines={2}>
-          {plan?.Remark || "Full access"}
-        </Text>
+      <View style={styles.planPriceRow}>
+        <Text style={styles.planPrice}>{free ? "Free" : formatINR(price)}</Text>
+        {!free && (
+          <Text style={styles.planPer}>
+            / {(plan?.DurationType || "month").toLowerCase()}
+          </Text>
+        )}
       </View>
 
-      <Btn
+      <View style={styles.planBenefits}>
+        <Benefit icon="layers-outline" text={`Up to ${plan?.maxNoofServices ?? "unlimited"} services`} />
+        <Benefit icon="shield-checkmark-outline" text={plan?.Remark || "Full access to contractor details"} />
+      </View>
+
+      <Button
         label={free ? "Activate free plan" : "Select plan"}
-        icon={free ? "gift-outline" : "card-outline"}
+        icon={free ? "gift-outline" : "arrow-forward"}
         variant="primary"
         onPress={() => onSelect(plan)}
         loading={busy}
         disabled={busy}
-        flex={0}
       />
     </View>
   );
 }
 
-function DetailTile({ icon, label, value, tone }) {
+function Benefit({ icon, text }) {
+  return (
+    <View style={styles.benefit}>
+      <View style={styles.benefitIcon}>
+        <Ionicons name={icon} size={14} color={T.success} />
+      </View>
+      <Text style={styles.benefitText} numberOfLines={2}>
+        {text}
+      </Text>
+    </View>
+  );
+}
+
+function DetailTile({ icon, label, value }) {
   return (
     <View style={styles.tile}>
       <View style={styles.tileIcon}>
-        <Ionicons name={icon} size={14} color={COLORS.primary} />
+        <Ionicons name={icon} size={15} color={T.brand} />
       </View>
       <View style={{ flex: 1, minWidth: 0 }}>
         <Text style={styles.tileLabel}>{label}</Text>
-        <Text
-          style={[styles.tileValue, tone && { color: tone }]}
-          numberOfLines={2}
-        >
+        <Text style={styles.tileValue} numberOfLines={2}>
           {value || "—"}
         </Text>
       </View>
@@ -785,10 +802,64 @@ function DetailTile({ icon, label, value, tone }) {
   );
 }
 
- 
+/* ------------------------------------------------------------------ */
+/* Related services                                                    */
+/* ------------------------------------------------------------------ */
 
-const contractorName = (c) => c?.CompanyName || c?.Name || "Contractor";
-const contractorPhone = (c) => c?.MobileNo || c?.PhoneNo || "";
+const RelatedRow = memo(function RelatedRow({ service, onPress }) {
+  const spec = tradeIconFor(service.ServiceName);
+  const description = service?.ServiceDescription ?? service?.serviceDescription ?? "";
+
+  return (
+    <Pressable
+      onPress={() => onPress(service)}
+      accessibilityRole="button"
+      accessibilityLabel={`Browse ${service.ServiceName}`}
+      style={({ pressed }) => [styles.relRow, pressed && { opacity: 0.7 }]}
+    >
+      <View style={styles.relIcon}>
+        <Icon spec={spec} size={18} color={T.brand} />
+      </View>
+      <View style={{ flex: 1, minWidth: 0 }}>
+        <Text style={styles.relName} numberOfLines={1}>
+          {service.ServiceName}
+        </Text>
+        {typeof description === "string" && !!description.trim() && (
+          <Text style={styles.relDesc} numberOfLines={2}>
+            {description.trim()}
+          </Text>
+        )}
+      </View>
+      <Ionicons name="chevron-forward" size={18} color={T.faint} />
+    </Pressable>
+  );
+});
+
+function RelatedGroup({ title, icon, services, emptyText, onSelect }) {
+  return (
+    <View style={styles.relGroup}>
+      <View style={styles.relGroupHead}>
+        <Ionicons name={icon} size={16} color={T.muted} />
+        <Text style={styles.relGroupTitle}>{title}</Text>
+        <View style={styles.relCount}>
+          <Text style={styles.relCountText}>{services.length}</Text>
+        </View>
+      </View>
+      {services.length ? (
+        services.map((service) => (
+          <RelatedRow
+            key={String(service.ServiceID)}
+            service={service}
+            onPress={onSelect}
+          />
+        ))
+      ) : (
+        <Text style={styles.relEmpty}>{emptyText}</Text>
+      )}
+    </View>
+  );
+}
+
 /* ------------------------------------------------------------------ */
 /* Main screen                                                         */
 /* ------------------------------------------------------------------ */
@@ -804,7 +875,6 @@ export default function CompanySubServices({ serviceId, serviceName }) {
   const userId = loginResponce?.userId || 0;
   const userType = loginResponce?.userType || 0;
 
-  // Shared with the drawer sidebar.
   const activeId = useCategoryStore((s) => s.activeId);
   const selectCategory = useCategoryStore((s) => s.select);
 
@@ -816,7 +886,6 @@ export default function CompanySubServices({ serviceId, serviceName }) {
   const [busy, setBusy] = useState(false);
   const [toast, setToast] = useState(null);
 
-  // Contractor the user tapped before having a plan; opened after purchase.
   const intentRef = useRef(null);
 
   const showToast = useCallback(
@@ -837,6 +906,18 @@ export default function CompanySubServices({ serviceId, serviceName }) {
     () => (activeId ? findNode(fullTree, activeId) : null),
     [fullTree, activeId],
   );
+
+  const relatedServices = useMemo(() => {
+    if (!activeNode) return { children: [], peers: [] };
+    const activeServiceId = Number(activeNode.ServiceID);
+    const parentServiceId = Number(activeNode.ParentServiceID ?? 0);
+    const peers = flattenTree(fullTree).filter(
+      (node) =>
+        Number(node.ParentServiceID ?? 0) === parentServiceId &&
+        Number(node.ServiceID) !== activeServiceId,
+    );
+    return { children: activeNode.children ?? [], peers };
+  }, [activeNode, fullTree]);
 
   const parentName = useMemo(() => {
     const s = (menuQuery.data ?? []).find(
@@ -925,28 +1006,31 @@ export default function CompanySubServices({ serviceId, serviceName }) {
     [showToast],
   );
 
-  const handleViewDetails = (item) => {
-    setCompanyUserID(item?.UserID);
+  const handleViewDetails = useCallback(
+    (item) => {
+      setCompanyUserID(item?.UserID);
 
-    if (!isLoggedIn) {
-      showToast("error", "Please login to view contractor details");
-      navigation.navigate("Login");
-      return;
-    }
+      if (!isLoggedIn) {
+        showToast("error", "Please login to view contractor details");
+        navigation.navigate("Login");
+        return;
+      }
 
-    if (!hasActivePlan) {
-      intentRef.current = item;
-      setPlansOpen(true);
-      return;
-    }
+      if (!hasActivePlan) {
+        intentRef.current = item;
+        setPlansOpen(true);
+        return;
+      }
 
-    if (Number(item?.IsActive) === 1) {
-      openDetail(item);
-      return;
-    }
+      if (Number(item?.IsActive) === 1) {
+        openDetail(item);
+        return;
+      }
 
-    setPendingItem(item);
-  };
+      setPendingItem(item);
+    },
+    [isLoggedIn, hasActivePlan, navigation, openDetail, showToast],
+  );
 
   const confirmPending = async () => {
     const item = pendingItem;
@@ -1114,36 +1198,47 @@ export default function CompanySubServices({ serviceId, serviceName }) {
     if (navigation.canGoBack()) navigation.goBack();
   };
 
-  const handleCrumbSelect = (node) => {
-    selectCategory(node.ServiceID, [...getAncestorIds(fullTree, node.ServiceID)]);
-    navigation.setParams({ serviceId: node.ServiceID, serviceName: node.ServiceName });
-  };
+  const handleCrumbSelect = useCallback(
+    (node) => {
+      selectCategory(node.ServiceID, [...getAncestorIds(fullTree, node.ServiceID)]);
+      navigation.setParams({ serviceId: node.ServiceID, serviceName: node.ServiceName });
+    },
+    [fullTree, navigation, selectCategory],
+  );
+
+  const handleRelatedServiceSelect = useCallback(
+    (node) => {
+      selectCategory(node.ServiceID, [...getAncestorIds(fullTree, node.ServiceID)]);
+      navigation.navigate("CompanySubServices", {
+        serviceId: node.ServiceID,
+        serviceName: node.ServiceName,
+      });
+    },
+    [fullTree, navigation, selectCategory],
+  );
 
   /* ── Render pieces ── */
-  const headerActions = [
-    {
-      icon: "menu-outline",
-      label: "Categories",
-      onPress: () => navigation.openDrawer(),
-    },
-  ];
-
   const listHeader = (
     <View style={styles.listHead}>
       {isLoggedIn && (
-        <MembershipCard
-          hasActivePlan={hasActivePlan}
-          activeSub={activeSub}
-          onAction={() => setPlansOpen(true)}
-        />
+        <FadeIn>
+          <MembershipCard
+            hasActivePlan={hasActivePlan}
+            activeSub={activeSub}
+            onAction={() => setPlansOpen(true)}
+          />
+        </FadeIn>
       )}
 
       <Breadcrumb tree={fullTree} activeId={activeId} onSelect={handleCrumbSelect} />
 
       <View style={styles.titleRow}>
-        <Text style={styles.title} numberOfLines={2}>
-          {activeNode?.ServiceName ?? "Select a category"}
-        </Text>
+        <View style={{ flex: 1, minWidth: 0 }}>
+          <Text style={styles.sectionEyebrow}>SPECIALISTS</Text>
+          <Text style={styles.title} numberOfLines={2}>
+            {activeNode?.ServiceName ?? "Select a category"}
+          </Text>
+        </View>
         {!contractorsLoading && !!activeId && (
           <View style={styles.countBadge}>
             <Text style={styles.countText}>{filtered.length}</Text>
@@ -1153,21 +1248,70 @@ export default function CompanySubServices({ serviceId, serviceName }) {
     </View>
   );
 
-  const emptyState = contractorsLoading ? (
-    <View style={styles.centerState}>
-      <ActivityIndicator size="large" color={COLORS.primary} />
-      <Text style={styles.stateText}>Loading specialists…</Text>
-    </View>
-  ) : (
-    <View style={styles.centerState}>
-      <View style={styles.emptyIcon}>
-        <Ionicons name="business-outline" size={28} color={COLORS.faint} />
+  const relatedFooter = (
+    <FadeIn delay={120}>
+      <View style={styles.relatedWrap}>
+        <View style={styles.relatedHeading}>
+          <View style={styles.relatedHeadingIcon}>
+            <Ionicons name="git-network-outline" size={18} color={T.brand} />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.relatedTitle}>Explore related services</Text>
+            <Text style={styles.relatedSub}>Browse nearby categories</Text>
+          </View>
+        </View>
+
+        {menuQuery.isLoading ? (
+          <View style={styles.relState}>
+            <ActivityIndicator size="small" color={T.brand} />
+            <Text style={styles.relEmpty}>Loading related services…</Text>
+          </View>
+        ) : menuQuery.isError ? (
+          <View style={styles.relState}>
+            <Ionicons name="cloud-offline-outline" size={20} color={T.faint} />
+            <Text style={styles.relEmpty}>Related services could not be loaded.</Text>
+            <Pressable
+              onPress={() => menuQuery.refetch()}
+              accessibilityRole="button"
+              style={styles.retryPill}
+            >
+              <Text style={styles.retryPillText}>Try again</Text>
+            </Pressable>
+          </View>
+        ) : (
+          <>
+            <RelatedGroup
+              title="Child services"
+              icon="git-branch-outline"
+              services={relatedServices.children}
+              emptyText="No child services for this category."
+              onSelect={handleRelatedServiceSelect}
+            />
+            <RelatedGroup
+              title="Peer services"
+              icon="people-outline"
+              services={relatedServices.peers}
+              emptyText="No peer services in this category."
+              onSelect={handleRelatedServiceSelect}
+            />
+          </>
+        )}
       </View>
-      <Text style={styles.stateTitle}>
+    </FadeIn>
+  );
+
+  const emptyState = contractorsLoading ? null : (
+    <View style={styles.emptyWrap}>
+      <View style={styles.emptyIcon}>
+        <Ionicons name="business-outline" size={28} color={T.brand} />
+      </View>
+      <Text style={styles.emptyTitle}>
         {activeId ? "No specialists found" : "Select a category"}
       </Text>
-      <Text style={styles.stateText}>
-        {activeId ? "Try a different category." : "Open the menu to choose a category."}
+      <Text style={styles.emptyText}>
+        {activeId
+          ? "Try a different category from the breadcrumb or menu."
+          : "Open the menu to choose a service category."}
       </Text>
     </View>
   );
@@ -1175,20 +1319,30 @@ export default function CompanySubServices({ serviceId, serviceName }) {
   const loadingGrid = Array.from({ length: columns * 2 }, (_, i) => ({ id: `sk-${i}` }));
 
   return (
-    <SafeAreaView style={styles.safe}>
-      <StatusBar barStyle="dark-content" backgroundColor={COLORS.canvas} />
+    <Screen>
+      <StatusBar barStyle="dark-content" backgroundColor={T.canvas} />
 
       <ScreenHeader
         title={parentName}
         subtitle={`${totalNodes} categories`}
         icon="business"
-        showBack={handleBack}
-        actions={headerActions}
+        showBack
+        onBack={handleBack}
+        right={
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Open categories"
+            onPress={() => navigation.openDrawer()}
+            style={styles.headerAction}
+          >
+            <Ionicons name="menu-outline" size={20} color={T.ink} />
+          </Pressable>
+        }
       />
 
       <FlatList
         key={`grid-${columns}`}
-        style={{ flex: 1 }}
+        style={styles.list}
         data={contractorsLoading ? loadingGrid : filtered}
         numColumns={columns}
         keyExtractor={(item, i) => String(item?.UserID ?? item?.id ?? i)}
@@ -1197,20 +1351,26 @@ export default function CompanySubServices({ serviceId, serviceName }) {
             {contractorsLoading ? (
               <CardSkeleton />
             ) : (
-              <ContractorCard item={item} idx={index} onView={handleViewDetails} disabled={busy} />
+              <ContractorCard
+                item={item}
+                idx={index}
+                onView={handleViewDetails}
+                disabled={busy}
+              />
             )}
           </View>
         )}
         ListHeaderComponent={listHeader}
         ListEmptyComponent={emptyState}
+        ListFooterComponent={relatedFooter}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
             refreshing={contractorsQuery.isFetching && !contractorsQuery.isLoading}
             onRefresh={() => contractorsQuery.refetch()}
-            tintColor={COLORS.primary}
-            colors={[COLORS.primary]}
+            tintColor={T.brand}
+            colors={[T.brand]}
           />
         }
       />
@@ -1221,19 +1381,19 @@ export default function CompanySubServices({ serviceId, serviceName }) {
         onClose={() => setPendingItem(null)}
         dismissable={!busy}
         icon="eye-outline"
-        title="View service details"
-        subtitle="Confirm your request"
-        maxHeight="60%"
+        title="View contractor details"
+        subtitle="Confirm to use one unit of your access."
+        maxHeight="55%"
         footer={
           <>
-            <Btn
+            <Button
               label="Cancel"
-              icon="close-outline"
+              icon="close"
               onPress={() => setPendingItem(null)}
               disabled={busy}
             />
-            <Btn
-              label="Yes, view details"
+            <Button
+              label="View details"
               icon="checkmark"
               variant="primary"
               onPress={confirmPending}
@@ -1243,10 +1403,10 @@ export default function CompanySubServices({ serviceId, serviceName }) {
           </>
         }
       >
-        <View style={{ padding: 18 }}>
+        <View style={styles.confirmBody}>
           <Text style={styles.confirmText}>
             Are you sure you want to view details for{" "}
-            <Text style={{ fontWeight: "800", color: COLORS.ink }}>
+            <Text style={styles.confirmStrong}>
               {pendingItem ? contractorName(pendingItem) : "this contractor"}
             </Text>
             ?
@@ -1265,15 +1425,16 @@ export default function CompanySubServices({ serviceId, serviceName }) {
         maxHeight="88%"
       >
         {plansQuery.isLoading ? (
-          <View style={styles.centerState}>
-            <ActivityIndicator size="large" color={COLORS.primary} />
+          <View style={styles.sheetState}>
+            <ActivityIndicator size="large" color={T.brand} />
           </View>
         ) : plans.length === 0 ? (
-          <View style={styles.centerState}>
-            <Text style={styles.stateText}>No plans available</Text>
+          <View style={styles.sheetState}>
+            <Ionicons name="pricetags-outline" size={26} color={T.faint} />
+            <Text style={styles.emptyText}>No plans available right now.</Text>
           </View>
         ) : (
-          <ScrollView contentContainerStyle={{ padding: 14, gap: 12 }}>
+          <ScrollView contentContainerStyle={styles.planList}>
             {plans.map((plan) => (
               <PlanCard
                 key={String(plan.PlanID)}
@@ -1291,20 +1452,20 @@ export default function CompanySubServices({ serviceId, serviceName }) {
         visible={!!paymentPlan}
         onClose={closePayment}
         dismissable={!busy}
-        icon="shield-checkmark-outline"
+        icon="card-outline"
         title="Confirm payment"
         subtitle="Subscribe to access contractor details"
         maxHeight="75%"
         footer={
           <>
-            <Btn label="Cancel" icon="close-outline" onPress={closePayment} disabled={busy} />
-            <Btn
+            <Button label="Cancel" icon="close" onPress={closePayment} disabled={busy} />
+            <Button
               label={
                 Number(paymentPlan?.Price) === 0
                   ? "Activate"
                   : `Pay ${formatINR(paymentPlan?.Price)}`
               }
-              icon="card-outline"
+              icon="lock-closed"
               variant="primary"
               onPress={handlePay}
               loading={busy}
@@ -1313,7 +1474,7 @@ export default function CompanySubServices({ serviceId, serviceName }) {
           </>
         }
       >
-        <ScrollView contentContainerStyle={{ padding: 18, gap: 14 }}>
+        <ScrollView contentContainerStyle={styles.payBody}>
           <View style={styles.summary}>
             <Text style={styles.summaryEyebrow}>PLAN SUMMARY</Text>
             <View style={styles.summaryRow}>
@@ -1325,13 +1486,13 @@ export default function CompanySubServices({ serviceId, serviceName }) {
               <Text style={styles.summaryValue}>{paymentPlan?.DurationType || "—"}</Text>
             </View>
             <View style={[styles.summaryRow, styles.summaryTotal]}>
-              <Text style={styles.summaryLabel}>Total amount</Text>
+              <Text style={styles.summaryLabel}>Total</Text>
               <Text style={styles.summaryTotalValue}>{formatINR(paymentPlan?.Price)}</Text>
             </View>
           </View>
 
           <View style={styles.secureNote}>
-            <Ionicons name="lock-closed-outline" size={14} color={COLORS.muted} />
+            <Ionicons name="shield-checkmark" size={16} color={T.success} />
             <Text style={styles.secureText}>
               Secure payment powered by Razorpay. Your data is encrypted.
             </Text>
@@ -1347,12 +1508,12 @@ export default function CompanySubServices({ serviceId, serviceName }) {
         title={detailItem ? contractorName(detailItem) : "Contractor"}
         subtitle={detailItem?.ServiceName || "—"}
         maxHeight="90%"
-        footer={<Btn label="Close" icon="close-outline" onPress={() => setDetailItem(null)} />}
+        footer={<Button label="Close" icon="close" onPress={() => setDetailItem(null)} />}
       >
-        <ScrollView contentContainerStyle={{ padding: 18, gap: 14 }}>
+        <ScrollView contentContainerStyle={styles.detailBody}>
           {hasActivePlan && (
             <View style={styles.accessBanner}>
-              <Ionicons name="checkmark-circle" size={20} color={COLORS.green} />
+              <Ionicons name="shield-checkmark" size={18} color={T.success} />
               <Text style={styles.accessText}>You have access to this contractor's details</Text>
             </View>
           )}
@@ -1374,9 +1535,11 @@ export default function CompanySubServices({ serviceId, serviceName }) {
           {!!contractorPhone(detailItem) && (
             <Pressable
               onPress={() => callNumber(contractorPhone(detailItem))}
-              style={({ pressed }) => [styles.callFull, pressed && { opacity: 0.85 }]}
+              accessibilityRole="button"
+              accessibilityLabel={`Call ${contractorName(detailItem)}`}
+              style={({ pressed }) => [styles.callFull, pressed && { opacity: 0.88 }]}
             >
-              <Ionicons name="call" size={16} color="#fff" />
+              <Ionicons name="call" size={17} color="#fff" />
               <Text style={styles.callFullText}>Call {contractorName(detailItem)}</Text>
             </Pressable>
           )}
@@ -1384,7 +1547,7 @@ export default function CompanySubServices({ serviceId, serviceName }) {
       </Sheet>
 
       <Toast toast={toast} onHide={hideToast} />
-    </SafeAreaView>
+    </Screen>
   );
 }
 
@@ -1393,289 +1556,400 @@ export default function CompanySubServices({ serviceId, serviceName }) {
 /* ------------------------------------------------------------------ */
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: COLORS.canvas },
-  listContent: { paddingHorizontal: 12, paddingBottom: 32, flexGrow: 1 },
-  listHead: { paddingTop: 12, gap: 10, marginBottom: 6 },
-  gridItem: { flex: 1, padding: 6 },
-
-  crumbRow: { alignItems: "center", gap: 4, paddingVertical: 2 },
-  crumbItem: { flexDirection: "row", alignItems: "center", gap: 4 },
-  crumbChip: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8, maxWidth: 180 },
-  crumbText: { fontSize: 11, fontWeight: "700" },
-
-  titleRow: { flexDirection: "row", alignItems: "center", gap: 10, marginTop: 4 },
-  title: { flex: 1, color: COLORS.ink, fontSize: 19, fontWeight: "900" },
-  countBadge: {
-    minWidth: 30,
-    height: 26,
-    borderRadius: 8,
-    paddingHorizontal: 8,
+  headerAction: {
+    width: 40,
+    height: 40,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: COLORS.indigoLight,
   },
-  countText: { color: COLORS.primary, fontSize: 12, fontWeight: "800" },
+  list: { flex: 1 },
+  listContent: { paddingHorizontal: 14, paddingBottom: 40, flexGrow: 1 },
+  listHead: { paddingTop: 14, gap: 14, marginBottom: 8 },
+  gridItem: { flex: 1, padding: 5 },
 
   /* Membership */
   member: {
+    borderRadius: RADIUS.xl,
+    padding: 16,
+    gap: 12,
+    backgroundColor: T.brandDeep,
+    overflow: "hidden",
+    ...SHADOW,
+  },
+  memberGlow: {
+    position: "absolute",
+    width: 160,
+    height: 160,
+    borderRadius: 80,
+    top: -70,
+    right: -40,
+    backgroundColor: "rgba(255,255,255,0.08)",
+  },
+  memberTop: { flexDirection: "row", alignItems: "center", gap: 12 },
+  memberIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: RADIUS.md,
+    backgroundColor: "rgba(255,255,255,0.16)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  memberEyebrow: {
+    color: "rgba(255,255,255,0.7)",
+    fontSize: 10,
+    fontWeight: "800",
+    letterSpacing: 1,
+  },
+  memberTitle: { color: "#fff", fontSize: 16, fontWeight: "800", marginTop: 2 },
+  statusChip: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 12,
-    padding: 12,
-    borderRadius: 16,
-    borderWidth: 1,
+    gap: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: RADIUS.pill,
   },
-  memberOn: { backgroundColor: "#FAF5FF", borderColor: "#E9D5FF" },
-  memberOff: { backgroundColor: COLORS.amberLight, borderColor: COLORS.amberLine },
-  memberIcon: {
-    width: 38,
-    height: 38,
-    borderRadius: 12,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  memberEyebrow: { fontSize: 11, fontWeight: "700" },
-  memberTitle: { color: COLORS.ink, fontSize: 14, fontWeight: "800", marginTop: 1 },
-  memberSub: { color: COLORS.muted, fontSize: 11, marginTop: 2 },
+  statusChipOn: { backgroundColor: "rgba(16,185,129,0.18)" },
+  statusChipOff: { backgroundColor: "rgba(245,158,11,0.2)" },
+  statusDot: { width: 6, height: 6, borderRadius: 3 },
+  statusChipText: { color: "#fff", fontSize: 11, fontWeight: "700" },
+  memberSub: { color: "rgba(255,255,255,0.78)", fontSize: 12, lineHeight: 17 },
   memberBtn: {
-    paddingHorizontal: 12,
-    height: 34,
-    borderRadius: 10,
+    height: 44,
+    flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: COLORS.brand,
+    gap: 8,
+    borderRadius: RADIUS.md,
+    backgroundColor: "#FFFFFF",
   },
-  memberBtnText: { color: "#fff", fontSize: 12, fontWeight: "800" },
+  memberBtnText: { color: T.brand, fontSize: 13, fontWeight: "800" },
+
+  /* Breadcrumb */
+  crumbScroll: { flexGrow: 0 },
+  crumbRow: { alignItems: "center", gap: 4, paddingVertical: 2 },
+  crumbItem: { flexDirection: "row", alignItems: "center", gap: 4 },
+  crumbChip: {
+    minHeight: 32,
+    justifyContent: "center",
+    paddingHorizontal: 10,
+    borderRadius: RADIUS.sm,
+    maxWidth: 180,
+  },
+  crumbText: { fontSize: 12, fontWeight: "700" },
+
+  /* Title */
+  titleRow: { flexDirection: "row", alignItems: "flex-end", gap: 12, marginTop: 2 },
+  sectionEyebrow: {
+    color: T.faint,
+    fontSize: 10,
+    fontWeight: "800",
+    letterSpacing: 1.2,
+    marginBottom: 2,
+  },
+  title: { color: T.ink, fontSize: 20, fontWeight: "900", letterSpacing: -0.3 },
+  countBadge: {
+    minWidth: 34,
+    height: 30,
+    paddingHorizontal: 10,
+    borderRadius: RADIUS.sm,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: T.brandSoft,
+  },
+  countText: { color: T.brand, fontSize: 13, fontWeight: "800" },
 
   /* Contractor card */
-  cCard: {
-    backgroundColor: COLORS.surface,
-    borderRadius: 22,
-    borderWidth: 1,
-    borderColor: COLORS.line,
+  card: {
+    backgroundColor: T.surface,
+    borderRadius: RADIUS.lg,
     overflow: "hidden",
-    elevation: 1,
+    ...SHADOW,
   },
-  cImageWrap: {
-    height: 144,
-    margin: 8,
-    borderRadius: 16,
+  cardMedia: {
+    height: 136,
+    margin: 6,
+    borderRadius: RADIUS.md,
     overflow: "hidden",
-    backgroundColor: COLORS.slateLight,
+    backgroundColor: T.slateSoft,
   },
-  cImage: { width: "100%", height: "100%" },
-  cShade: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(15,23,42,0.18)" },
-  ratingBadge: {
+  cardImage: { width: "100%", height: "100%" },
+  cardShade: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(15,23,42,0.12)",
+  },
+  ratingChip: {
     position: "absolute",
     top: 8,
     left: 8,
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
-    paddingHorizontal: 7,
-    paddingVertical: 3,
-    borderRadius: 8,
-    backgroundColor: "rgba(255,255,255,0.92)",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: RADIUS.sm,
+    backgroundColor: "rgba(255,255,255,0.94)",
   },
-  ratingText: { color: COLORS.slate, fontSize: 10, fontWeight: "900" },
+  ratingText: { color: T.ink, fontSize: 11, fontWeight: "800" },
   statusBadge: {
     position: "absolute",
     top: 8,
     right: 8,
-    paddingHorizontal: 7,
-    paddingVertical: 3,
-    borderRadius: 8,
-  },
-  statusBadgeText: { color: "#fff", fontSize: 9, fontWeight: "900" },
-  cBody: { paddingHorizontal: 14, paddingBottom: 14 },
-  cName: { color: COLORS.slate, fontSize: 14, fontWeight: "800" },
-  cLocRow: {
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
-    marginTop: 3,
-    marginBottom: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: RADIUS.sm,
   },
-  cLoc: { color: COLORS.faint, fontSize: 11, flex: 1 },
-  cActions: { flexDirection: "row", gap: 8 },
-  viewBtn: {
-    flex: 1,
+  statusBadgeText: { color: "#fff", fontSize: 10, fontWeight: "800" },
+  cardBody: { paddingHorizontal: 12, paddingTop: 8, paddingBottom: 12 },
+  cardName: { color: T.ink, fontSize: 15, fontWeight: "800" },
+  cardLocRow: { flexDirection: "row", alignItems: "center", gap: 4, marginTop: 4 },
+  cardLoc: { flex: 1, color: T.muted, fontSize: 12 },
+  cardActions: { flexDirection: "row", alignItems: "center", gap: 8, marginTop: 12 },
+  primaryAction: {
+    height: 42,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     gap: 6,
-    height: 38,
-    borderRadius: 12,
+    borderRadius: RADIUS.md,
   },
-  viewBtnText: { color: "#fff", fontSize: 12, fontWeight: "800" },
-  callBtn: {
-    flex: 1,
-    flexDirection: "row",
+  primaryActionOpen: { backgroundColor: T.brand },
+  primaryActionDone: { backgroundColor: T.slateSoft },
+  primaryActionText: { fontSize: 13, fontWeight: "800" },
+  callAction: {
+    width: 42,
+    height: 42,
+    borderRadius: RADIUS.md,
     alignItems: "center",
     justifyContent: "center",
-    gap: 6,
-    height: 38,
-    borderRadius: 12,
+    backgroundColor: T.successSoft,
     borderWidth: 1,
-    borderColor: COLORS.greenLine,
-    backgroundColor: COLORS.surface,
+    borderColor: T.successLine,
   },
-  callBtnText: { color: COLORS.green, fontSize: 12, fontWeight: "800" },
-  skel: { height: 12, borderRadius: 6, backgroundColor: COLORS.slateLight },
+  skelMedia: { height: 136, margin: 6, borderRadius: RADIUS.md, backgroundColor: T.slateSoft },
+  skelLine: { height: 12, borderRadius: 6, backgroundColor: T.slateSoft },
+  skelBtn: { height: 42, borderRadius: RADIUS.md, backgroundColor: T.slateSoft },
 
-  /* Empty / loading */
-  centerState: {
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 48,
-    paddingHorizontal: 24,
-    gap: 6,
-  },
+  /* Empty */
+  emptyWrap: { alignItems: "center", paddingVertical: 40, paddingHorizontal: 24, gap: 6 },
   emptyIcon: {
-    width: 56,
-    height: 56,
-    borderRadius: 18,
-    backgroundColor: COLORS.slateLight,
+    width: 60,
+    height: 60,
+    borderRadius: 20,
     alignItems: "center",
     justifyContent: "center",
+    backgroundColor: T.brandSoft,
     marginBottom: 6,
   },
-  stateTitle: { color: COLORS.ink, fontSize: 15, fontWeight: "800", textAlign: "center" },
-  stateText: { color: COLORS.muted, fontSize: 12, textAlign: "center", lineHeight: 18 },
+  emptyTitle: { color: T.ink, fontSize: 16, fontWeight: "800" },
+  emptyText: { color: T.muted, fontSize: 13, lineHeight: 19, textAlign: "center" },
+  sheetState: { alignItems: "center", justifyContent: "center", paddingVertical: 48, gap: 10 },
+
+  /* Related */
+  relatedWrap: {
+    marginTop: 24,
+    padding: 16,
+    borderRadius: RADIUS.xl,
+    backgroundColor: T.surface,
+    ...SHADOW,
+  },
+  relatedHeading: { flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 12 },
+  relatedHeadingIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: RADIUS.md,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: T.brandSoft,
+  },
+  relatedTitle: { color: T.ink, fontSize: 16, fontWeight: "800" },
+  relatedSub: { color: T.muted, fontSize: 12, marginTop: 2 },
+  relGroup: { marginTop: 8 },
+  relGroupHead: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 4 },
+  relGroupTitle: { flex: 1, color: T.body, fontSize: 13, fontWeight: "800" },
+  relCount: {
+    minWidth: 24,
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    borderRadius: RADIUS.sm,
+    alignItems: "center",
+    backgroundColor: T.slateSoft,
+  },
+  relCountText: { color: T.body, fontSize: 11, fontWeight: "800" },
+  relRow: {
+    minHeight: 60,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    paddingVertical: 10,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: T.line,
+  },
+  relIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: RADIUS.md,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: T.brandSoft,
+  },
+  relName: { color: T.ink, fontSize: 14, fontWeight: "700" },
+  relDesc: { color: T.muted, fontSize: 12, lineHeight: 16, marginTop: 2 },
+  relEmpty: { color: T.muted, fontSize: 12, lineHeight: 18, paddingVertical: 8 },
+  relState: { minHeight: 72, alignItems: "center", justifyContent: "center", gap: 8 },
+  retryPill: {
+    paddingHorizontal: 14,
+    height: 34,
+    justifyContent: "center",
+    borderRadius: RADIUS.pill,
+    backgroundColor: T.brandSoft,
+  },
+  retryPillText: { color: T.brand, fontSize: 12, fontWeight: "800" },
+
+  /* Buttons */
+  button: {
+    minHeight: 46,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    paddingHorizontal: 14,
+    borderRadius: RADIUS.md,
+  },
+  buttonGhost: { borderWidth: 1, borderColor: T.line },
+  buttonText: { fontSize: 14, fontWeight: "800" },
 
   /* Sheets */
   sheetRoot: { flex: 1, justifyContent: "flex-end" },
-  backdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(15,23,42,0.6)" },
+  backdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(15,23,42,0.5)" },
   sheet: {
-    backgroundColor: COLORS.surface,
-    borderTopLeftRadius: 26,
-    borderTopRightRadius: 26,
+    backgroundColor: T.surface,
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
     overflow: "hidden",
+    paddingBottom: 4,
   },
-  sheetHandle: {
+  sheetGrip: {
     width: 40,
     height: 4,
     borderRadius: 2,
-    backgroundColor: "#CBD5E1",
+    backgroundColor: T.line,
     alignSelf: "center",
-    marginTop: 8,
-    marginBottom: 6,
+    marginTop: 10,
+    marginBottom: 8,
   },
   sheetHead: {
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
-    paddingHorizontal: 18,
-    paddingBottom: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.line,
+    paddingHorizontal: 20,
+    paddingBottom: 16,
   },
   sheetIcon: {
-    width: 38,
-    height: 38,
-    borderRadius: 13,
-    backgroundColor: COLORS.primary,
+    width: 42,
+    height: 42,
+    borderRadius: RADIUS.md,
     alignItems: "center",
     justifyContent: "center",
+    backgroundColor: T.brandSoft,
   },
-  sheetTitle: { color: COLORS.ink, fontSize: 17, fontWeight: "800" },
-  sheetSub: { color: COLORS.muted, fontSize: 11, marginTop: 2 },
-  closeBtn: {
+  sheetTitle: { color: T.ink, fontSize: 17, fontWeight: "800" },
+  sheetSub: { color: T.muted, fontSize: 12, marginTop: 2, lineHeight: 16 },
+  sheetClose: {
     width: 36,
     height: 36,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: COLORS.line,
+    borderRadius: RADIUS.md,
     alignItems: "center",
     justifyContent: "center",
+    backgroundColor: T.slateSoft,
   },
   sheetContent: { flexShrink: 1 },
   sheetFooter: {
     flexDirection: "row",
     gap: 10,
     padding: 16,
-    borderTopWidth: 1,
-    borderTopColor: COLORS.line,
+    paddingBottom: 20,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: T.line,
   },
+  confirmBody: { padding: 20 },
+  confirmText: { color: T.body, fontSize: 14, lineHeight: 21 },
+  confirmStrong: { color: T.ink, fontWeight: "800" },
 
-  btn: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 6,
-    height: 46,
-    paddingHorizontal: 14,
-    borderRadius: 14,
-  },
-  btnText: { fontSize: 13, fontWeight: "800" },
-  confirmText: { color: COLORS.muted, fontSize: 14, lineHeight: 21 },
-
-  /* Plan card */
+  /* Plans */
+  planList: { padding: 16, gap: 12 },
   planCard: {
     padding: 16,
-    borderRadius: 18,
-    borderWidth: 1.5,
-    borderColor: COLORS.line,
-    backgroundColor: COLORS.surface,
-    gap: 6,
+    borderRadius: RADIUS.lg,
+    borderWidth: 1,
+    borderColor: T.line,
+    backgroundColor: T.surface,
+    gap: 12,
   },
   planTop: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 8 },
-  planName: { flex: 1, color: COLORS.ink, fontSize: 16, fontWeight: "900" },
-  activePill: {
+  planName: { flex: 1, color: T.ink, fontSize: 16, fontWeight: "800" },
+  planActive: {
     paddingHorizontal: 8,
     paddingVertical: 3,
-    borderRadius: 999,
-    backgroundColor: COLORS.greenLight,
+    borderRadius: RADIUS.pill,
+    backgroundColor: T.successSoft,
   },
-  activePillText: { color: COLORS.green, fontSize: 10, fontWeight: "800" },
-  planPrice: { color: COLORS.primary, fontSize: 30, fontWeight: "900", marginTop: 4 },
-  planPer: { color: COLORS.muted, fontSize: 12, marginBottom: 6 },
-  bulletRow: { flexDirection: "row", alignItems: "center", gap: 8 },
-  bulletText: { flex: 1, color: COLORS.slate, fontSize: 13 },
+  planActiveText: { color: T.success, fontSize: 11, fontWeight: "800" },
+  planPriceRow: { flexDirection: "row", alignItems: "flex-end", gap: 4 },
+  planPrice: { color: T.brand, fontSize: 28, fontWeight: "900", letterSpacing: -0.5 },
+  planPer: { color: T.muted, fontSize: 13, fontWeight: "600", marginBottom: 4 },
+  planBenefits: { gap: 8 },
+  benefit: { flexDirection: "row", alignItems: "center", gap: 10 },
+  benefitIcon: {
+    width: 24,
+    height: 24,
+    borderRadius: 8,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: T.successSoft,
+  },
+  benefitText: { flex: 1, color: T.body, fontSize: 13, lineHeight: 18 },
 
   /* Payment */
+  payBody: { padding: 20, gap: 14 },
   summary: {
-    padding: 16,
-    borderRadius: 18,
-    backgroundColor: COLORS.indigoLight,
-    borderWidth: 1,
-    borderColor: COLORS.indigoLine,
-    gap: 10,
+    padding: 18,
+    borderRadius: RADIUS.lg,
+    backgroundColor: T.brandSoft,
+    gap: 12,
   },
-  summaryEyebrow: { color: COLORS.primary, fontSize: 10, fontWeight: "900", letterSpacing: 1.2 },
+  summaryEyebrow: { color: T.brand, fontSize: 10, fontWeight: "900", letterSpacing: 1.2 },
   summaryRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-  summaryLabel: { color: COLORS.muted, fontSize: 13, fontWeight: "600" },
-  summaryValue: {
-    color: COLORS.primary,
-    fontSize: 13,
-    fontWeight: "800",
-    flexShrink: 1,
-    textAlign: "right",
-  },
-  summaryTotal: { paddingTop: 10, borderTopWidth: 1, borderTopColor: COLORS.indigoLine },
-  summaryTotalValue: { color: COLORS.primary, fontSize: 22, fontWeight: "900" },
+  summaryLabel: { color: T.muted, fontSize: 13, fontWeight: "600" },
+  summaryValue: { color: T.brand, fontSize: 13, fontWeight: "800", flexShrink: 1, textAlign: "right" },
+  summaryTotal: { paddingTop: 12, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: T.brandLine },
+  summaryTotalValue: { color: T.brand, fontSize: 22, fontWeight: "900" },
   secureNote: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
+    gap: 10,
     padding: 12,
-    borderRadius: 12,
-    backgroundColor: COLORS.slateLight,
+    borderRadius: RADIUS.md,
+    backgroundColor: T.slateSoft,
   },
-  secureText: { flex: 1, color: COLORS.muted, fontSize: 11, lineHeight: 16 },
+  secureText: { flex: 1, color: T.muted, fontSize: 12, lineHeight: 17 },
 
   /* Details */
+  detailBody: { padding: 20, gap: 14 },
   accessBanner: {
     flexDirection: "row",
     alignItems: "center",
     gap: 10,
     padding: 14,
-    borderRadius: 16,
-    backgroundColor: COLORS.greenLight,
+    borderRadius: RADIUS.md,
+    backgroundColor: T.successSoft,
     borderWidth: 1,
-    borderColor: COLORS.greenLine,
+    borderColor: T.successLine,
   },
-  accessText: { flex: 1, color: "#047857", fontSize: 12, fontWeight: "800" },
+  accessText: { flex: 1, color: "#047857", fontSize: 13, fontWeight: "700" },
   tileGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
   tile: {
     width: "48%",
@@ -1684,37 +1958,35 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 10,
     padding: 12,
-    borderRadius: 14,
-    backgroundColor: COLORS.canvas,
-    borderWidth: 1,
-    borderColor: COLORS.line,
+    borderRadius: RADIUS.md,
+    backgroundColor: T.canvas,
   },
   tileIcon: {
-    width: 30,
-    height: 30,
-    borderRadius: 10,
-    backgroundColor: COLORS.indigoLight,
+    width: 32,
+    height: 32,
+    borderRadius: RADIUS.sm,
     alignItems: "center",
     justifyContent: "center",
+    backgroundColor: T.surface,
   },
   tileLabel: {
-    color: COLORS.faint,
+    color: T.faint,
     fontSize: 10,
     fontWeight: "700",
     textTransform: "uppercase",
     letterSpacing: 0.6,
   },
-  tileValue: { color: COLORS.slate, fontSize: 13, fontWeight: "800", marginTop: 2 },
+  tileValue: { color: T.ink, fontSize: 13, fontWeight: "700", marginTop: 2 },
   callFull: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     gap: 8,
-    height: 48,
-    borderRadius: 16,
-    backgroundColor: COLORS.green,
+    height: 50,
+    borderRadius: RADIUS.md,
+    backgroundColor: T.success,
   },
-  callFullText: { color: "#fff", fontSize: 14, fontWeight: "800" },
+  callFullText: { color: "#fff", fontSize: 15, fontWeight: "800" },
 
   /* Toast */
   toast: {
@@ -1725,9 +1997,10 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 10,
-    paddingVertical: 13,
-    paddingHorizontal: 14,
-    borderRadius: 14,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius: RADIUS.md,
+    ...SHADOW,
     elevation: 6,
   },
   toastText: { flex: 1, color: "#fff", fontSize: 13, fontWeight: "700" },

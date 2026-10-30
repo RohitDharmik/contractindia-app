@@ -22,8 +22,8 @@ import {
 import { colors } from "@/constants/colors";
 import { radius, spacing, typography } from "@/constants/sizes";
 import { formatINR } from "@/utils/formatters";
-import { getUserPaymentHistory } from "../../api/api";
-
+import { getUserPaymentHistory, UserPaymentHistoryGetId } from "../../api/api";
+import { useAuthStore } from "@/store/authStore";
 const STATUS_FILTERS = [
   { key: "all", label: "All" },
   { key: "Success", label: "Success" },
@@ -76,13 +76,19 @@ export default function PaymentsScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
-
+  const user = useAuthStore((s) => s?.user);
+  const userType = user?.userType ?? 0;
   const loadPayments = useCallback(async (isRefresh = false) => {
     if (isRefresh) setRefreshing(true);
     else setLoading(true);
     setError(null);
     try {
-      const response = await getUserPaymentHistory();
+      const response =
+        user?.userType == 0
+          ? await getUserPaymentHistory()
+          : await UserPaymentHistoryGetId(
+              `userId=${encodeURIComponent(user?.userId)}`,
+            );
       const records = Array.isArray(response)
         ? response
         : Array.isArray(response?.data)
@@ -251,33 +257,35 @@ export default function PaymentsScreen() {
         contentContainerStyle={styles.listContent}
         ListHeaderComponent={
           <View>
-            <View style={styles.statsGrid}>
-              <StatCard
-                label="Total revenue"
-                value={formatINR(totals.total)}
-                icon="cash-outline"
-                color={colors.primary}
-              />
-              <StatCard
-                label="Successful"
-                value={`${totals.successful}`}
-                detail={`${formatINR(totals.successAmount)} collected`}
-                icon="checkmark-circle-outline"
-                color={colors.success}
-              />
-              <StatCard
-                label="Pending"
-                value={`${totals.pending}`}
-                icon="time-outline"
-                color={colors.warning}
-              />
-              <StatCard
-                label="Failed"
-                value={`${totals.failed}`}
-                icon="close-circle-outline"
-                color={colors.danger}
-              />
-            </View>
+            {user?.userType == 0 && (
+              <View style={styles.statsGrid}>
+                <StatCard
+                  label="Total revenue"
+                  value={formatINR(totals.total)}
+                  icon="cash-outline"
+                  color={colors.primary}
+                />
+                <StatCard
+                  label="Successful"
+                  value={`${totals.successful}`}
+                  detail={`${formatINR(totals.successAmount)} collected`}
+                  icon="checkmark-circle-outline"
+                  color={colors.success}
+                />
+                <StatCard
+                  label="Pending"
+                  value={`${totals.pending}`}
+                  icon="time-outline"
+                  color={colors.warning}
+                />
+                <StatCard
+                  label="Failed"
+                  value={`${totals.failed}`}
+                  icon="close-circle-outline"
+                  color={colors.danger}
+                />
+              </View>
+            )}
             <Input
               placeholder="Search user, email, ID or transaction"
               value={q}

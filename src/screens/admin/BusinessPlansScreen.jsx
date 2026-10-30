@@ -9,7 +9,6 @@ import {
   Platform,
   Pressable,
   RefreshControl,
-  SafeAreaView,
   ScrollView,
   StatusBar,
   StyleSheet,
@@ -29,6 +28,8 @@ import {
   userType,
 } from "../../api/api"; 
 import ScreenHeader from "../../components/ScreenHeader";
+import { Screen } from "@/components";
+import { useNavigation } from "@react-navigation/native";
 /* ------------------------------------------------------------------ */
 /* Design tokens                                                       */
 /* ------------------------------------------------------------------ */
@@ -640,6 +641,7 @@ function Toast({ toast, onHide }) {
 /* ------------------------------------------------------------------ */
 
 export default function BusinessPlansScreen() {
+  const nav = useNavigation();
   const queryClient = useQueryClient();
   const { width } = useWindowDimensions();
   const columns = width >= 720 ? 2 : 1;
@@ -866,16 +868,35 @@ export default function BusinessPlansScreen() {
     }
   };
   return (
-    <SafeAreaView style={styles.safe}>
+    <Screen>
       <StatusBar barStyle="dark-content" backgroundColor={COLORS.canvas} />
 
       <ScreenHeader
         title="Business Plans"
         subtitle="Manage plan master entries"
         icon="briefcase"
-        showBack={handleBack}
-        // onBack={handleBack}
-        actions={headerActions}
+        showBack
+        onBack={handleBack}
+        right={
+          <View style={styles.headerActions}>
+            {headerActions.map((action) => (
+              <Pressable
+                key={action.label}
+                accessibilityRole="button"
+                accessibilityLabel={action.label}
+                onPress={action.onPress}
+                disabled={action.loading || action.disabled}
+                style={styles.headerAction}
+              >
+                <Ionicons
+                  name={action.icon}
+                  size={20}
+                  color={COLORS.primary}
+                />
+              </Pressable>
+            ))}
+          </View>
+        }
       />
 
       <FlatList
@@ -984,7 +1005,7 @@ export default function BusinessPlansScreen() {
       </BottomSheet>
 
       <Toast toast={toast} onHide={hideToast} />
-    </SafeAreaView>
+    </Screen>
   );
 }
 
@@ -993,8 +1014,14 @@ export default function BusinessPlansScreen() {
 /* ------------------------------------------------------------------ */
 
 const styles = StyleSheet?.create({
-  safe: { flex: 1, backgroundColor: COLORS.canvas },
   listContent: { paddingHorizontal: 14, paddingBottom: 32, flexGrow: 1 },
+  headerActions: { flexDirection: "row", alignItems: "center", gap: 4 },
+  headerAction: {
+    width: 40,
+    height: 40,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   colWrap: { gap: 12 },
   half: { flex: 1 },
 

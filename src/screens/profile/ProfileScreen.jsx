@@ -27,7 +27,7 @@ export default function ProfileScreen() {
         <ScreenHeader title="Profile" />
       </Screen>
     );
-  const isAdmin = user.role === "admin";
+  const isAdmin = user?.userType == 0 || user.role === "admin";
   const isCommercial = user.role === "commercial";
   const roleLabel = isAdmin
     ? "ADMIN"
@@ -36,17 +36,12 @@ export default function ProfileScreen() {
       : "INDIVIDUAL BUYER";
   const roleBadgeTone = isAdmin ? "danger" : isCommercial ? "accent" : "info";
   const sections = [
-    {
-      title: "Admin workspace",
-      items: [
-        // {
-        //   icon: "business-outline",
-        //   label: "Vendor approvals",
-        //   onPress: () => nav.navigate(Routes.AdminVendorApprovals),
-        // },
-
-        ...(isAdmin
-          ? [
+    ...(isAdmin
+      ? [
+          {
+            key: "admin-workspace",
+            title: "Admin workspace",
+            items: [
               {
                 icon: "shield-checkmark-outline",
                 label: "User verification",
@@ -67,19 +62,14 @@ export default function ProfileScreen() {
                 label: "Payment records",
                 onPress: () => nav.navigate(Routes.AdminPayments),
               },
-            ]
-          : []),
-
-        // {
-        //   icon: "megaphone-outline",
-        //   label: "Announcements",
-        //   onPress: () => nav.navigate(Routes.AdminAnnouncements),
-        // },
-      ],
-    },
+            ],
+          },
+        ]
+      : []),
     ...(user?.userType == 2
       ? [
           {
+            key: "commercial-company-workspace",
             title: "Commercial workspace",
             items: [
               {
@@ -90,7 +80,7 @@ export default function ProfileScreen() {
               {
                 icon: "briefcase-outline",
                 label: "My services",
-                onPress: () => nav.navigate(Routes.VendorServices),
+                onPress: () => nav.navigate(Routes.IndividualMyServicesScreen),
               },
               {
                 icon: "people-outline",
@@ -109,6 +99,7 @@ export default function ProfileScreen() {
     ...(!isAdmin
       ? [
           {
+            key: "account-workspace",
             title:
               user?.userType == 1
                 ? "Individual workspace"
@@ -117,7 +108,7 @@ export default function ProfileScreen() {
               {
                 icon: "briefcase-outline",
                 label: "My services",
-                onPress: () => nav.navigate(Routes.IndividualServices),
+                onPress: () => nav.navigate(Routes.IndividualMyServicesScreen),
               },
               {
                 icon: "calendar-outline",
@@ -129,6 +120,7 @@ export default function ProfileScreen() {
         ]
       : []),
     {
+      key: "account-security",
       title: "Account & Security",
       items: [
         {
@@ -145,33 +137,36 @@ export default function ProfileScreen() {
       ],
     },
 
-    {
-      title: "Billing & Subscriptions",
-      items: [
-        {
-          icon: "sparkles-outline",
-          label: "Subscription plans",
-          onPress: () => nav.navigate(Routes.Plans),
-        },
-        {
-          icon: "cash-outline",
-          label: "Credits & top up",
-          onPress: () => nav.navigate(Routes.Credits),
-        },
+    ...(!isAdmin
+      ? [
+          {
+            key: "billing-subscriptions",
+            title: "Billing & Subscriptions",
+            items: [
+        // {
+        //   icon: "sparkles-outline",
+        //   label: "Subscription plans",
+        //   onPress: () => nav.navigate(Routes.Plans),
+        // },
+        // {
+        //   icon: "cash-outline",
+        //   label: "Credits & top up",
+        //   onPress: () => nav.navigate(Routes.Credits),
+        // },
         {
           icon: "receipt-outline",
           label: "Purchase history",
           onPress: () => nav.navigate(Routes.PurchaseHistory),
         },
-        !isAdmin && (
-          {
-            icon: "cash-outline",
-            label: "Payment records",
-            onPress: () => nav.navigate(Routes.AdminPayments),
-          }
-        ),
-      ],
-    },
+        {
+          icon: "cash-outline",
+          label: "Payment records",
+          onPress: () => nav.navigate(Routes.AdminPayments),
+        },
+          ],
+          },
+        ]
+      : []),
     // {
     //   title: "Preferences & Support",
     //   items: [
@@ -262,13 +257,13 @@ export default function ProfileScreen() {
         </View>
 
         {sections.map((sec) => (
-          <View key={sec.title} style={{ marginTop: spacing.lg }}>
+          <View key={sec.key} style={{ marginTop: spacing.lg }}>
             <Text style={styles.section}>{sec.title}</Text>
             <Card style={{ padding: 0 }}>
               {sec.items.map((it, idx) => (
                 <Pressable
-                  key={it.label}
-                  onPress={it.onPress}
+                  key={it?.label}
+                  onPress={it?.onPress}
                   style={[
                     styles.row,
                     idx < sec.items.length - 1 && {
@@ -277,17 +272,17 @@ export default function ProfileScreen() {
                     },
                   ]}
                 >
-                  <Ionicons name={it.icon} size={20} color={colors.primary} />
+                  <Ionicons name={it?.icon} size={20} color={colors.primary} />
                   <Text
                     style={[
                       typography.body,
                       { flex: 1, marginLeft: spacing.md },
                     ]}
                   >
-                    {it.label}
+                    {it?.label}
                   </Text>
-                  {"badge" in it && it.badge ? (
-                    <Badge label={String(it.badge)} tone="info" />
+                  {"badge" in it && it?.badge ? (
+                    <Badge label={String(it?.badge)} tone="info" />
                   ) : null}
                   <Ionicons
                     name="chevron-forward"

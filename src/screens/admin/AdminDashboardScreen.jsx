@@ -1,152 +1,237 @@
-import React from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import React, { useEffect, useRef } from "react";
+import { Animated, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
 import { useNavigation } from "@react-navigation/native";
-import { Screen, ScreenHeader, Card, Badge } from "@/components";
-import { colors } from "@/constants/colors";
-import { radius, spacing, typography } from "@/constants/sizes";
+import { Screen, ScreenHeader } from "@/components";
+import PressScale from "../../components/PressScale";
 import { Routes } from "@/constants/routes";
 import { formatINR } from "@/utils/formatters";
-import {
-  vendorApprovals,
-  listingApprovals,
-  adminPayments,
-} from "@/services/adminMockData";
-const kpis = [
-  { label: "Total users", value: "0", delta: "+0%" },
-  { label: "Active vendors", value: "0", delta: "+0%" },
-  { label: "New leads (24h)", value: "0", delta: "+0%" },
-  { label: "Revenue (MTD)", value: formatINR(0), delta: "+0%" },
+
+/* ------------------------------------------------------------------ */
+/* Design tokens                                                       */
+/* ------------------------------------------------------------------ */
+
+const T = {
+  brand: "#4F46E5",
+  brandDeep: "#312E81",
+  brandSoft: "#EEF2FF",
+  ink: "#0F172A",
+  body: "#334155",
+  muted: "#64748B",
+  faint: "#94A3B8",
+  line: "#E2E8F0",
+  surface: "#FFFFFF",
+  canvas: "#F6F7FB",
+  slateSoft: "#F1F5F9",
+  success: "#059669",
+  successSoft: "#ECFDF5",
+  amber: "#D97706",
+  amberSoft: "#FFFBEB",
+  sky: "#0369A1",
+  skySoft: "#F0F9FF",
+  violet: "#7C3AED",
+  violetSoft: "#F5F3FF",
+};
+
+const SHADOW = {
+  shadowColor: "#0F172A",
+  shadowOpacity: 0.06,
+  shadowRadius: 12,
+  shadowOffset: { width: 0, height: 4 },
+  elevation: 2,
+};
+
+/* ------------------------------------------------------------------ */
+/* Static configuration                                                */
+/* ------------------------------------------------------------------ */
+
+// Values are placeholders until a stats endpoint is connected.
+const KPIS = [
+  { key: "users", label: "Total users", value: "0", delta: "+0%", icon: "account-group-outline", lib: "mci", tone: T.brand, soft: T.brandSoft },
+  { key: "vendors", label: "Active vendors", value: "0", delta: "+0%", icon: "storefront-outline", lib: "mci", tone: T.sky, soft: T.skySoft },
+  { key: "leads", label: "New leads (24h)", value: "0", delta: "+0%", icon: "lightning-bolt-outline", lib: "mci", tone: T.amber, soft: T.amberSoft },
+  { key: "revenue", label: "Revenue (MTD)", value: formatINR(0), delta: "+0%", icon: "currency-inr", lib: "mci", tone: T.success, soft: T.successSoft },
 ];
-const health = [
-  { label: "API uptime", value: "0%", tone: "success" },
-  { label: "Payment gateway", value: "Operational", tone: "success" },
-  { label: "Push delivery", value: "Degraded", tone: "warning" },
-  { label: "Storage usage", value: "62% of 1TB", tone: "info" },
-];
-const activity = [
+
+const MODULES = [
   {
-    id: "a1",
-    who: "Rajesh Kumar",
-    what: "submitted KYC documents",
-    when: "2 min ago",
-    icon: "document-text-outline",
-  },
-  {
-    id: "a2",
-    who: "Sthapati Architects",
-    what: "published a new service",
-    when: "14 min ago",
-    icon: "briefcase-outline",
-  },
-  {
-    id: "a3",
-    who: "Reena Nair",
-    what: "upgraded to Premium",
-    when: "48 min ago",
-    icon: "star-outline",
-  },
-  {
-    id: "a4",
-    who: "AeroSurvey India",
-    what: "requested verification",
-    when: "1 hr ago",
-    icon: "shield-checkmark-outline",
-  },
-  {
-    id: "a5",
-    who: "Mohammed Iqbal",
-    what: "payment failed (₹235)",
-    when: "2 hr ago",
-    icon: "alert-circle-outline",
-  },
-];
-const modules = [
-  {
-    icon: "shield-checkmark-outline",
+    key: "verification",
     label: "User verification",
     body: "Review registration verification requests",
+    icon: "shield-check-outline",
+    lib: "mci",
+    tone: T.brand,
+    soft: T.brandSoft,
     route: Routes.AdminUserVerification,
   },
   {
-    icon: "construct-outline",
+    key: "services",
     label: "Service management",
-    body: "Manage service catalog records",
+    body: "Manage the service catalog records",
+    icon: "toolbox-outline",
+    lib: "mci",
+    tone: T.sky,
+    soft: T.skySoft,
     route: Routes.ServiceManagement,
-  },{ 
-    icon: "cash-outline",
+  },
+  {
+    key: "payments",
     label: "Payments",
-    body: "Razorpay/Stripe reconciliation",
+    body: "Razorpay and Stripe reconciliation",
+    icon: "credit-card-check-outline",
+    lib: "mci",
+    tone: T.success,
+    soft: T.successSoft,
     route: Routes.AdminPayments,
-  },  {
-    icon: "sparkles-outline",
+  },
+  {
+    key: "plans",
     label: "Plans & pricing",
-    body: "Subscription tiers",
+    body: "Subscription tiers and pricing",
+    icon: "crown-outline",
+    lib: "mci",
+    tone: T.violet,
+    soft: T.violetSoft,
     route: Routes.BusinessPlansScreen,
   },
-  // {
-  //   icon: "people-outline",
-  //   label: "User management",
-  //   body: "Create, edit, suspend, delete",
-  //   route: Routes.AdminUsers,
-  // },
-  // {
-  //   icon: "business-outline",
-  //   label: "Vendor approvals",
-  //   body: "KYC & document review queue",
-  //   route: Routes.AdminVendorApprovals,
-  // },
-  // {
-  //   icon: "briefcase-outline",
-  //   label: "Listings",
-  //   body: "Approve, feature, archive",
-  //   route: Routes.AdminListings,
-  // },
-  // {
-  //   icon: "grid-outline",
-  //   label: "Categories",
-  //   body: "Activate & feature categories",
-  //   route: Routes.AdminCategories,
-  // },
-
-  
-  // {
-  //   icon: "bar-chart-outline",
-  //   label: "Reports & exports",
-  //   body: "Revenue, users, vendors",
-  //   route: Routes.AdminReports,
-  // },
-  // {
-  //   icon: "document-text-outline",
-  //   label: "Forms engine",
-  //   body: "Design dynamic forms",
-  //   route: Routes.AdminFormBuilder,
-  // },
-  // {
-  //   icon: "folder-open-outline",
-  //   label: "Document subcategories",
-  //   body: "Manage document taxonomy",
-  //   route: Routes.AdminDocumentSubcategories,
-  // },
-  
-  // {
-  //   icon: "megaphone-outline",
-  //   label: "Announcements",
-  //   body: "Push, in-app, email",
-  //   route: Routes.AdminAnnouncements,
-  // },
 ];
+
+/* ------------------------------------------------------------------ */
+/* Motion                                                              */
+/* ------------------------------------------------------------------ */
+
+function FadeIn({ delay = 0, children, style }) {
+  const progress = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.timing(progress, {
+      toValue: 1,
+      duration: 380,
+      delay,
+      useNativeDriver: true,
+    }).start();
+  }, [progress, delay]);
+
+  return (
+    <Animated.View
+      style={[
+        {
+          opacity: progress,
+          transform: [
+            {
+              translateY: progress.interpolate({
+                inputRange: [0, 1],
+                outputRange: [12, 0],
+              }),
+            },
+          ],
+        },
+        style,
+      ]}
+    >
+      {children}
+    </Animated.View>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Pieces                                                              */
+/* ------------------------------------------------------------------ */
+
+function SpecIcon({ spec, color, size = 20, style }) {
+  const Icon = spec.lib === "mci" ? MaterialCommunityIcons : Ionicons;
+  return (
+    <View style={style}>
+      <Icon name={spec.icon} size={size} color={color} />
+    </View>
+  );
+}
+
+function OverviewHero() {
+  return (
+    <View style={styles.hero}>
+      <LinearGradient
+        colors={[T.brandDeep, T.brand]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={StyleSheet.absoluteFillObject}
+      />
+      <View style={styles.heroGlow} />
+      <View style={styles.heroTop}>
+        <View style={styles.heroBadge}>
+          <Ionicons name="shield-checkmark" size={13} color="#fff" />
+          <Text style={styles.heroBadgeText}>Super admin</Text>
+        </View>
+        <Ionicons name="pulse-outline" size={18} color="rgba(255,255,255,0.8)" />
+      </View>
+      <Text style={styles.heroTitle}>Platform overview</Text>
+      <Text style={styles.heroSub}>Key figures across users, vendors and revenue</Text>
+    </View>
+  );
+}
+
+function KpiTile({ kpi }) {
+  return (
+    <View style={styles.kpi}>
+      <View style={styles.kpiTop}>
+        <SpecIcon
+          spec={kpi}
+          color={kpi.tone}
+          size={20}
+          style={[styles.kpiIcon, { backgroundColor: kpi.soft }]}
+        />
+        <View style={styles.deltaChip}>
+          <Ionicons name="trending-up" size={12} color={T.success} />
+          <Text style={styles.deltaText}>{kpi.delta}</Text>
+        </View>
+      </View>
+      <Text style={styles.kpiValue} numberOfLines={1} adjustsFontSizeToFit>
+        {kpi.value}
+      </Text>
+      <Text style={styles.kpiLabel} numberOfLines={1}>
+        {kpi.label}
+      </Text>
+    </View>
+  );
+}
+
+function ModuleRow({ module, onPress }) {
+  return (
+    <PressScale
+      onPress={onPress}
+      style={styles.moduleWrap}
+      contentStyle={styles.module}
+      accessibilityLabel={module.label}
+    >
+      <SpecIcon
+        spec={module}
+        color={module.tone}
+        size={22}
+        style={[styles.moduleIcon, { backgroundColor: module.soft }]}
+      />
+      <View style={styles.moduleText}>
+        <Text style={styles.moduleLabel} numberOfLines={1}>
+          {module.label}
+        </Text>
+        <Text style={styles.moduleBody} numberOfLines={2}>
+          {module.body}
+        </Text>
+      </View>
+      <View style={styles.moduleArrow}>
+        <Ionicons name="chevron-forward" size={16} color={T.muted} />
+      </View>
+    </PressScale>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Screen                                                              */
+/* ------------------------------------------------------------------ */
+
 export default function AdminDashboardScreen() {
   const nav = useNavigation();
-  const pendingVendors = vendorApprovals.filter(
-    (v) => v.status === "pending",
-  ).length;
-  const pendingListings = listingApprovals.filter(
-    (l) => l.status === "pending",
-  ).length;
-  const failedPayments = adminPayments.filter(
-    (p) => p.status === "failed",
-  ).length;
+
   return (
     <Screen>
       <ScreenHeader
@@ -154,177 +239,176 @@ export default function AdminDashboardScreen() {
         subtitle="ContractsIndia Super Admin"
         showBack
       />
+
       <ScrollView
-        contentContainerStyle={{
-          padding: spacing.lg,
-          paddingBottom: spacing.xxxl,
-        }}
+        style={styles.scroll}
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
       >
-        <View style={styles.grid}>
-          {kpis?.map((k) => (
-            <Card key={k.label} style={styles.kpi}>
-              <Text style={styles.kpiValue}>{k.value}</Text>
-              <Text style={styles.kpiLabel}>{k.label}</Text>
-              <Text style={styles.delta}>{k.delta}</Text>
-            </Card>
-          ))}
-        </View>
+        <FadeIn>
+          <OverviewHero />
+        </FadeIn>
 
-        {/* <Text style={styles.section}>Action required</Text>
-        <View style={styles.actionRow}>
-          <Pressable
-            onPress={() => nav.navigate(Routes.AdminVendorApprovals)}
-            style={[styles.action, { borderColor: colors.warning }]}
-          >
-            <Ionicons
-              name="business-outline"
-              size={18}
-              color={colors.warning}
-            />
-            <Text style={styles.actionValue}>{pendingVendors}</Text>
-            <Text style={styles.actionLabel}>Vendor approvals</Text>
-          </Pressable>
-          <Pressable
-            onPress={() => nav.navigate(Routes.AdminListings)}
-            style={[styles.action, { borderColor: colors.info }]}
-          >
-            <Ionicons name="briefcase-outline" size={18} color={colors.info} />
-            <Text style={styles.actionValue}>{pendingListings}</Text>
-            <Text style={styles.actionLabel}>Listings pending</Text>
-          </Pressable>
-          <Pressable
-            onPress={() => nav.navigate(Routes.AdminPayments)}
-            style={[styles.action, { borderColor: colors.danger }]}
-          >
-            <Ionicons
-              name="alert-circle-outline"
-              size={18}
-              color={colors.danger}
-            />
-            <Text style={styles.actionValue}>{failedPayments}</Text>
-            <Text style={styles.actionLabel}>Payment failures</Text>
-          </Pressable>
-        </View> */}
+        <FadeIn delay={80}>
+          <View style={styles.sectionRow}>
+            <Text style={styles.sectionTitle}>Key metrics</Text>
+          </View>
+          <View style={styles.kpiGrid}>
+            {KPIS.map((kpi) => (
+              <KpiTile key={kpi.key} kpi={kpi} />
+            ))}
+          </View>
+        </FadeIn>
 
-        {/*  <Text style={styles.section}>System health</Text>
-        <Card>
-          {health.map((h, i) => (<View key={h.label} style={[styles.healthRow, i < health.length - 1 && { borderBottomWidth: 1, borderBottomColor: colors.border }]}>
-              <Text style={typography.body}>{h.label}</Text>
-              <Badge label={h.value} tone={h.tone}/>
-            </View>))}
-        </Card> */}
-
-        {/* <Text style={styles.section}>Recent activity</Text>
-        {activity.map((a) => (
-          <Card
-            key={a.id}
-            style={{
-              marginBottom: spacing.sm,
-              flexDirection: "row",
-              alignItems: "center",
-            }}
-          >
-            <View style={styles.queueIcon}>
-              <Ionicons name={a.icon} size={18} color={colors.primary} />
-            </View>
-            <View style={{ flex: 1, marginLeft: spacing.md }}>
-              <Text style={typography.body}>
-                <Text style={typography.bodyBold}>{a.who}</Text> {a.what}
-              </Text>
-              <Text
-                style={{
-                  ...typography.small,
-                  color: colors.textMuted,
-                  marginTop: 2,
-                }}
-              >
-                {a.when}
-              </Text>
-            </View>
-          </Card>
-        ))} */}
-
-        <Text style={[styles.section, { marginTop: spacing.lg }]}>Modules</Text>
-        <View style={styles.grid}>
-          {modules?.map((m) => (
-            <Pressable
-              key={m.label}
-              onPress={() => nav.navigate(m.route)}
-              style={styles.module}
-            >
-              <Ionicons name={m.icon} size={22} color={colors.primary} />
-              <Text style={[typography.bodyBold, { marginTop: 4 }]}>
-                {m.label}
-              </Text>
-              <Text
-                style={{
-                  ...typography.small,
-                  color: colors.textMuted,
-                  marginTop: 2,
-                }}
-              >
-                {m.body}
-              </Text>
-            </Pressable>
-          ))}
-        </View>
+        <FadeIn delay={160}>
+          <View style={styles.sectionRow}>
+            <Text style={styles.sectionTitle}>Modules</Text>
+            <Text style={styles.sectionCount}>{MODULES.length}</Text>
+          </View>
+          <View style={styles.moduleList}>
+            {MODULES.map((module) => (
+              <ModuleRow
+                key={module.key}
+                module={module}
+                onPress={() => nav.navigate(module.route)}
+              />
+            ))}
+          </View>
+        </FadeIn>
       </ScrollView>
     </Screen>
   );
 }
+
+/* ------------------------------------------------------------------ */
+/* Styles                                                              */
+/* ------------------------------------------------------------------ */
+
 const styles = StyleSheet.create({
-  grid: {
+  scroll: { flex: 1, backgroundColor: T.canvas },
+  content: { paddingHorizontal: 16, paddingTop: 4, paddingBottom: 40, gap: 6 },
+
+  /* Hero */
+  hero: {
+    borderRadius: 22,
+    padding: 18,
+    overflow: "hidden",
+    marginBottom: 6,
+    shadowColor: T.brand,
+    shadowOpacity: 0.25,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 6,
+  },
+  heroGlow: {
+    position: "absolute",
+    width: 170,
+    height: 170,
+    borderRadius: 85,
+    top: -70,
+    right: -50,
+    backgroundColor: "rgba(255,255,255,0.08)",
+  },
+  heroTop: {
     flexDirection: "row",
-    flexWrap: "wrap",
+    alignItems: "center",
     justifyContent: "space-between",
+    marginBottom: 14,
   },
-  kpi: { width: "48%", marginBottom: spacing.sm },
-  kpiValue: { ...typography.h2, color: colors.text },
-  kpiLabel: { ...typography.small, color: colors.textMuted, marginTop: 2 },
-  delta: {
-    ...typography.small,
-    color: colors.success,
-    fontWeight: "700",
-    marginTop: 4,
+  heroBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 999,
+    backgroundColor: "rgba(255,255,255,0.16)",
   },
-  section: {
-    ...typography.label,
-    color: colors.text,
-    marginBottom: spacing.sm,
-    marginTop: spacing.md,
+  heroBadgeText: { color: "#fff", fontSize: 11, fontWeight: "800", letterSpacing: 0.3 },
+  heroTitle: { color: "#fff", fontSize: 20, fontWeight: "800", letterSpacing: -0.3 },
+  heroSub: { color: "rgba(255,255,255,0.75)", fontSize: 12, marginTop: 4, lineHeight: 17 },
+
+  /* Section */
+  sectionRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginTop: 18,
+    marginBottom: 10,
   },
-  queueIcon: {
-    width: 36,
-    height: 36,
+  sectionTitle: { color: T.ink, fontSize: 16, fontWeight: "800", letterSpacing: -0.2 },
+  sectionCount: {
+    minWidth: 26,
+    textAlign: "center",
+    overflow: "hidden",
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
+    color: T.brand,
+    backgroundColor: T.brandSoft,
+    fontSize: 11,
+    fontWeight: "800",
+  },
+
+  /* KPIs */
+  kpiGrid: { flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between", gap: 10 },
+  kpi: {
+    width: "48%",
+    flexGrow: 1,
+    padding: 14,
     borderRadius: 18,
-    backgroundColor: colors.surfaceAlt,
+    backgroundColor: T.surface,
+    ...SHADOW,
+  },
+  kpiTop: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 12 },
+  kpiIcon: {
+    width: 38,
+    height: 38,
+    borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
   },
-  module: {
-    width: "48%",
-    backgroundColor: colors.surface,
-    padding: spacing.md,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: colors.border,
-    marginBottom: spacing.sm,
-  },
-  actionRow: { flexDirection: "row", gap: spacing.sm },
-  action: {
-    flex: 1,
-    padding: spacing.md,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    backgroundColor: colors.surface,
-    alignItems: "flex-start",
-  },
-  actionValue: { ...typography.h2, color: colors.text, marginTop: 4 },
-  actionLabel: { ...typography.small, color: colors.textMuted },
-  healthRow: {
+  deltaChip: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
-    paddingVertical: spacing.sm,
+    gap: 3,
+    paddingHorizontal: 7,
+    paddingVertical: 3,
+    borderRadius: 8,
+    backgroundColor: T.successSoft,
+  },
+  deltaText: { color: T.success, fontSize: 11, fontWeight: "800" },
+  kpiValue: { color: T.ink, fontSize: 22, fontWeight: "800", letterSpacing: -0.4 },
+  kpiLabel: { color: T.muted, fontSize: 12, fontWeight: "600", marginTop: 3 },
+
+  /* Modules */
+  moduleList: { gap: 10 },
+  moduleWrap: { borderRadius: 18, ...SHADOW },
+  module: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 14,
+    padding: 14,
+    borderRadius: 18,
+    backgroundColor: T.surface,
+    minHeight: 76,
+  },
+  moduleIcon: {
+    width: 46,
+    height: 46,
+    borderRadius: 14,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  moduleText: { flex: 1, minWidth: 0 },
+  moduleLabel: { color: T.ink, fontSize: 15, fontWeight: "800" },
+  moduleBody: { color: T.muted, fontSize: 12, lineHeight: 17, marginTop: 3 },
+  moduleArrow: {
+    width: 30,
+    height: 30,
+    borderRadius: 10,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: T.slateSoft,
   },
 });

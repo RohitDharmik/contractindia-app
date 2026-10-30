@@ -8,7 +8,6 @@ import {
   Platform,
   Pressable,
   RefreshControl,
-  SafeAreaView,
   ScrollView,
   StatusBar,
   StyleSheet,
@@ -24,7 +23,7 @@ import {
   UserServiceDetailsGetbyParam,
 } from "../../api/api"; 
 import { useAuthStore } from "@/store/authStore";
-import { ScreenHeader } from "../../components";
+import { Screen, ScreenHeader } from "../../components";
 /* ------------------------------------------------------------------ */
 /* Design tokens                                                       */
 /* ------------------------------------------------------------------ */
@@ -412,15 +411,6 @@ export default function IndividualMyServicesScreen( ) {
     [userId, showToast],
   );
 
-  const headerActions = [
-    {
-      icon: "refresh-outline",
-      label: "Refresh",
-      onPress: () => refetch(),
-      loading: isFetching && !isLoading,
-    },
-  ];
-
   /* ── List header: search, count, notices ── */
   const listHeader = (
     <View style={styles.listHead}>
@@ -491,23 +481,26 @@ export default function IndividualMyServicesScreen( ) {
       )}
     </View>
   );
- const handleBack = () => {
-    if (nav.canGoBack()) {
-      nav.goBack();
-    } else {
-      nav.navigate(Routes.AdminDashboard);
-    }
-  };
   return (
-    <SafeAreaView style={styles.safe}>
+    <Screen>
       <StatusBar barStyle="dark-content" backgroundColor={COLORS.canvas} />
 
       <ScreenHeader
        title="My Services"
         subtitle="Browse services and enquire with our team"
         icon="briefcase"
-        showBack={handleBack}
-        // onBack={handleBack} 
+        showBack
+        right={
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Refresh services"
+            onPress={() => refetch()}
+            disabled={isFetching}
+            style={styles.refreshButton}
+          >
+            <Ionicons name="refresh-outline" size={20} color={COLORS.ink} />
+          </Pressable>
+        }
       />
    
 
@@ -544,7 +537,7 @@ export default function IndividualMyServicesScreen( ) {
       <EnquirySheet enquiry={enquiry} onClose={() => setEnquiry(null)} />
 
       <Toast toast={toast} onHide={hideToast} />
-    </SafeAreaView>
+    </Screen>
   );
 }
 
@@ -553,7 +546,12 @@ export default function IndividualMyServicesScreen( ) {
 /* ------------------------------------------------------------------ */
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: COLORS.canvas },
+  refreshButton: {
+    width: 40,
+    height: 40,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   listContent: { paddingHorizontal: 14, paddingBottom: 32, flexGrow: 1 },
   colWrap: { gap: 12 },
   half: { flex: 1 },

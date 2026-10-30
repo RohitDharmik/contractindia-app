@@ -9,7 +9,6 @@ import {
   Platform,
   Pressable,
   RefreshControl,
-  SafeAreaView,
   ScrollView,
   StatusBar,
   StyleSheet,
@@ -21,7 +20,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { AlertBox } from "../../components";
+import { AlertBox, Screen } from "../../components";
 import {
   ServiceMasterDelete,
   ServiceMasterGet,
@@ -29,6 +28,8 @@ import {
   ServiceMasterUpdate,
 } from "../../api/api";
 import ScreenHeader from "../../components/ScreenHeader";
+import { useNavigation } from "@react-navigation/native";
+import { Routes } from "@/constants/routes";
 
 if (
   Platform.OS === "android" &&
@@ -784,6 +785,7 @@ export default function ServiceManagement({
   dashboardMode = false,
   allowDelete = false,
 }) {
+  const nav = useNavigation();
   const queryClient = useQueryClient();
   const readOnly = dashboardMode;
 
@@ -892,10 +894,7 @@ export default function ServiceManagement({
     [mutation],
   );
 
-  const confirmDelete = useCallback(
-    (node) => setDeleteTarget(node),
-    [],
-  );
+  const confirmDelete = useCallback((node) => setDeleteTarget(node), []);
 
   const deleteService = () => {
     if (!deleteTarget) return;
@@ -989,14 +988,35 @@ export default function ServiceManagement({
     }
   };
   return (
-    <SafeAreaView style={styles.safe}>
+    <Screen>
       <StatusBar barStyle="dark-content" backgroundColor={COLORS.canvas} />
 
       <ScreenHeader
         title="Service Listing"
         subtitle="Manage the full hierarchy of service categories"
         icon="layers"
-        showBack={handleBack}
+        showBack
+        onBack={handleBack}
+        right={
+          <View style={styles.headerActions}>
+            {headerActions.map((action) => (
+              <Pressable
+                key={action.label}
+                accessibilityRole="button"
+                accessibilityLabel={action.label}
+                onPress={action.onPress}
+                disabled={action.loading || action.disabled}
+                style={styles.headerAction}
+              >
+                <Ionicons
+                  name={action.icon}
+                  size={20}
+                  color={COLORS.primary}
+                />
+              </Pressable>
+            ))}
+          </View>
+        }
       />
 
       <FlatList
@@ -1120,7 +1140,7 @@ export default function ServiceManagement({
       />
 
       <Toast toast={toast} onHide={hideToast} />
-    </SafeAreaView>
+    </Screen>
   );
 }
 
@@ -1129,8 +1149,14 @@ export default function ServiceManagement({
 /* ------------------------------------------------------------------ */
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: COLORS.canvas },
   listContent: { paddingHorizontal: 14, paddingBottom: 32, flexGrow: 1 },
+  headerActions: { flexDirection: "row", alignItems: "center", gap: 4 },
+  headerAction: {
+    width: 40,
+    height: 40,
+    alignItems: "center",
+    justifyContent: "center",
+  },
 
   /* Toolbar */
   toolbar: { paddingTop: 12, paddingBottom: 6, gap: 12 },

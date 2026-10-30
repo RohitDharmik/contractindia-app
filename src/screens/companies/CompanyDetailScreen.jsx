@@ -4,7 +4,6 @@ import {
   Image,
   Pressable,
   RefreshControl,
-  SafeAreaView,
   ScrollView,
   StatusBar,
   StyleSheet,
@@ -21,7 +20,7 @@ import {
   fetchCompanyDetail,
 } from "../../services/companyService";
 import { COLORS } from "../../constants/colors";
-import { ScreenHeader } from "../../components";
+import { Screen, ScreenHeader } from "../../components";
 
 const SECTIONS = [
   { id: "overview", label: "Overview" },
@@ -149,14 +148,26 @@ export default function CompanyDetailScreen() {
   const tileWidthStyle = twoCol ? undefined : { width: "100%" };
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <Screen>
       <StatusBar barStyle="dark-content" backgroundColor={COLORS.canvas} />
 
       <ScreenHeader
         title={companyName}
         subtitle="Company profile"
         icon="business"
-        showBack={handleBack}
+        showBack
+        onBack={handleBack}
+        right={
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Refresh company profile"
+            onPress={() => detailQuery.refetch()}
+            disabled={detailQuery.isFetching}
+            style={styles.refreshButton}
+          >
+            <Ionicons name="refresh-outline" size={20} color={COLORS.ink} />
+          </Pressable>
+        }
       />
 
       {detailQuery.isLoading ? (
@@ -396,12 +407,17 @@ export default function CompanyDetailScreen() {
           </Section>
         </ScrollView>
       )}
-    </SafeAreaView>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: COLORS.canvas },
+  refreshButton: {
+    width: 40,
+    height: 40,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   content: { paddingBottom: 32 },
   center: {
     flex: 1,

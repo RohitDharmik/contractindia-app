@@ -1,12 +1,5 @@
 import React, { useEffect, useRef } from "react";
-import {
-  Animated,
-  StyleSheet,
-  Text,
-  View,
-  Platform,
-  Pressable,
-} from "react-native";
+import { Animated, Platform, Pressable, StyleSheet, Text, View } from "react-native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -22,45 +15,58 @@ import CompanyListScreen from "../screens/companies/CompanyListScreen";
 
 const Tab = createBottomTabNavigator();
 
-/* ─────────────────────────────── palette ─────────────────────────────── */
+/* ------------------------------------------------------------------ */
+/* Solid controls sit over a lightly translucent glass surface.       */
+/* ------------------------------------------------------------------ */
 
 const C = {
-  purple:     "#7C3AED",
+  purple: "#7C3AED",
   purpleDark: "#5B21B6",
-  surface:    "#FFFFFF",
-  muted:      "#94A3B8",
-  line:       "#E2E8F0",
+  surface: "#F1F5FB",
+  glass: "rgba(241, 245, 251, 0.72)",
+  canvas: "#F8FAFC",
+  muted: "#94A3B8",
+  line: "#E2E8F0",
+  danger: "#EF4444",
 };
 
-const TAB_H    = 68;   // tab bar visual height
-const FAB_SIZE = 58;   // floating action button diameter
+const TAB_H = 64;     // height of the pill itself
+const FAB_SIZE = 58;
+const FAB_LIFT = 18;  // how far the FAB rises above the pill
+const MIN_BOTTOM = 10;
 
-/* ─────────────────────────────── icon lookup ─────────────────────────── */
+/* ------------------------------------------------------------------ */
+/* Icons per route                                                     */
+/* ------------------------------------------------------------------ */
 
 const ICON_MAP = {
-  [Routes.HomeTab]:                    { active: "home",         inactive: "home-outline" },
-  [Routes.LeadsTab]:                   { active: "megaphone",    inactive: "megaphone-outline" },
-  [Routes.IndividualMyServicesScreen]: { active: "briefcase",    inactive: "briefcase-outline" },
-  [Routes.PlansAndSubscriptionsScreen]:{ active: "flash",        inactive: "flash-outline" },
-  [Routes.CompanyListScreen]:          { active: "business",     inactive: "business-outline" },
-  [Routes.ProfileTab]:                 { active: "person-circle",inactive: "person-circle-outline" },
+  [Routes.HomeTab]: { active: "home", inactive: "home-outline" },
+  [Routes.LeadsTab]: { active: "megaphone", inactive: "megaphone-outline" },
+  [Routes.IndividualMyServicesScreen]: { active: "briefcase", inactive: "briefcase-outline" },
+  [Routes.CompanyListScreen]: { active: "business", inactive: "business-outline" },
+  [Routes.ProfileTab]: { active: "person-circle", inactive: "person-circle-outline" },
 };
 
-/* ─────────────────────────────── custom tab bar ─────────────────────────── */
+/* ------------------------------------------------------------------ */
+/* Custom tab bar                                                      */
+/* The bar is a normal flex child of the navigator, so the scene area  */
+/* above it is sized to end where the bar starts. Nothing scrolls      */
+/* underneath it.                                                      */
+/* ------------------------------------------------------------------ */
 
 function CustomTabBar({ state, descriptors, navigation }) {
-  const insets    = useSafeAreaInsets();
-  const bottomPad = Math.max(insets.bottom, 10);
+  const insets = useSafeAreaInsets();
+  const bottomPad = Math.max(insets.bottom, MIN_BOTTOM);
 
   return (
-    <View style={[styles.barWrapper, { paddingBottom: bottomPad }]}>
-      <View style={styles.barCard}>
+    // Opaque wrapper. It covers the gesture-bar inset as well as the pill.
+    <View style={[styles.bar, { paddingBottom: bottomPad }]}>
+      <View style={styles.pill}>
         {state.routes.map((route, index) => {
           const { options } = descriptors[route.key];
-          const label       = options.title ?? route.name;
-          const isFocused   = state.index === index;
-          const isFab       = options.isFab === true;
-          const badge       = options.tabBarBadge;
+          const label = options.title ?? route.name;
+          const isFocused = state.index === index;
+          const badge = options.tabBarBadge;
 
           const onPress = () => {
             const event = navigation.emit({
@@ -73,14 +79,14 @@ function CustomTabBar({ state, descriptors, navigation }) {
             }
           };
 
-          if (isFab) {
+          if (options.isFab === true) {
             return (
               <FabButton
                 key={route.key}
                 label={label}
                 isFocused={isFocused}
+                badge={badge}
                 onPress={onPress}
-                routeName={route.name}
               />
             );
           }
@@ -89,10 +95,10 @@ function CustomTabBar({ state, descriptors, navigation }) {
             <TabButton
               key={route.key}
               label={label}
-              isFocused={isFocused}
-              onPress={onPress}
               routeName={route.name}
+              isFocused={isFocused}
               badge={badge}
+              onPress={onPress}
             />
           );
         })}
@@ -101,110 +107,109 @@ function CustomTabBar({ state, descriptors, navigation }) {
   );
 }
 
-/* ─── regular tab button ─── */
-function TabButton({ label, isFocused, onPress, routeName, badge }) {
-  const scaleAnim  = useRef(new Animated.Value(1)).current;
-  const dotOpacity = useRef(new Animated.Value(isFocused ? 1 : 0)).current;
+/* ---------- Regular tab ---------- */
+
+function TabButton({ label, routeName, isFocused, badge, onPress }) {
+  const scale = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
-    Animated.parallel([
-      Animated.spring(scaleAnim, {
-        toValue: isFocused ? 1.12 : 1,
-        useNativeDriver: true,
-        tension: 130,
-        friction: 6,
-      }),
-      Animated.timing(dotOpacity, {
-        toValue: isFocused ? 1 : 0,
-        duration: 220,
-        useNativeDriver: true,
-      }),
-    ]).start();
-  }, [isFocused]);
+    Animated.spring(scale, {
+      toValue: isFocused ? 1.08 : 1,
+      useNativeDriver: true,
+      tension: 140,
+      friction: 8,
+    }).start();
+  }, [isFocused, scale]);
 
   const icons = ICON_MAP[routeName] ?? { active: "ellipse", inactive: "ellipse-outline" };
 
   return (
     <Pressable
-      style={styles.tabBtn}
       onPress={onPress}
+      style={styles.tab}
       accessibilityRole="tab"
       accessibilityState={{ selected: isFocused }}
+      accessibilityLabel={label}
+      hitSlop={6}
     >
-      <Animated.View style={{ alignItems: "center", transform: [{ scale: scaleAnim }] }}>
-        <View style={styles.tabIconWrap}>
+      <Animated.View style={[styles.tabInner, { transform: [{ scale }] }]}>
+        <View style={[styles.iconWrap, isFocused && styles.iconWrapActive]}>
           <Ionicons
             name={isFocused ? icons.active : icons.inactive}
-            size={22}
+            size={21}
             color={isFocused ? C.purple : C.muted}
           />
-          {!!badge && badge > 0 && (
-            <View style={styles.badge}>
-              <Text style={styles.badgeText}>{badge > 99 ? "99+" : badge}</Text>
-            </View>
-          )}
+          <Badge count={badge} />
         </View>
-        <Text style={[styles.tabLabel, isFocused && styles.tabLabelActive]}>
+        <Text
+          style={[styles.tabLabel, isFocused && styles.tabLabelActive]}
+          numberOfLines={1}
+        >
           {label}
         </Text>
       </Animated.View>
-      {/* active indicator dot */}
-      {/* <Animated.View style={[styles.activeDot, { opacity: dotOpacity }]} /> */}
     </Pressable>
   );
 }
 
-/* ─── floating action button (centre) ─── */
-function FabButton({ label, onPress, isFocused }) {
-  const pulseAnim = useRef(new Animated.Value(1)).current;
-  const scaleAnim = useRef(new Animated.Value(1)).current;
+/* ---------- Centre FAB ---------- */
 
-  useEffect(() => {
-    const pulse = Animated.loop(
-      Animated.sequence([
-        Animated.timing(pulseAnim, { toValue: 1.1, duration: 1400, useNativeDriver: true }),
-        Animated.timing(pulseAnim, { toValue: 1,   duration: 1400, useNativeDriver: true }),
-      ])
-    );
-    pulse.start();
-    return () => pulse.stop();
-  }, []);
+function FabButton({ label, isFocused, badge, onPress }) {
+  const scale = useRef(new Animated.Value(1)).current;
 
-  const handleIn  = () =>
-    Animated.spring(scaleAnim, { toValue: 0.88, useNativeDriver: true, speed: 60 }).start();
-  const handleOut = () =>
-    Animated.spring(scaleAnim, { toValue: 1, useNativeDriver: true, speed: 60 }).start();
+  const pressIn = () =>
+    Animated.spring(scale, { toValue: 0.92, useNativeDriver: true, speed: 50 }).start();
+  const pressOut = () =>
+    Animated.spring(scale, { toValue: 1, useNativeDriver: true, speed: 50 }).start();
 
   return (
-    <View style={styles.fabContainer}>
-      {/* pulse ring */}
-      <Animated.View style={[styles.fabPulse, { transform: [{ scale: pulseAnim }] }]} />
+    <View style={styles.fabSlot}>
+      {/* Opaque ring that sits behind the FAB and cuts the pill's edge */}
+      <View style={styles.fabRing} pointerEvents="none" />
       <Pressable
         onPress={onPress}
-        onPressIn={handleIn}
-        onPressOut={handleOut}
+        onPressIn={pressIn}
+        onPressOut={pressOut}
         accessibilityRole="button"
         accessibilityLabel={label}
+        accessibilityState={{ selected: isFocused }}
+        style={styles.fabHit}
       >
         <Animated.View
           style={[
             styles.fab,
             isFocused && styles.fabActive,
-            { transform: [{ scale: scaleAnim }] },
+            { transform: [{ translateY: -FAB_LIFT }, { scale }] },
           ]}
         >
           <Ionicons name="flash" size={26} color="#fff" />
+          <Badge count={badge} />
         </Animated.View>
       </Pressable>
-      <Text style={[styles.fabLabel, isFocused && styles.fabLabelActive]}>{label}</Text>
+      <Text style={[styles.fabLabel, isFocused && styles.tabLabelActive]} numberOfLines={1}>
+        {label}
+      </Text>
     </View>
   );
 }
 
-/* ─────────────────────────────── main tabs ─────────────────────────────── */
+/* ---------- Badge ---------- */
+
+function Badge({ count }) {
+  if (!count || count <= 0) return null;
+  return (
+    <View style={styles.badge}>
+      <Text style={styles.badgeText}>{count > 99 ? "99+" : count}</Text>
+    </View>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Navigator                                                           */
+/* ------------------------------------------------------------------ */
 
 export default function MainTabs() {
-  const role   = useAuthStore((s) => s.user?.userType ?? s.user?.role);
+  const role = useAuthStore((s) => s.user?.userType ?? s.user?.role);
   const unread = useNotificationsStore(
     (s) => s.items.filter((item) => item.type === "message" && !item.read).length,
   );
@@ -214,18 +219,13 @@ export default function MainTabs() {
   return (
     <Tab.Navigator
       tabBar={(props) => <CustomTabBar {...props} />}
+      sceneContainerStyle={styles.scene}
       screenOptions={{ headerShown: false }}
     >
-      {/* ── Home ── */}
-      <Tab.Screen
-        name={Routes.HomeTab}
-        component={DashboardScreen}
-        options={{ title: "Home" }}
-      />
+      <Tab.Screen name={Routes.HomeTab} component={DashboardScreen} options={{ title: "Home" }} />
 
-      {!isAdmin ? (
+      {!isAdmin && (
         <>
-          {/* ── Role-based second tab ── */}
           {role == 1 ? (
             <Tab.Screen
               name={Routes.IndividualMyServicesScreen}
@@ -240,7 +240,6 @@ export default function MainTabs() {
             />
           )}
 
-          {/* ── Centre FAB ── */}
           <Tab.Screen
             name={Routes.PlansAndSubscriptionsScreen}
             component={PlansAndSubscriptionsScreen}
@@ -251,125 +250,107 @@ export default function MainTabs() {
             }}
           />
 
-          {/* ── Companies ── */}
           <Tab.Screen
             name={Routes.CompanyListScreen}
             component={CompanyListScreen}
             options={{ title: "Companies" }}
           />
         </>
-      ) : null}
+      )}
 
-      {/* ── Profile ── */}
-      <Tab.Screen
-        name={Routes.ProfileTab}
-        component={ProfileScreen}
-        options={{ title: "Me" }}
-      />
+      <Tab.Screen name={Routes.ProfileTab} component={ProfileScreen} options={{ title: "Me" }} />
     </Tab.Navigator>
   );
 }
 
-/* ─────────────────────────────── styles ─────────────────────────────── */
+/* ------------------------------------------------------------------ */
+/* Styles                                                              */
+/* ------------------------------------------------------------------ */
 
 const styles = StyleSheet.create({
-  /* wrapper sits at bottom of the screen */
-  barWrapper: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    alignItems: "center",
-    paddingHorizontal: 12,
-  },
+  scene: { backgroundColor: C.canvas },
 
-  /* the white rounded pill card */
-  barCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-around",
-    width: "100%",
-    height: TAB_H,
-    backgroundColor: C.surface,
-    borderRadius: 32,
-    borderWidth: 1,
-    borderColor: C.line,
-    paddingHorizontal: 6,
+  /* The bar reserves scene space while its glass tint reveals the    */
+  /* navigator background.                                            */
+  bar: {
+    backgroundColor: C.glass,
+    paddingTop: FAB_LIFT,
+    paddingHorizontal: 12,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: C.line,
     ...Platform.select({
       ios: {
-        shadowColor: "#1E293B",
-        shadowOffset: { width: 0, height: -3 },
-        shadowOpacity: 0.08,
-        shadowRadius: 18,
+        shadowColor: "#0F172A",
+        shadowOffset: { width: 0, height: -2 },
+        shadowOpacity: 0.06,
+        shadowRadius: 10,
       },
-      android: { elevation: 16 },
+      android: { elevation: 12 },
     }),
   },
 
-  /* ── regular tab ── */
-  tabBtn: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
+  pill: {
     height: TAB_H,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-around",
+    backgroundColor: C.glass,
+    borderRadius: 28,
+    borderWidth: 1,
+    borderColor: "#FFFFFF",
+    paddingHorizontal: 4,
+    shadowColor: "#64748B",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 5,
   },
-  tabIconWrap: {
-    position: "relative",
-    width: 30,
-    height: 30,
+
+  /* Regular tabs */
+  tab: {
+    flex: 1,
+    height: TAB_H,
     alignItems: "center",
     justifyContent: "center",
   },
+  tabInner: { alignItems: "center" },
+  iconWrap: {
+    width: 42,
+    height: 28,
+    borderRadius: 14,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  iconWrapActive: { backgroundColor: "#F3E8FF" },
   tabLabel: {
     fontSize: 10,
     fontWeight: "600",
     color: C.muted,
-    marginTop: 3,
-    letterSpacing: 0.1,
+    marginTop: 2,
   },
-  tabLabelActive: {
-    color: C.purple,
-    fontWeight: "700",
-  },
-  activeDot: {
-    position: "absolute",
-    bottom: 7,
-    width: 5,
-    height: 5,
-    borderRadius: 2.5,
-    backgroundColor: C.purple,
-  },
+  tabLabelActive: { color: C.purple, fontWeight: "700" },
 
-  /* badge */
-  badge: {
+  /* FAB. The slot is as tall as the pill, the FAB lifts out of it. */
+  fabSlot: {
+    width: FAB_SIZE + 24,
+    height: TAB_H,
+    alignItems: "center",
+    justifyContent: "flex-start",
+  },
+  fabRing: {
     position: "absolute",
-    top: -3,
-    right: -7,
-    minWidth: 16,
-    height: 16,
-    borderRadius: 8,
-    backgroundColor: "#EF4444",
+    top: -FAB_LIFT + 0,
+    width: FAB_SIZE + 12,
+    height: FAB_SIZE + 12,
+    borderRadius: (FAB_SIZE + 12) / 2,
+    backgroundColor: C.glass,
+  },
+  fabHit: {
+    width: FAB_SIZE,
+    height: FAB_SIZE,
+    marginTop: -FAB_LIFT,
     alignItems: "center",
     justifyContent: "center",
-    paddingHorizontal: 3,
-    borderWidth: 1.5,
-    borderColor: C.surface,
-  },
-  badgeText: { color: "#fff", fontSize: 8, fontWeight: "900" },
-
-  /* ── FAB ── */
-  fabContainer: {
-    alignItems: "center",
-    justifyContent: "center",
-    marginTop: -(FAB_SIZE / 2 + 6),
-    width: FAB_SIZE + 20,
-  },
-  fabPulse: {
-    position: "absolute",
-    width: FAB_SIZE + 18,
-    height: FAB_SIZE + 18,
-    borderRadius: (FAB_SIZE + 18) / 2,
-    backgroundColor: "rgba(124, 58, 237, 0.14)",
   },
   fab: {
     width: FAB_SIZE,
@@ -381,24 +362,36 @@ const styles = StyleSheet.create({
     ...Platform.select({
       ios: {
         shadowColor: C.purple,
-        shadowOffset: { width: 0, height: 8 },
-        shadowOpacity: 0.45,
-        shadowRadius: 14,
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.35,
+        shadowRadius: 10,
       },
-      android: { elevation: 14 },
+      android: { elevation: 10 },
     }),
   },
-  fabActive: {
-    backgroundColor: C.purpleDark,
-  },
+  fabActive: { backgroundColor: C.purpleDark },
   fabLabel: {
+    position: "absolute",
+    bottom: 6,
     fontSize: 10,
-    fontWeight: "700",
+    fontWeight: "600",
     color: C.muted,
-    marginTop: 5,
-  },
-  fabLabelActive: {
-    color: C.purple,
   },
 
+  /* Badge */
+  badge: {
+    position: "absolute",
+    top: -4,
+    right: -6,
+    minWidth: 17,
+    height: 17,
+    paddingHorizontal: 4,
+    borderRadius: 9,
+    backgroundColor: C.danger,
+    borderWidth: 1.5,
+    borderColor: C.surface,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  badgeText: { color: "#fff", fontSize: 9, fontWeight: "800" },
 });

@@ -8,7 +8,6 @@ import {
   Platform,
   Pressable,
   RefreshControl,
-  SafeAreaView,
   ScrollView,
   StatusBar,
   StyleSheet,
@@ -26,6 +25,7 @@ import {
   userSubscriptionDetailSave,
 } from "../../api/api";
 import ScreenHeader from "../../components/ScreenHeader";
+import { Screen } from "@/components";
 import { useAuthStore } from "@/store/authStore";
 import { openRazorpay } from "../../utils/razorpayCheckout";
 /* ------------------------------------------------------------------ */
@@ -874,15 +874,6 @@ export default function PlansAndSubscriptionsScreen({ onBack }) {
   const isTabFetching = tab === "plans" ? plansFetching : subsFetching;
   const count = tab === "plans" ? plans.length : subs.length;
 
-  const headerActions = [
-    {
-      icon: "refresh-outline",
-      label: "Refresh",
-      onPress: refreshAll,
-      loading: isTabFetching && !isTabLoading,
-    },
-  ];
-
   const openPay = useCallback((plan) => {
     setDetailPlan(null);
     setPaymentPlan(plan);
@@ -992,16 +983,26 @@ export default function PlansAndSubscriptionsScreen({ onBack }) {
     onBack?.();
   };
   return (
-    <SafeAreaView style={styles.safe}>
+    <Screen>
       <StatusBar barStyle="dark-content" backgroundColor={COLORS.canvas} />
 
       <ScreenHeader
         title="Plans & Subscriptions"
         subtitle="Browse plans and manage your history"
         icon="briefcase"
-        showBack={handleBack}
-        // onBack={handleBack}
-        actions={headerActions}
+        showBack
+        onBack={handleBack}
+        right={
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Refresh plans and subscriptions"
+            onPress={refreshAll}
+            disabled={isTabFetching && !isTabLoading}
+            style={styles.refreshButton}
+          >
+            <Ionicons name="refresh-outline" size={20} color={COLORS.ink} />
+          </Pressable>
+        }
       />
 
       <FlatList
@@ -1060,7 +1061,7 @@ export default function PlansAndSubscriptionsScreen({ onBack }) {
       />
 
       <Toast toast={toast} onHide={hideToast} />
-    </SafeAreaView>
+    </Screen>
   );
 }
 
@@ -1069,7 +1070,12 @@ export default function PlansAndSubscriptionsScreen({ onBack }) {
 /* ------------------------------------------------------------------ */
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: COLORS.canvas },
+  refreshButton: {
+    width: 40,
+    height: 40,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   listContent: { paddingHorizontal: 14, paddingBottom: 32, flexGrow: 1 },
   colWrap: { gap: 12 },
   half: { flex: 1 },

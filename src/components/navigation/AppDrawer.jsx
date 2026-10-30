@@ -305,6 +305,8 @@ const Drawer = createDrawerNavigator();
 
 export default function AppDrawer() {
   const { width } = useWindowDimensions();
+  const user = useAuthStore((s) => s.user);
+  const isAdmin = user?.userType == 0 || user?.role === "admin";
   const isTablet  = width >= 900;
 
   return (
@@ -314,7 +316,9 @@ export default function AppDrawer() {
       screenOptions={{
         headerShown: false,
         drawerType: isTablet ? "permanent" : "slide",
+        swipeEnabled: !isAdmin,
         drawerStyle: {
+          display: isAdmin ? "none" : "flex",
           width: isTablet ? 300 : 295,
           backgroundColor: C.surface,
         },
