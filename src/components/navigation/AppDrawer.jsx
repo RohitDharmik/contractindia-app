@@ -46,7 +46,7 @@ const C = {
 const NAV_MAIN = [
   { key: "profile",   label: "Profile",    icon: "person-outline",        route: "ProfileTab" },
 //   { key: "messages",  label: "Messages",   icon: "chatbubble-outline",    route: "ChatList" },
-  { key: "activity",  label: "Activity",   icon: "pulse-outline",         route: "LeadsTab" },
+  { key: "activity",  label: "Activity",   icon: "pulse-outline",         route: "LeadInbox" },
   { key: "lists",     label: "Services",   icon: "list-outline",          route: "CompanySubServices", expandable: true },
   { key: "reports",   label: "Reports",    icon: "bar-chart-outline",     route: "Analytics" },
   { key: "plans",     label: "Plans",      icon: "trending-up-outline",   route: "PlansAndSubscriptionsScreen" },
@@ -104,7 +104,6 @@ function DrawerContent({ navigation, state }) {
     close();
     const tabRoutes = [
       "ProfileTab",
-      "LeadsTab",
       "IndividualMyServicesScreen",
       "PlansAndSubscriptionsScreen",
       "CompanyListScreen",

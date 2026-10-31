@@ -169,12 +169,9 @@ export default function SearchScreen() {
       selectCategory(node.ServiceID, [
         ...getAncestorIds(serviceTree, node.ServiceID),
       ]);
-      navigation.navigate(Routes.MainTabs, {
-        screen: Routes.CompanySubServices,
-        params: {
-          serviceId: node.ServiceID,
-          serviceName: node.ServiceName,
-        },
+      navigation.navigate(Routes.CompanySubServices, {
+        serviceId: node.ServiceID,
+        serviceName: node.ServiceName,
       });
     },
     [navigation, selectCategory, serviceTree],

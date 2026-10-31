@@ -5,15 +5,15 @@ import { useAuthStore } from "@/store/authStore";
 import { Routes } from "@/constants/routes";
 import AuthStack from "./AuthStack";
 import AppStack from "./AppStack";
-import OnboardingScreen from "@/screens/auth/OnboardingScreen";
-import SplashScreen from "@/screens/auth/SplashScreen";
+import GuestStack from "./GuestStack";
 import { colors } from "@/constants/colors";
+import { rootStackScreenOptions } from "./stackOptions";
 const Stack = createNativeStackNavigator();
 export default function RootNavigator() {
   const hydrated = useAuthStore((s) => s.hydrated);
   const hydrate = useAuthStore((s) => s.hydrate);
   const user = useAuthStore((s) => s.user);
-  const hasOnboarded = useAuthStore((s) => s.hasOnboarded);
+  const isAuthenticated = user?.isLoginSuccessbyOtp === true;
   useEffect(() => {
     hydrate();
   }, [hydrate]);
@@ -32,22 +32,15 @@ export default function RootNavigator() {
     );
   }
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
-      {
-        user?.isLoginSuccessbyOtp === true ? (
-          <Stack.Screen name="App" component={AppStack} />
-        ) : !hasOnboarded ? (
-          <>
-            <Stack.Screen name={Routes.Splash} component={SplashScreen} />
-            <Stack.Screen
-              name={Routes.Onboarding}
-              component={OnboardingScreen}
-            />
-          </>
-        ) : (
+    <Stack.Navigator screenOptions={rootStackScreenOptions}>
+      {isAuthenticated ? (
+        <Stack.Screen name="App" component={AppStack} />
+      ) : (
+        <>
+          <Stack.Screen name={Routes.Guest} component={GuestStack} />
           <Stack.Screen name={Routes.AuthStack} component={AuthStack} />
-        )
-      }
+        </>
+      )}
     </Stack.Navigator>
   );
 }

@@ -570,31 +570,39 @@ function SubscriptionDetailSheet({ sub, plan, onClose }) {
 function PaymentSheet({ plan, userId, loginInfo, onClose, onSuccess }) {
   const [step, setStep] = useState("payment"); // payment | processing | success
   const [paymentError, setPaymentError] = useState("");
+  const [savedTransactionId, setSavedTransactionId] = useState("");
+  const [paymentHistorySaved, setPaymentHistorySaved] = useState(false);
   const isFree = plan?.price === 0;
   const working = step === "processing";
+  const paymentCompleted = !!savedTransactionId || paymentHistorySaved;
 
   useEffect(() => {
     if (plan) {
       setStep("payment");
       setPaymentError("");
+      setSavedTransactionId("");
+      setPaymentHistorySaved(false);
     }
   }, [plan]);
 
-  const recordPayment = async (paymentFields) => {
-    const historyRes = await UserPaymentHistorySave({
-      userID: userId,
-      payment: plan.price,
-      paymentStatus: "Success",
-      paymentMode: "Card",
-      remark: plan.name,
-      enterredBy: userId,
-      enterDate: new Date().toISOString(),
-      TransactionDate: new Date().toISOString(),
-      isActive: 1,
-      ...paymentFields,
-    });
-    if (!historyRes?.status)
-      throw new Error(historyRes?.message || "Failed to save payment history.");
+  const recordPayment = async (transactionId) => {
+    if (!paymentHistorySaved) {
+      const historyRes = await UserPaymentHistorySave({
+        userID: userId,
+        payment: plan.price,
+        paymentStatus: "Success",
+        paymentMode: "Card",
+        remark: plan.name,
+        enterredBy: userId,
+        enterDate: new Date().toISOString(),
+        TransactionDate: new Date().toISOString(),
+        isActive: 1,
+        ...(transactionId ? { TransactionID: transactionId } : {}),
+      });
+      if (!historyRes?.status)
+        throw new Error(historyRes?.message || "Failed to save payment history.");
+      setPaymentHistorySaved(true);
+    }
 
     const subRes = await userSubscriptionDetailSave({
       userID: userId,
@@ -614,9 +622,8 @@ function PaymentSheet({ plan, userId, loginInfo, onClose, onSuccess }) {
     setPaymentError("");
     setStep("processing");
     try {
-      if (isFree) {
-        await recordPayment({});
-      } else {
+      let transactionId = savedTransactionId;
+      if (!isFree && !transactionId) {
         const response = await openRazorpay({
           key: "rzp_test_TBIngVA6fjYaLH",
           amount: Math.round(plan.price * 100), // paise
@@ -630,10 +637,13 @@ function PaymentSheet({ plan, userId, loginInfo, onClose, onSuccess }) {
           },
           theme: { color: COLORS.primary },
         });
-        await recordPayment({
-          TransactionID: response?.razorpay_payment_id ?? "",
-        });
+        transactionId = response?.razorpay_payment_id ?? "";
+        if (!transactionId) {
+          throw new Error("Payment completed without a transaction reference.");
+        }
+        setSavedTransactionId(transactionId);
       }
+      await recordPayment(transactionId);
       setStep("success");
     } catch (error) {
       // Razorpay reports a cancelled checkout with code 0.
@@ -652,7 +662,7 @@ function PaymentSheet({ plan, userId, loginInfo, onClose, onSuccess }) {
     <Sheet
       visible={!!plan}
       onClose={onClose}
-      dismissable={!working && step !== "success"}
+      dismissable={!working && step !== "success" && !paymentCompleted}
       header={
         <View style={[styles.heroHeader, { backgroundColor: COLORS.primary }]}>
           <View style={{ flex: 1, minWidth: 0 }}>
@@ -665,7 +675,7 @@ function PaymentSheet({ plan, userId, loginInfo, onClose, onSuccess }) {
             </Text>
             <Text style={styles.heroSub}>{plan?.duration || ""}</Text>
           </View>
-          {!working && step !== "success" && (
+          {!working && step !== "success" && !paymentCompleted && (
             <SheetCloseBtn onPress={onClose} />
           )}
         </View>
@@ -673,11 +683,23 @@ function PaymentSheet({ plan, userId, loginInfo, onClose, onSuccess }) {
       footer={
         step === "payment" ? (
           <>
-            <ActionBtn icon="close-outline" label="Cancel" onPress={onClose} />
+            {!paymentCompleted && (
+              <ActionBtn icon="close-outline" label="Cancel" onPress={onClose} />
+            )}
             <ActionBtn
-              icon={isFree ? "gift-outline" : "lock-closed-outline"}
+              icon={
+                paymentCompleted
+                  ? "refresh-outline"
+                  : isFree
+                    ? "gift-outline"
+                    : "lock-closed-outline"
+              }
               label={
-                isFree ? "Activate free plan" : `Pay ${formatINR(plan?.price)}`
+                paymentCompleted
+                  ? "Retry activation"
+                  : isFree
+                    ? "Activate free plan"
+                    : `Pay ${formatINR(plan?.price)}`
               }
               variant="primary"
               onPress={handlePay}
@@ -863,6 +885,9 @@ export default function PlansAndSubscriptionsScreen({ onBack }) {
     setPaymentPlan(null);
     queryClient.invalidateQueries({
       queryKey: ["subscriptionHistory", userId],
+    });
+    queryClient.invalidateQueries({
+      queryKey: ["company-profile-subscriptions", userId],
     });
     queryClient.invalidateQueries({
       queryKey: ["planMasterGetById", userType],

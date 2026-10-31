@@ -1,20 +1,28 @@
-import { Building2, Check, ChevronRight } from "lucide-react";
+import {
+  Building2,
+  Check,
+  ChevronRight,
+  LoaderCircle,
+  ShieldCheck,
+} from "lucide-react";
 import { motion } from "framer-motion";
 import { userCommonlistType } from "../../../../services/api";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 const userCommonlistTypeApi = async () => {
   const response = await userCommonlistType("Organisation_type");
-  console.log(response, "response");
   return response ?? [];
 };
 const Step1CompanyType = ({ store, nextStep }) => {
   const [companyTypes, setcompanyTypes] = useState([]);
-  const { data: companyTypesData = [], isLoading: companyTypesDataLoading } =
-    useQuery({
-      queryKey: ["userCommonlistTypeApi"],
-      queryFn: () => userCommonlistTypeApi(),
-    });
+  const {
+    data: companyTypesData = [],
+    isLoading: companyTypesDataLoading,
+    isError: companyTypesDataError,
+  } = useQuery({
+    queryKey: ["userCommonlistTypeApi"],
+    queryFn: () => userCommonlistTypeApi(),
+  });
   // const companyTypes = [
   //   { id: "proprietor", label: "Proprietor", desc: "Single owner business" },
   //   {
@@ -50,12 +58,37 @@ const Step1CompanyType = ({ store, nextStep }) => {
   }, [companyTypesData]);
 
   return (
-    <div className="space-y-4 profileWizardStep profileWizardStep--selection">
-      <p className="text-xs text-slate-500">
-        Select your organization structure. This will determine registration
-        details and tax requirements.
-      </p>
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+    <div className="space-y-4 profileWizardStep profileWizardStep--selection pw-step--company-type">
+      <div className="pw-step-intro">
+        <span className="pw-step-intro__icon">
+          <Building2 aria-hidden="true" />
+        </span>
+        <div>
+          <h3>Choose your business structure</h3>
+          <p>
+            This helps us tailor registration and compliance details to your
+            organisation.
+          </p>
+        </div>
+      </div>
+
+      {companyTypesDataLoading ? (
+        <div className="pw-step-state" role="status">
+          <LoaderCircle className="animate-spin" aria-hidden="true" />
+          <span>Loading organisation types…</span>
+        </div>
+      ) : companyTypesDataError ? (
+        <div className="pw-step-state" role="alert">
+          <ShieldCheck aria-hidden="true" />
+          <span>We couldn’t load organisation types. Please try again later.</span>
+        </div>
+      ) : companyTypes.length === 0 ? (
+        <div className="pw-step-state" role="status">
+          <ShieldCheck aria-hidden="true" />
+          <span>No organisation types are available right now.</span>
+        </div>
+      ) : (
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 pw-company-grid">
         {companyTypes?.map((type) => {
           const isSelected = store.companyType == type?.id;
           return (
@@ -105,14 +138,20 @@ const Step1CompanyType = ({ store, nextStep }) => {
                 <p className="text-[10px] text-slate-500 mt-0.5">
                   {type?.desc}
                 </p>
+                <span className="pw-choice-action">
+                  {isSelected ? "Selected" : "Choose structure"}
+                  <ChevronRight aria-hidden="true" />
+                </span>
               </div>
             </motion.button>
           );
         })}
       </div>
+      )}
 
-      <div className="flex justify-end gap-3 pt-6 border-t border-white/5 mt-6 ">
+      <div className="flex justify-end gap-3 pt-6 border-t border-white/5 mt-6 pw-step-actions">
         <button
+          type="button"
           onClick={nextStep}
           disabled={!store.companyType}
           className="px-6 py-2.5 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg text-white font-extrabold text-xs shadow-lg disabled:opacity-40 disabled:cursor-not-allowed hover:from-blue-500 hover:to-purple-500 transition-all flex items-center gap-1"

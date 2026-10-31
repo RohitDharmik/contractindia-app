@@ -135,9 +135,9 @@ export default function CompanyDetailScreen() {
   // Opens a service in the drawer screen, which re-targets the category sidebar.
   const openService = (s) => {
     if (!s.id) return;
-    navigation.navigate("Main", {
-      screen: "CompanySubServices",
-      params: { serviceId: s.id, serviceName: s.name },
+    navigation.navigate("CompanySubServices", {
+      serviceId: s.id,
+      serviceName: s.name,
     });
   };
 

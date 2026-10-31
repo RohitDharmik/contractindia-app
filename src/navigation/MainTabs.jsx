@@ -7,10 +7,10 @@ import { Routes } from "@/constants/routes";
 import { useAuthStore } from "@/store/authStore";
 import { useNotificationsStore } from "@/store/notificationsStore";
 import DashboardScreen from "@/screens/dashboard/DashboardScreen";
-import LeadInboxScreen from "@/screens/leads/LeadInboxScreen";
 import ProfileScreen from "@/screens/profile/ProfileScreen";
 import PlansAndSubscriptionsScreen from "../screens/plans/PlansAndSubscriptionsScreen";
 import IndividualMyServicesScreen from "../screens/Individual/IndividualMyServices";
+import ActiveServicesScreen from "@/screens/services/ActiveServicesScreen";
 import CompanyListScreen from "../screens/companies/CompanyListScreen";
 
 const Tab = createBottomTabNavigator();
@@ -41,7 +41,7 @@ const MIN_BOTTOM = 10;
 
 const ICON_MAP = {
   [Routes.HomeTab]: { active: "home", inactive: "home-outline" },
-  [Routes.LeadsTab]: { active: "megaphone", inactive: "megaphone-outline" },
+  [Routes.ActiveServices]: { active: "briefcase", inactive: "briefcase-outline" },
   [Routes.IndividualMyServicesScreen]: { active: "briefcase", inactive: "briefcase-outline" },
   [Routes.CompanyListScreen]: { active: "business", inactive: "business-outline" },
   [Routes.ProfileTab]: { active: "person-circle", inactive: "person-circle-outline" },
@@ -234,9 +234,9 @@ export default function MainTabs() {
             />
           ) : (
             <Tab.Screen
-              name={Routes.LeadsTab}
-              component={LeadInboxScreen}
-              options={{ title: "Leads" }}
+              name={Routes.ActiveServices}
+              component={ActiveServicesScreen}
+              options={{ title: "Active" }}
             />
           )}
 

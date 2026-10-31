@@ -7,11 +7,11 @@ import {
   View,
   Platform,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 
 import { colors } from '@/constants/colors';
-import { spacing, typography } from '@/constants/sizes';
+import { spacing } from '@/constants/sizes';
 
 export default function ScreenHeader({
   title,
@@ -24,6 +24,7 @@ export default function ScreenHeader({
   backLabel = 'Go back',
   titleNumberOfLines = 2,
   subtitleNumberOfLines = 2,
+  variant = 'solid',
 }) {
   const navigation = useNavigation();
 
@@ -47,9 +48,15 @@ export default function ScreenHeader({
   }, [navigation, onBack]);
 
   const shouldShowBack = showBack && (onBack || canGoBack);
+  const variantStyle =
+    variant === 'transparent'
+      ? styles.transparent
+      : variant === 'elevated'
+        ? styles.elevated
+        : styles.solid;
 
   return (
-    <View style={[styles.container, style]}>
+    <View style={[styles.container, variantStyle, style]}>
       <View style={styles.leftSection}>
         {shouldShowBack && (
           <Pressable
@@ -67,9 +74,9 @@ export default function ScreenHeader({
             accessibilityLabel={backLabel}
             accessibilityHint="Returns to the previous screen"
           >
-            <Ionicons
-              name="chevron-back"
-              size={26}
+            <MaterialCommunityIcons
+              name="arrow-left"
+              size={20}
               color={colors.text}
             />
           </Pressable>
@@ -117,12 +124,26 @@ export default function ScreenHeader({
 const styles = StyleSheet.create({
   container: {
     width: '100%',
-    minHeight: 64,
+    minHeight: 70,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
+    paddingVertical: spacing.sm,
+  },
+  solid: {
+    backgroundColor: colors.bg,
+  },
+  transparent: {
+    backgroundColor: 'transparent',
+  },
+  elevated: {
+    backgroundColor: colors.surface,
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
+    elevation: 3,
   },
 
   leftSection: {
@@ -137,8 +158,11 @@ const styles = StyleSheet.create({
     height: 44,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 22,
+    borderRadius: 14,
     marginRight: spacing.sm,
+    backgroundColor: colors.surface,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.border,
     overflow: Platform.OS === 'android' ? 'hidden' : 'visible',
   },
 
@@ -160,13 +184,17 @@ const styles = StyleSheet.create({
   },
 
   title: {
-    ...typography.h2,
+    fontSize: 19,
+    lineHeight: 24,
+    fontWeight: '700',
     color: colors.text,
     flexShrink: 1,
   },
 
   subtitle: {
-    ...typography.small,
+    fontSize: 12,
+    lineHeight: 16,
+    fontWeight: '500',
     color: colors.textMuted,
     marginTop: 3,
     flexShrink: 1,

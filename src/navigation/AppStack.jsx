@@ -46,10 +46,10 @@ import {
   DocumentSubcategoriesScreen,
 } from "@/screens/admin/AdminFeatureScreens";
 import {
-  CompanyProfileWizardScreen,
   ClientHistoryScreen,
   InvoicesScreen,
 } from "@/screens/vendors/CommercialFeatureScreens";
+import CompanyProfileWizardScreen from "@/screens/vendors/CompanyProfileWizardScreen";
 import InquiryScreen from "@/screens/marketplace/InquiryScreen";
 import BookConsultationScreen from "@/screens/marketplace/BookConsultationScreen";
 import AIAssistantScreen from "@/screens/marketplace/AIAssistantScreen";
@@ -72,13 +72,41 @@ import IndividualMyServicesScreen from "../screens/Individual/IndividualMyServic
 import CompanySubServices from "../screens/public/CompanySubServices";
 import CompanyListScreen from "../screens/companies/CompanyListScreen";
 import CompanyDetailScreen from "../screens/companies/CompanyDetailScreen";
+import {
+  globalStackScreenOptions,
+  modalStackScreenOptions,
+} from "./stackOptions";
 const Stack = createNativeStackNavigator();
 
 export default function AppStack() {
-  console.log(useAuthStore.user, "useAuthStore");
+  const user = useAuthStore((state) => state.user);
+  const profileGateUnlocked = useAuthStore((state) => state.profileGateUnlocked);
+  const requiresProfileSetup =
+    Number(user?.userType) === 2 && !profileGateUnlocked;
 
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
+    <Stack.Navigator
+      key={requiresProfileSetup ? "commercial-profile-gate" : "app"}
+      initialRouteName={
+        requiresProfileSetup ? Routes.VendorProfileWizard : Routes.MainTabs
+      }
+      screenOptions={globalStackScreenOptions}
+    >
+      {requiresProfileSetup ? (
+        <>
+          <Stack.Screen
+            name={Routes.VendorProfileWizard}
+            component={CompanyProfileWizardScreen}
+            options={{ gestureEnabled: false }}
+          />
+          <Stack.Screen
+            name={Routes.PlansAndSubscriptionsScreen}
+            component={PlansAndSubscriptionsScreen}
+            initialParams={{ type: "PlansAndSubscriptionsScreen" }}
+          />
+        </>
+      ) : (
+        <>
       <Stack.Screen name={Routes.MainTabs} component={AppDrawer} />
 
       {/* Marketplace */}
@@ -92,19 +120,19 @@ export default function AppStack() {
       <Stack.Screen
         name={Routes.Filters}
         component={FiltersScreen}
-        options={{ presentation: "modal" }}
+        options={modalStackScreenOptions}
       />
       <Stack.Screen name={Routes.Compare} component={CompareScreen} />
       <Stack.Screen name={Routes.Favorites} component={FavoritesScreen} />
       <Stack.Screen
         name={Routes.Inquiry}
         component={InquiryScreen}
-        options={{ presentation: "modal" }}
+        options={modalStackScreenOptions}
       />
       <Stack.Screen
         name={Routes.BookConsultation}
         component={BookConsultationScreen}
-        options={{ presentation: "modal" }}
+        options={modalStackScreenOptions}
       />
       <Stack.Screen name={Routes.AIAssistant} component={AIAssistantScreen} />
 
@@ -123,7 +151,10 @@ export default function AppStack() {
         component={VendorDashboardScreen}
       />
       <Stack.Screen name="CompanyList" component={CompanyListScreen} />
-      <Stack.Screen name="CompanyDetail" component={CompanyDetailScreen} />
+      <Stack.Screen
+        name={Routes.CompanyDetailScreen}
+        component={CompanyDetailScreen}
+      />
       <Stack.Screen
         name={Routes.VendorServices}
         component={AccountRecordsScreen}
@@ -188,7 +219,7 @@ export default function AppStack() {
       <Stack.Screen
         name={Routes.Checkout}
         component={CheckoutScreen}
-        options={{ presentation: "modal" }}
+        options={modalStackScreenOptions}
       />
 
       {/* Analytics */}
@@ -277,6 +308,8 @@ export default function AppStack() {
         name={Routes.AdminVendorApprovalDetail}
         component={VendorApprovalDetailScreen}
       />
+        </>
+      )}
     </Stack.Navigator>
   );
 }

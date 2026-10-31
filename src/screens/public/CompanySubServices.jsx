@@ -9,6 +9,7 @@ import React, {
 } from "react";
 import {
   ActivityIndicator,
+  Alert,
   Animated,
   FlatList,
   Image,
@@ -44,7 +45,9 @@ import { useAuthStore } from "@/store/authStore";
 import { useCategoryStore } from "../../store/categoryStore";
 import ScreenHeader from "../../components/ScreenHeader";
 import { Screen } from "@/components";
+import { Routes } from "@/constants/routes";
 import { openRazorpay } from "../../utils/razorpayCheckout";
+import { requireAuthentication } from "@/utils/authAccess";
 
 /* ------------------------------------------------------------------ */
 /* Config                                                              */
@@ -53,12 +56,6 @@ import { openRazorpay } from "../../utils/razorpayCheckout";
 const API_URL = process.env.EXPO_PUBLIC_API_URL || "";
 const RAZORPAY_KEY =
   process.env.EXPO_PUBLIC_RAZORPAY_KEY || "rzp_test_TBIngVA6fjYaLH";
-
-const FALLBACK_IMAGES = [
-  "https://images.unsplash.com/photo-1504307651254-35680f356dfd?q=80&w=800&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=800&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1509391366360-2e959784a276?q=80&w=800&auto=format&fit=crop",
-];
 
 /* ------------------------------------------------------------------ */
 /* Design tokens                                                       */
@@ -608,38 +605,53 @@ const MembershipCard = memo(function MembershipCard({
 /* Contractor card                                                     */
 /* ------------------------------------------------------------------ */
 
-const ContractorCard = memo(function ContractorCard({ item, idx, onView, disabled }) {
+const ContractorCard = memo(function ContractorCard({
+  item,
+  onView,
+  disabled,
+  canContact,
+}) {
   const [imgFailed, setImgFailed] = useState(false);
 
   const company = contractorName(item);
   const location = item?.CityName || item?.StateName || "India";
   const phone = contractorPhone(item);
   const status = item?.Status || "";
-  const rating =
-    typeof item?.Rating === "number" ? item.Rating : 4.5 + (idx % 5) * 0.1;
+  const rawRating = item?.Rating ?? item?.rating;
+  const rating = rawRating == null || rawRating === "" ? null : Number(rawRating);
   const remote = API_URL
     ? `${API_URL}/UserDocumentStore/image?userId=${item?.UserID}&documentCategoryId=7&documentSubCategoryId=10`
     : null;
-  const source = {
-    uri: remote && !imgFailed ? remote : FALLBACK_IMAGES[idx % FALLBACK_IMAGES.length],
-  };
+  const source = remote && !imgFailed ? { uri: remote } : null;
   const viewed = Number(item?.IsActive) === 1;
   const approved = status === "Approved";
 
   return (
     <View style={styles.card}>
       <View style={styles.cardMedia}>
-        <Image
-          source={source}
-          style={styles.cardImage}
-          onError={() => setImgFailed(true)}
-        />
-        <View style={styles.cardShade} />
+        {source ? (
+          <Image
+            source={source}
+            style={styles.cardImage}
+            onError={() => setImgFailed(true)}
+          />
+        ) : (
+          <View style={styles.cardImageFallback}>
+            <MaterialCommunityIcons
+              name="domain"
+              size={38}
+              color="rgba(79,70,229,0.6)"
+            />
+          </View>
+        )}
+        {source ? <View style={styles.cardShade} /> : null}
 
-        <View style={styles.ratingChip}>
-          <Ionicons name="star" size={11} color="#FBBF24" />
-          <Text style={styles.ratingText}>{rating.toFixed(1)}</Text>
-        </View>
+        {Number.isFinite(rating) && rating > 0 ? (
+          <View style={styles.ratingChip}>
+            <Ionicons name="star" size={11} color="#FBBF24" />
+            <Text style={styles.ratingText}>{rating.toFixed(1)}</Text>
+          </View>
+        ) : null}
 
         {!!status && (
           <View
@@ -699,7 +711,7 @@ const ContractorCard = memo(function ContractorCard({ item, idx, onView, disable
             </View>
           </Pressy>
 
-          {!!phone && viewed && (
+          {!!phone && viewed && canContact && (
             <Pressy onPress={() => callNumber(phone)} label="Call contractor">
               <View style={styles.callAction}>
                 <Ionicons name="call" size={16} color={T.success} />
@@ -871,7 +883,7 @@ export default function CompanySubServices({ serviceId, serviceName }) {
   const columns = isTablet ? (width >= 1200 ? 3 : 2) : width >= 600 ? 2 : 1;
 
   const loginResponce = useAuthStore((s) => s?.user);
-  const isLoggedIn = !!(loginResponce?.isLoginSuccessful || loginResponce?.userId);
+  const isLoggedIn = loginResponce?.isLoginSuccessbyOtp === true;
   const userId = loginResponce?.userId || 0;
   const userType = loginResponce?.userType || 0;
 
@@ -1011,8 +1023,10 @@ export default function CompanySubServices({ serviceId, serviceName }) {
       setCompanyUserID(item?.UserID);
 
       if (!isLoggedIn) {
-        showToast("error", "Please login to view contractor details");
-        navigation.navigate("Login");
+        requireAuthentication(navigation, {
+          message:
+            "Sign in to unlock contractor details and contact businesses.",
+        });
         return;
       }
 
@@ -1029,10 +1043,17 @@ export default function CompanySubServices({ serviceId, serviceName }) {
 
       setPendingItem(item);
     },
-    [isLoggedIn, hasActivePlan, navigation, openDetail, showToast],
+    [isLoggedIn, hasActivePlan, navigation, openDetail],
   );
 
   const confirmPending = async () => {
+    if (
+      !requireAuthentication(navigation, {
+        message: "Sign in to connect with this contractor.",
+      })
+    ) {
+      return;
+    }
     const item = pendingItem;
     if (!item) return;
     setBusy(true);
@@ -1049,23 +1070,46 @@ export default function CompanySubServices({ serviceId, serviceName }) {
         isActive: 1,
         CompanyUserID: item?.UserID,
       });
-      if (!res?.status) {
-        throw new Error(res?.message || "Failed to activate service. Please try again.");
+      const activated =
+        res?.status === true ||
+        res?.status === 1 ||
+        res?.status === "true" ||
+        res?.status === "1";
+      if (!activated) {
+        setPendingItem(null);
+        Alert.alert(
+          "Service not activated",
+          res?.message || "Failed to activate service. Please try again.",
+        );
+        return;
       }
 
       setPendingItem(null);
-      showToast("success", res?.message || "Service activated successfully");
-      contractorsQuery.refetch();
-      subsQuery.refetch();
-      await openDetail(item);
+      await Promise.all([contractorsQuery.refetch(), subsQuery.refetch()]);
+      Alert.alert(
+        "Service activated",
+        res?.message || "Service activated successfully.",
+        [{ text: "OK", onPress: () => openDetail(item) }],
+      );
     } catch (err) {
-      showToast("error", err?.message || "Failed to activate service. Please try again.");
+      setPendingItem(null);
+      Alert.alert(
+        "Service not activated",
+        err?.message || "Failed to activate service. Please try again.",
+      );
     } finally {
       setBusy(false);
     }
   };
 
   const activateFreePlan = async (plan) => {
+    if (
+      !requireAuthentication(navigation, {
+        message: "Sign in to activate a subscription plan.",
+      })
+    ) {
+      return;
+    }
     setBusy(true);
     try {
       const res = await userSubscriptionDetailSave({
@@ -1095,6 +1139,13 @@ export default function CompanySubServices({ serviceId, serviceName }) {
   };
 
   const handleSelectPlan = (plan) => {
+    if (
+      !requireAuthentication(navigation, {
+        message: "Sign in to choose a subscription plan.",
+      })
+    ) {
+      return;
+    }
     if (Number(plan?.Price) === 0) {
       activateFreePlan(plan);
       return;
@@ -1103,6 +1154,13 @@ export default function CompanySubServices({ serviceId, serviceName }) {
   };
 
   const handlePay = async () => {
+    if (
+      !requireAuthentication(navigation, {
+        message: "Sign in to continue to checkout.",
+      })
+    ) {
+      return;
+    }
     const plan = paymentPlan;
     if (!plan) return;
     setBusy(true);
@@ -1332,7 +1390,17 @@ export default function CompanySubServices({ serviceId, serviceName }) {
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Open categories"
-            onPress={() => navigation.openDrawer()}
+              onPress={() => {
+                if (typeof navigation.openDrawer === "function") {
+                  navigation.openDrawer();
+                } else if (isLoggedIn) {
+                  navigation.navigate(Routes.MainTabs);
+                } else {
+                  navigation.navigate(Routes.GuestTabs, {
+                    screen: Routes.GuestCategories,
+                  });
+                }
+              }}
             style={styles.headerAction}
           >
             <Ionicons name="menu-outline" size={20} color={T.ink} />
@@ -1346,16 +1414,16 @@ export default function CompanySubServices({ serviceId, serviceName }) {
         data={contractorsLoading ? loadingGrid : filtered}
         numColumns={columns}
         keyExtractor={(item, i) => String(item?.UserID ?? item?.id ?? i)}
-        renderItem={({ item, index }) => (
+        renderItem={({ item }) => (
           <View style={styles.gridItem}>
             {contractorsLoading ? (
               <CardSkeleton />
             ) : (
               <ContractorCard
                 item={item}
-                idx={index}
                 onView={handleViewDetails}
                 disabled={busy}
+                canContact={isLoggedIn && hasActivePlan}
               />
             )}
           </View>
@@ -1674,6 +1742,12 @@ const styles = StyleSheet.create({
     backgroundColor: T.slateSoft,
   },
   cardImage: { width: "100%", height: "100%" },
+  cardImageFallback: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: T.brandSoft,
+  },
   cardShade: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: "rgba(15,23,42,0.12)",

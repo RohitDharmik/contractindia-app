@@ -1,5 +1,11 @@
 import { api } from "./client";
+import { useAuthStore } from "@/store/authStore";
 
+const ensureAuthenticated = () => {
+  if (useAuthStore.getState().user?.isLoginSuccessbyOtp !== true) {
+    throw new Error("Sign in is required to perform this action.");
+  }
+};
 
 export const authentication = async (payload) => {
   return await api.post("/Authentication/authenticate", payload);
@@ -107,12 +113,15 @@ export const DocumentSubCategoryGetById = async (planId) => {
   return await api.get(`/DocumentSubCategory/get/${planId}`);
 };
 export const UserServiceDetailsSave = async (payload) => {
+  ensureAuthenticated();
   return await api.post(`/UserServiceDetails/save`, payload);
 };
 export const UserServiceDetailsUpdate = async (payload) => {
+  ensureAuthenticated();
   return await api.put(`/UserServiceDetails/update`, payload);
 };
 export const UserServiceDetailsDelete = async (planId) => {
+  ensureAuthenticated();
   return await api.delete(`/UserServiceDetails/delete/${planId}`);
 };
 export const UserServiceDetailsGet = async () => {
@@ -149,6 +158,7 @@ export const subscriptionHistoryGet = async () => {
   return await api.get(`/UserSubscriptionDetail/get`);
 };
 export const userSubscriptionDetailSave = async (payload) => {
+  ensureAuthenticated();
   return await api.post(`/UserSubscriptionDetail/save`, payload);
 };
 export const clientHistoryGet = async () => {
@@ -242,12 +252,15 @@ export const UserSubscriptionDetailGet = async (params) => {
 };
 
 export const UserPaymentHistorySave = async (payload) => {
+  ensureAuthenticated();
   return await api.post(`/UserPaymentHistory/save`, payload);
 };
 export const UserPaymentHistoryUpdate = async (payload) => {
+  ensureAuthenticated();
   return await api.put(`/UserPaymentHistory/update`, payload);
 };
 export const UserPaymentHistoryDelete = async (planId) => {
+  ensureAuthenticated();
   return await api.delete(`/UserPaymentHistory/delete/${planId}`);
 };
 export const UserPaymentHistoryGet = async () => {

@@ -1,5 +1,13 @@
 import { useMutation } from "@tanstack/react-query";
-import { AlertCircle, ChevronLeft, ChevronRight, Loader, Loader2, MapPin } from "lucide-react";
+import {
+  AlertCircle,
+  Building2,
+  ChevronLeft,
+  ChevronRight,
+  Loader,
+  Loader2,
+  MapPin,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useUserStore } from "../../../../store/store";
@@ -41,8 +49,6 @@ const Step2BasicInfo = ({ store, nextStep, prevStep, triggerOtpSend }) => {
   const { mutate: saveBasicInfo, isPending: isSaving } = useMutation({
     mutationFn: userBasicInformationSave,
     onSuccess: (response) => {
-      console.log(response, "response");
-
       if (response?.status) {
         toast.success(
           response?.message || "Basic Information saved successfully!",
@@ -176,8 +182,17 @@ const Step2BasicInfo = ({ store, nextStep, prevStep, triggerOtpSend }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSaveStep2)} className="space-y-4 profileWizardStep">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <form onSubmit={handleSubmit(onSaveStep2)} className="space-y-4 profileWizardStep pw-step--basic-info">
+      <div className="pw-step-intro">
+        <span className="pw-step-intro__icon">
+          <Building2 aria-hidden="true" />
+        </span>
+        <div>
+          <h3>Business identity</h3>
+          <p>Share the details customers and partners will use to reach you.</p>
+        </div>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pw-basic-grid">
         <div className="flex flex-col gap-1.5">
           <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
             Company Name *
@@ -304,10 +319,13 @@ const Step2BasicInfo = ({ store, nextStep, prevStep, triggerOtpSend }) => {
         </div>
       </div>
 
-      <div className="pw-section-panel space-y-4 mt-6">
-        <h4 className="text-xs uppercase font-extrabold tracking-widest text-green-700 mb-4 flex items-center gap-2">
+      <div className="pw-section-panel space-y-4 mt-6 pw-location-section">
+        <h4 className="pw-section-heading">
           <MapPin className="w-4 h-4" />
-          Location details
+          <span>
+            <strong>Business location</strong>
+            <small>Use your PIN code to find and confirm your address.</small>
+          </span>
         </h4>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -435,7 +453,7 @@ const Step2BasicInfo = ({ store, nextStep, prevStep, triggerOtpSend }) => {
       </div>
 
       {/* Address Field */}
-      <div className="flex flex-col gap-1.5 relative">
+      <div className="flex flex-col gap-1.5 relative pw-address-field">
         <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
           Address *
         </label>
@@ -452,7 +470,7 @@ const Step2BasicInfo = ({ store, nextStep, prevStep, triggerOtpSend }) => {
         )}
       </div>
 
-      <div className="flex justify-between gap-3 pt-6 border-t border-slate-100 mt-6">
+      <div className="flex justify-between gap-3 pt-6 border-t border-slate-100 mt-6 pw-step-actions">
         <button
           type="button"
           onClick={prevStep}

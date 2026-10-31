@@ -1,4 +1,10 @@
-import { Check, ChevronLeft, Loader } from "lucide-react";
+import {
+  Check,
+  ChevronLeft,
+  Landmark,
+  Loader,
+  LockKeyhole,
+} from "lucide-react";
 import { useUserStore } from "../../../../store/store";
 import { userBankDetailSave } from "../../../../services/api";
 import { useForm } from "react-hook-form";
@@ -109,9 +115,18 @@ const Step6Banking = ({
   };
 
   return (
-    <form onSubmit={handleSubmit(onSaveStep6)} className="space-y-6 profileWizardStep">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-        <div className="space-y-4">
+    <form onSubmit={handleSubmit(onSaveStep6)} className="space-y-6 profileWizardStep pw-step--banking">
+      <div className="pw-step-intro">
+        <span className="pw-step-intro__icon">
+          <Landmark aria-hidden="true" />
+        </span>
+        <div>
+          <h3>Settlement account</h3>
+          <p>Provide the account where your business payments should be settled.</p>
+        </div>
+      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center pw-bank-layout">
+        <div className="space-y-4 pw-bank-fields">
           <div className="flex flex-col gap-1.5">
 
             <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
@@ -137,7 +152,7 @@ const Step6Banking = ({
               </label>
               <input
                 type="password"
-                placeholder="Encrypted account number"
+                placeholder="Enter 9–18 digit account number"
                 className="bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100/50 text-slate-800 placeholder-slate-400 font-mono shadow-sm"
                 {...register("accountNumber", {
                   required: "Account Number is required",
@@ -193,7 +208,7 @@ const Step6Banking = ({
           </div>
         </div>
 
-        <div className="flex justify-center">
+        <div className="flex flex-col items-center gap-4">
           <div
             data-bank-preview
             className={`w-80 h-48 rounded-3xl bg-gradient-to-br ${detectedBank.color} p-6 shadow-2xl flex flex-col justify-between text-white relative overflow-hidden border border-white/10 shadow-blue-500/5`}
@@ -245,10 +260,14 @@ const Step6Banking = ({
               </div>
             </div>
           </div>
+          <div className="pw-bank-security">
+            <LockKeyhole aria-hidden="true" />
+            <span>Bank details are used only to set up your settlement account.</span>
+          </div>
         </div>
       </div>
 
-      <div className="flex justify-between gap-3 pt-6 border-t border-slate-100 mt-6">
+      <div className="flex justify-between gap-3 pt-6 border-t border-slate-100 mt-6 pw-step-actions">
         <button
           type="button"
           onClick={prevStep}

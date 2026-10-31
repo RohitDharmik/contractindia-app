@@ -1,35 +1,32 @@
 import React, { useEffect, useRef } from "react";
 import { Animated, ScrollView, StyleSheet, Text, View } from "react-native";
-import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useNavigation } from "@react-navigation/native";
 import { Screen, ScreenHeader } from "@/components";
 import PressScale from "../../components/PressScale";
 import { Routes } from "@/constants/routes";
-import { formatINR } from "@/utils/formatters";
+import { colors } from "@/constants/colors";
 
 /* ------------------------------------------------------------------ */
 /* Design tokens                                                       */
 /* ------------------------------------------------------------------ */
 
 const T = {
-  brand: "#4F46E5",
-  brandDeep: "#312E81",
-  brandSoft: "#EEF2FF",
-  ink: "#0F172A",
-  body: "#334155",
-  muted: "#64748B",
-  faint: "#94A3B8",
-  line: "#E2E8F0",
-  surface: "#FFFFFF",
-  canvas: "#F6F7FB",
-  slateSoft: "#F1F5F9",
-  success: "#059669",
+  brand: colors.primary,
+  brandDeep: colors.primaryDark,
+  brandSoft: colors.surfaceAlt,
+  ink: colors.text,
+  muted: colors.textMuted,
+  surface: colors.surface,
+  canvas: colors.bg,
+  slateSoft: colors.surfaceAlt,
+  success: colors.success,
   successSoft: "#ECFDF5",
-  amber: "#D97706",
+  amber: colors.accentDark,
   amberSoft: "#FFFBEB",
-  sky: "#0369A1",
-  skySoft: "#F0F9FF",
+  sky: colors.info,
+  skySoft: "#EFF6FF",
   violet: "#7C3AED",
   violetSoft: "#F5F3FF",
 };
@@ -46,21 +43,12 @@ const SHADOW = {
 /* Static configuration                                                */
 /* ------------------------------------------------------------------ */
 
-// Values are placeholders until a stats endpoint is connected.
-const KPIS = [
-  { key: "users", label: "Total users", value: "0", delta: "+0%", icon: "account-group-outline", lib: "mci", tone: T.brand, soft: T.brandSoft },
-  { key: "vendors", label: "Active vendors", value: "0", delta: "+0%", icon: "storefront-outline", lib: "mci", tone: T.sky, soft: T.skySoft },
-  { key: "leads", label: "New leads (24h)", value: "0", delta: "+0%", icon: "lightning-bolt-outline", lib: "mci", tone: T.amber, soft: T.amberSoft },
-  { key: "revenue", label: "Revenue (MTD)", value: formatINR(0), delta: "+0%", icon: "currency-inr", lib: "mci", tone: T.success, soft: T.successSoft },
-];
-
 const MODULES = [
   {
     key: "verification",
     label: "User verification",
     body: "Review registration verification requests",
     icon: "shield-check-outline",
-    lib: "mci",
     tone: T.brand,
     soft: T.brandSoft,
     route: Routes.AdminUserVerification,
@@ -70,7 +58,6 @@ const MODULES = [
     label: "Service management",
     body: "Manage the service catalog records",
     icon: "toolbox-outline",
-    lib: "mci",
     tone: T.sky,
     soft: T.skySoft,
     route: Routes.ServiceManagement,
@@ -80,7 +67,6 @@ const MODULES = [
     label: "Payments",
     body: "Razorpay and Stripe reconciliation",
     icon: "credit-card-check-outline",
-    lib: "mci",
     tone: T.success,
     soft: T.successSoft,
     route: Routes.AdminPayments,
@@ -90,7 +76,6 @@ const MODULES = [
     label: "Plans & pricing",
     body: "Subscription tiers and pricing",
     icon: "crown-outline",
-    lib: "mci",
     tone: T.violet,
     soft: T.violetSoft,
     route: Routes.BusinessPlansScreen,
@@ -140,10 +125,9 @@ function FadeIn({ delay = 0, children, style }) {
 /* ------------------------------------------------------------------ */
 
 function SpecIcon({ spec, color, size = 20, style }) {
-  const Icon = spec.lib === "mci" ? MaterialCommunityIcons : Ionicons;
   return (
     <View style={style}>
-      <Icon name={spec.icon} size={size} color={color} />
+      <MaterialCommunityIcons name={spec.icon} size={size} color={color} />
     </View>
   );
 }
@@ -160,43 +144,31 @@ function OverviewHero() {
       <View style={styles.heroGlow} />
       <View style={styles.heroTop}>
         <View style={styles.heroBadge}>
-          <Ionicons name="shield-checkmark" size={13} color="#fff" />
-          <Text style={styles.heroBadgeText}>Super admin</Text>
+          <MaterialCommunityIcons name="shield-check" size={14} color="#fff" />
+          <Text style={styles.heroBadgeText}>ADMIN WORKSPACE</Text>
         </View>
-        <Ionicons name="pulse-outline" size={18} color="rgba(255,255,255,0.8)" />
+        <MaterialCommunityIcons name="view-dashboard-outline" size={19} color="rgba(255,255,255,0.8)" />
       </View>
-      <Text style={styles.heroTitle}>Platform overview</Text>
-      <Text style={styles.heroSub}>Key figures across users, vendors and revenue</Text>
+      <Text style={styles.heroTitle}>Run your platform</Text>
+      <Text style={styles.heroSub}>
+        Manage the people, services and payments that keep ContractsIndia moving.
+      </Text>
+      <View style={styles.heroMeta}>
+        <View>
+          <Text style={styles.heroMetaValue}>{MODULES.length}</Text>
+          <Text style={styles.heroMetaLabel}>management tools</Text>
+        </View>
+        <View style={styles.heroMetaDivider} />
+        <View>
+          <Text style={styles.heroMetaValue}>One place</Text>
+          <Text style={styles.heroMetaLabel}>for daily operations</Text>
+        </View>
+      </View>
     </View>
   );
 }
 
-function KpiTile({ kpi }) {
-  return (
-    <View style={styles.kpi}>
-      <View style={styles.kpiTop}>
-        <SpecIcon
-          spec={kpi}
-          color={kpi.tone}
-          size={20}
-          style={[styles.kpiIcon, { backgroundColor: kpi.soft }]}
-        />
-        <View style={styles.deltaChip}>
-          <Ionicons name="trending-up" size={12} color={T.success} />
-          <Text style={styles.deltaText}>{kpi.delta}</Text>
-        </View>
-      </View>
-      <Text style={styles.kpiValue} numberOfLines={1} adjustsFontSizeToFit>
-        {kpi.value}
-      </Text>
-      <Text style={styles.kpiLabel} numberOfLines={1}>
-        {kpi.label}
-      </Text>
-    </View>
-  );
-}
-
-function ModuleRow({ module, onPress }) {
+function ModuleCard({ module, onPress }) {
   return (
     <PressScale
       onPress={onPress}
@@ -211,7 +183,7 @@ function ModuleRow({ module, onPress }) {
         style={[styles.moduleIcon, { backgroundColor: module.soft }]}
       />
       <View style={styles.moduleText}>
-        <Text style={styles.moduleLabel} numberOfLines={1}>
+        <Text style={styles.moduleLabel} numberOfLines={2}>
           {module.label}
         </Text>
         <Text style={styles.moduleBody} numberOfLines={2}>
@@ -219,7 +191,7 @@ function ModuleRow({ module, onPress }) {
         </Text>
       </View>
       <View style={styles.moduleArrow}>
-        <Ionicons name="chevron-forward" size={16} color={T.muted} />
+        <MaterialCommunityIcons name="chevron-right" size={18} color={T.muted} />
       </View>
     </PressScale>
   );
@@ -235,8 +207,8 @@ export default function AdminDashboardScreen() {
   return (
     <Screen>
       <ScreenHeader
-        title="Admin panel"
-        subtitle="ContractsIndia Super Admin"
+        title="Overview"
+        subtitle="Admin workspace"
         showBack
       />
 
@@ -251,23 +223,17 @@ export default function AdminDashboardScreen() {
 
         <FadeIn delay={80}>
           <View style={styles.sectionRow}>
-            <Text style={styles.sectionTitle}>Key metrics</Text>
+            <View>
+              <Text style={styles.sectionTitle}>Platform management</Text>
+              <Text style={styles.sectionSub}>Choose an area to get started</Text>
+            </View>
+            <View style={styles.sectionCount}>
+              <Text style={styles.sectionCountText}>{MODULES.length} tools</Text>
+            </View>
           </View>
-          <View style={styles.kpiGrid}>
-            {KPIS.map((kpi) => (
-              <KpiTile key={kpi.key} kpi={kpi} />
-            ))}
-          </View>
-        </FadeIn>
-
-        <FadeIn delay={160}>
-          <View style={styles.sectionRow}>
-            <Text style={styles.sectionTitle}>Modules</Text>
-            <Text style={styles.sectionCount}>{MODULES.length}</Text>
-          </View>
-          <View style={styles.moduleList}>
+          <View style={styles.moduleGrid}>
             {MODULES.map((module) => (
-              <ModuleRow
+              <ModuleCard
                 key={module.key}
                 module={module}
                 onPress={() => nav.navigate(module.route)}
@@ -286,12 +252,12 @@ export default function AdminDashboardScreen() {
 
 const styles = StyleSheet.create({
   scroll: { flex: 1, backgroundColor: T.canvas },
-  content: { paddingHorizontal: 16, paddingTop: 4, paddingBottom: 40, gap: 6 },
+  content: { paddingHorizontal: 18, paddingTop: 4, paddingBottom: 40, gap: 8 },
 
   /* Hero */
   hero: {
-    borderRadius: 22,
-    padding: 18,
+    borderRadius: 24,
+    padding: 20,
     overflow: "hidden",
     marginBottom: 6,
     shadowColor: T.brand,
@@ -313,20 +279,32 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 14,
+    marginBottom: 22,
   },
   heroBadge: {
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
+    paddingHorizontal: 11,
+    paddingVertical: 7,
     borderRadius: 999,
     backgroundColor: "rgba(255,255,255,0.16)",
   },
-  heroBadgeText: { color: "#fff", fontSize: 11, fontWeight: "800", letterSpacing: 0.3 },
-  heroTitle: { color: "#fff", fontSize: 20, fontWeight: "800", letterSpacing: -0.3 },
-  heroSub: { color: "rgba(255,255,255,0.75)", fontSize: 12, marginTop: 4, lineHeight: 17 },
+  heroBadgeText: { color: "#fff", fontSize: 10, fontWeight: "800", letterSpacing: 0.7 },
+  heroTitle: { color: "#fff", fontSize: 25, fontWeight: "800", letterSpacing: -0.5 },
+  heroSub: { color: "rgba(255,255,255,0.76)", fontSize: 13, marginTop: 7, lineHeight: 19 },
+  heroMeta: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 18,
+    marginTop: 22,
+    paddingTop: 16,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: "rgba(255,255,255,0.24)",
+  },
+  heroMetaValue: { color: "#fff", fontSize: 15, fontWeight: "800" },
+  heroMetaLabel: { color: "rgba(255,255,255,0.7)", fontSize: 11, marginTop: 3 },
+  heroMetaDivider: { width: StyleSheet.hairlineWidth, height: 34, backgroundColor: "rgba(255,255,255,0.25)" },
 
   /* Section */
   sectionRow: {
@@ -334,79 +312,50 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     marginTop: 18,
-    marginBottom: 10,
+    marginBottom: 12,
   },
-  sectionTitle: { color: T.ink, fontSize: 16, fontWeight: "800", letterSpacing: -0.2 },
+  sectionTitle: { color: T.ink, fontSize: 17, fontWeight: "800", letterSpacing: -0.3 },
+  sectionSub: { color: T.muted, fontSize: 12, marginTop: 4 },
   sectionCount: {
-    minWidth: 26,
-    textAlign: "center",
-    overflow: "hidden",
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 8,
-    color: T.brand,
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+    borderRadius: 10,
     backgroundColor: T.brandSoft,
-    fontSize: 11,
-    fontWeight: "800",
   },
+  sectionCountText: { color: T.brand, fontSize: 11, fontWeight: "800" },
 
-  /* KPIs */
-  kpiGrid: { flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between", gap: 10 },
-  kpi: {
-    width: "48%",
-    flexGrow: 1,
-    padding: 14,
-    borderRadius: 18,
-    backgroundColor: T.surface,
-    ...SHADOW,
-  },
-  kpiTop: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 12 },
-  kpiIcon: {
-    width: 38,
-    height: 38,
-    borderRadius: 12,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  deltaChip: {
+  /* Module shortcuts */
+  moduleGrid: {
     flexDirection: "row",
-    alignItems: "center",
-    gap: 3,
-    paddingHorizontal: 7,
-    paddingVertical: 3,
-    borderRadius: 8,
-    backgroundColor: T.successSoft,
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+    rowGap: 12,
   },
-  deltaText: { color: T.success, fontSize: 11, fontWeight: "800" },
-  kpiValue: { color: T.ink, fontSize: 22, fontWeight: "800", letterSpacing: -0.4 },
-  kpiLabel: { color: T.muted, fontSize: 12, fontWeight: "600", marginTop: 3 },
-
-  /* Modules */
-  moduleList: { gap: 10 },
-  moduleWrap: { borderRadius: 18, ...SHADOW },
+  moduleWrap: { width: "48.5%", borderRadius: 18, ...SHADOW },
   module: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 14,
+    alignItems: "flex-start",
+    minHeight: 154,
     padding: 14,
     borderRadius: 18,
     backgroundColor: T.surface,
-    minHeight: 76,
   },
   moduleIcon: {
-    width: 46,
-    height: 46,
+    width: 42,
+    height: 42,
     borderRadius: 14,
     alignItems: "center",
     justifyContent: "center",
   },
-  moduleText: { flex: 1, minWidth: 0 },
-  moduleLabel: { color: T.ink, fontSize: 15, fontWeight: "800" },
-  moduleBody: { color: T.muted, fontSize: 12, lineHeight: 17, marginTop: 3 },
+  moduleText: { flex: 1, width: "100%", minWidth: 0, marginTop: 14 },
+  moduleLabel: { color: T.ink, fontSize: 14, fontWeight: "800" },
+  moduleBody: { color: T.muted, fontSize: 11, lineHeight: 16, marginTop: 5 },
   moduleArrow: {
-    width: 30,
-    height: 30,
-    borderRadius: 10,
+    position: "absolute",
+    right: 12,
+    top: 12,
+    width: 26,
+    height: 26,
+    borderRadius: 9,
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: T.slateSoft,

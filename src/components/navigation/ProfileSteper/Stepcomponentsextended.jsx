@@ -1,10 +1,13 @@
-import { message, Switch } from "antd";
+import { Switch } from "antd";
 import {
     ChevronRight,
     ChevronLeft,
-    Check,
     AlertCircle,
+    BadgeCheck,
+    Building2,
+    Info,
     Loader,
+    ShieldCheck,
 } from "lucide-react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -14,6 +17,12 @@ import { toast } from "sonner";
 // ═══════════════════════════════════════════════════════════════════════════════
 
 export function Step3Registration({ store, nextStep, prevStep }) {
+    const patterns = {
+        gstNo: /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/,
+        panNo: /^[A-Z]{5}[0-9]{4}[A-Z]$/,
+        cinNo: /^[A-Z][0-9]{5}[A-Z]{2}[0-9]{4}[A-Z]{3}[0-9]{6}$/,
+        aadharNo: /^\d{12}$/,
+    };
     const {
         register: registerStep3,
         control: controlStep3,
@@ -22,35 +31,62 @@ export function Step3Registration({ store, nextStep, prevStep }) {
         setValue: setValueStep3,
         watch: watchStep3,
     } = useForm({
+        mode: "onBlur",
         defaultValues: {
-            gstNo: store.registrationDetails.gstNo || "",
-            panNo: store.registrationDetails.panNo || "",
-            cinNo: store.registrationDetails.cinNo || "",
-            aadharNo: store.registrationDetails.aadharNo || "",
-            pfNo: store.registrationDetails.pfNo || "",
-            esiNo: store.registrationDetails.esiNo || "",
-            msmeNo: store.registrationDetails.msmeNo || "",
-            udyogAadhaarToggle: store.registrationDetails.udyogAadhaarToggle || false,
+            gstNo: store.registrationDetails?.gstNo || "",
+            panNo: store.registrationDetails?.panNo || "",
+            cinNo: store.registrationDetails?.cinNo || "",
+            aadharNo: store.registrationDetails?.aadharNo || "",
+            pfNo: store.registrationDetails?.pfNo || "",
+            esiNo: store.registrationDetails?.esiNo || "",
+            msmeNo: store.registrationDetails?.msmeNo || "",
+            udyogAadhaarToggle: store.registrationDetails?.udyogAadhaarToggle || false,
+            licenseNo: store.registrationDetails?.licenseNo || "",
+            licenseExpiryDate: store.registrationDetails?.licenseExpiryDate || "",
         },
     });
 
     const onSaveStep3 = async (data) => {
+        const identifiers = {
+            gstNo: data.gstNo?.trim().toUpperCase() || "",
+            panNo: data.panNo?.trim().toUpperCase() || "",
+            cinNo: data.cinNo?.trim().toUpperCase() || "",
+            aadharNo: data.aadharNo?.trim() || "",
+        };
+        if (!Object.values(identifiers).some(Boolean)) {
+            toast.error("Add at least one business identification number.");
+            return;
+        }
+
         try {
-            store.setRegistrationDetails(data);
+            store.setRegistrationDetails({ ...data, ...identifiers });
             toast.success("Registration & Compliance details saved!");
             nextStep();
         } catch (error) {
-            toast.error("Failed to save registration details");
+            toast.error(error?.message || "Failed to save registration details");
         }
     };
 
     return (
-        <form onSubmit={handleSubmitStep3(onSaveStep3)} className="space-y-6 profileWizardStep">
+        <form onSubmit={handleSubmitStep3(onSaveStep3)} className="space-y-6 profileWizardStep pw-step--registration pw-step--registration-extended">
+            <div className="pw-step-intro">
+                <span className="pw-step-intro__icon">
+                    <Building2 aria-hidden="true" />
+                </span>
+                <div>
+                    <h3>Registration & compliance</h3>
+                    <p>Add the business identifiers and workforce details that apply to your organisation.</p>
+                </div>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* SECTION A - Registration Details */}
-                <div className="bg-slate-50/50 border border-slate-200/60 rounded-2xl p-5 space-y-4">
-                    <h4 className="text-xs uppercase font-extrabold tracking-widest text-blue-600 border-b border-slate-100 pb-2">
-                        SECTION A – Registration Details
+                <div className="pw-section-panel pw-registration-section bg-slate-50/50 border border-slate-200/60 rounded-2xl p-5 space-y-4">
+                    <h4 className="pw-section-heading">
+                        <BadgeCheck aria-hidden="true" />
+                        <span>
+                            <strong>Business registration</strong>
+                            <small>Tax and identity numbers for your organisation.</small>
+                        </span>
                     </h4>
 
                     <div className="flex flex-col gap-1.5">
@@ -62,11 +98,7 @@ export function Step3Registration({ store, nextStep, prevStep }) {
                             placeholder="e.g. 07AAAAA1111A1Z1"
                             className="bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100/50 text-slate-800 placeholder-slate-400 shadow-sm"
                             {...registerStep3("gstNo", {
-                                pattern: {
-                                    value:
-                                        /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}[Z]{1}[0-9A-Z]{1}$/,
-                                    message: "Invalid GSTIN format",
-                                },
+                                validate: (value) => !value || patterns.gstNo.test(value.trim().toUpperCase()) || "Invalid GSTIN format",
                             })}
                         />
                         {errorsStep3.gstNo && (
@@ -85,10 +117,7 @@ export function Step3Registration({ store, nextStep, prevStep }) {
                             placeholder="e.g. ABCDE1234F"
                             className="bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100/50 text-slate-800 placeholder-slate-400 shadow-sm"
                             {...registerStep3("panNo", {
-                                pattern: {
-                                    value: /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/,
-                                    message: "Invalid PAN format",
-                                },
+                                validate: (value) => !value || patterns.panNo.test(value.trim().toUpperCase()) || "Invalid PAN format",
                             })}
                         />
                         {errorsStep3.panNo && (
@@ -106,8 +135,13 @@ export function Step3Registration({ store, nextStep, prevStep }) {
                             type="text"
                             placeholder="e.g. L27020MH1919PLC000540"
                             className="bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100/50 text-slate-800 placeholder-slate-400 shadow-sm"
-                            {...registerStep3("cinNo")}
+                            {...registerStep3("cinNo", {
+                                validate: (value) => !value || patterns.cinNo.test(value.trim().toUpperCase()) || "Invalid CIN format",
+                            })}
                         />
+                        {errorsStep3.cinNo && (
+                            <span className="text-red-500 text-[10px]">{errorsStep3.cinNo.message}</span>
+                        )}
                     </div>
 
                     <div className="flex flex-col gap-1.5">
@@ -119,10 +153,7 @@ export function Step3Registration({ store, nextStep, prevStep }) {
                             placeholder="e.g. 123456789012"
                             className="bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100/50 text-slate-800 placeholder-slate-400 shadow-sm"
                             {...registerStep3("aadharNo", {
-                                pattern: {
-                                    value: /^\d{12}$/,
-                                    message: "Aadhaar must be 12 digits",
-                                },
+                                validate: (value) => !value || patterns.aadharNo.test(value.trim()) || "Aadhaar must be 12 digits",
                             })}
                         />
                         {errorsStep3.aadharNo && (
@@ -134,9 +165,13 @@ export function Step3Registration({ store, nextStep, prevStep }) {
                 </div>
 
                 {/* SECTION B - Additional Compliance */}
-                <div className="bg-slate-50/50 border border-slate-200/60 rounded-2xl p-5 space-y-4">
-                    <h4 className="text-xs uppercase font-extrabold tracking-widest text-blue-600 border-b border-slate-100 pb-2">
-                        SECTION B – Additional Compliance
+                <div className="pw-section-panel pw-compliance-section bg-slate-50/50 border border-slate-200/60 rounded-2xl p-5 space-y-4">
+                    <h4 className="pw-section-heading">
+                        <ShieldCheck aria-hidden="true" />
+                        <span>
+                            <strong>Additional compliance</strong>
+                            <small>Employee, licence, and MSME details where applicable.</small>
+                        </span>
                     </h4>
 
                     <div className="flex flex-col gap-1.5">
@@ -160,6 +195,29 @@ export function Step3Registration({ store, nextStep, prevStep }) {
                             placeholder="e.g. 31000123450001001"
                             className="bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100/50 text-slate-800 placeholder-slate-400 shadow-sm"
                             {...registerStep3("esiNo")}
+                        />
+                    </div>
+
+                    <div className="flex flex-col gap-1.5">
+                        <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                            Trade or shop licence number
+                        </label>
+                        <input
+                            type="text"
+                            placeholder="Licence number"
+                            className="bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100/50 text-slate-800 placeholder-slate-400 shadow-sm"
+                            {...registerStep3("licenseNo")}
+                        />
+                    </div>
+
+                    <div className="flex flex-col gap-1.5">
+                        <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                            Licence expiry date
+                        </label>
+                        <input
+                            type="date"
+                            className="bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100/50 text-slate-800 shadow-sm"
+                            {...registerStep3("licenseExpiryDate")}
                         />
                     </div>
 
@@ -199,7 +257,12 @@ export function Step3Registration({ store, nextStep, prevStep }) {
                 </div>
             </div>
 
-            <div className="flex justify-between gap-3 pt-6 border-t border-slate-100 mt-6">
+            <div className="pw-step-note">
+                <Info aria-hidden="true" />
+                <span>At least one identification number (GST, PAN, CIN, or Aadhaar) is required.</span>
+            </div>
+
+            <div className="flex justify-between gap-3 pt-6 border-t border-slate-100 mt-6 pw-step-actions">
                 <button
                     type="button"
                     onClick={prevStep}
@@ -229,7 +292,7 @@ export function Step3Registration({ store, nextStep, prevStep }) {
  * @returns {JSX} Formatted error element
  */
 export const FormError = ({ fieldName, errorMessage }) => (
-    <span className="text-red-500 text-[10px] flex items-center gap-1">
+    <span className="pw-form-error text-red-500 text-[10px] flex items-center gap-1">
         <AlertCircle className="w-3 h-3" /> {errorMessage}
     </span>
 );
@@ -245,7 +308,7 @@ export const FormInput = ({
     type = "text",
     ...props
 }) => (
-    <div className="flex flex-col gap-1.5 profileWizardField">
+    <div className="flex flex-col gap-1.5 profileWizardField pw-form-field">
         <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
             {label} {required && "*"}
         </label>

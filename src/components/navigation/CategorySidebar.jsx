@@ -171,7 +171,7 @@ export default function CategorySidebar({ navigation: drawerNavigation }) {
   const term = query.trim().toLowerCase();
 
   const loginResponce = useAuthStore((s) => s?.user);
-  const isLoggedIn = !!(loginResponce?.isLoginSuccessful || loginResponce?.userId);
+  const isLoggedIn = loginResponce?.isLoginSuccessbyOtp === true;
   const userId = loginResponce?.userId || 0;
 
   const activeId = useCategoryStore((s) => s.activeId);

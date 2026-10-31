@@ -4,11 +4,10 @@ import {
   Loader,
   Upload,
   FileText,
-  AlertCircle,
+  CheckCircle2,
+  ShieldCheck,
   X,
-  Eye,
   Trash2,
-  RefreshCw,
   Download,
 } from "lucide-react";
 import { useState, useMemo, useEffect } from "react";
@@ -274,17 +273,18 @@ function UploadCard({ category, subCategory, userId, existingDoc, onRefresh }) {
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="bg-white border border-slate-200 rounded-xl p-4 space-y-3"
+        className="pw-upload-card bg-white border border-slate-200 rounded-xl p-4 space-y-3"
       >
         {/* Title */}
         <div className="flex items-start justify-between gap-2">
           <div>
-            <h5 className="text-xs font-bold text-slate-700 uppercase tracking-wide">
+            <h5 className="pw-upload-card__title text-xs font-bold text-slate-700 uppercase tracking-wide">
               {subCategory?.DocumentSubCategoryName ?? "Unknown"}
             </h5>
             {existingDoc && (
-              <span className="inline-flex items-center gap-1 mt-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100">
-                ✓ Uploaded
+              <span className="pw-upload-status inline-flex items-center gap-1 mt-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100">
+                <CheckCircle2 aria-hidden="true" />
+                Uploaded
               </span>
             )}
           </div>
@@ -292,7 +292,7 @@ function UploadCard({ category, subCategory, userId, existingDoc, onRefresh }) {
 
         {/* Uploaded doc actions */}
         {existingDoc ? (
-          <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl space-y-2">
+          <div className="pw-uploaded-file p-3 bg-emerald-50 border border-emerald-200 rounded-xl space-y-2">
             <div className="flex items-center gap-2 min-w-0">
               <FileText className="w-4 h-4 text-emerald-600 shrink-0" />
               <div className="min-w-0 flex-1">
@@ -317,7 +317,9 @@ function UploadCard({ category, subCategory, userId, existingDoc, onRefresh }) {
 
               {/* Download */}
               <button
+                type="button"
                 onClick={handleDownload}
+                aria-label={`Download ${existingDoc.DocumentName}`}
                 className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-bold bg-white border border-blue-200 text-blue-600 hover:bg-blue-50 transition-colors"
               >
                 <Download className="w-3 h-3" /> Download
@@ -341,6 +343,7 @@ function UploadCard({ category, subCategory, userId, existingDoc, onRefresh }) {
 
               {/* Delete */}
               <button
+                type="button"
                 onClick={() => {
                   if (window.confirm("Delete this document?")) {
                     deleteDoc(existingDoc.UserDocumentID);
@@ -372,6 +375,7 @@ function UploadCard({ category, subCategory, userId, existingDoc, onRefresh }) {
             <input
               type="file"
               accept=".pdf,.jpg,.jpeg,.png,.tiff"
+              aria-label={`Upload document for ${subCategory?.DocumentSubCategoryName ?? "this category"}`}
               className="absolute inset-0 opacity-0 cursor-pointer"
               onChange={(e) => {
                 const f = e.target.files?.[0];
@@ -501,18 +505,21 @@ export function Step4Documents({ store, nextStep, prevStep }) {
   };
 
   return (
-    <div className="space-y-6 profileWizardStep">
+    <div className="space-y-6 profileWizardStep pw-step--documents">
       {/* Info banner */}
-      <div className="flex items-start gap-2 p-3 bg-blue-50 border border-blue-200 rounded-xl">
-        <AlertCircle className="w-4 h-4 text-blue-600 mt-0.5 shrink-0" />
-        <p className="text-xs text-blue-800">
-          Upload one document per subcategory. You can view, replace, download, or delete uploaded documents.
+      <div className="pw-document-guidance">
+        <span className="pw-document-guidance__icon">
+          <ShieldCheck aria-hidden="true" />
+        </span>
+        <p>
+          Upload one document for each category. Files are attached to your
+          business profile and can be downloaded or removed later.
         </p>
       </div>
 
       {/* Uploaded docs count */}
       {existingDocs.length > 0 && (
-        <div className="flex items-center gap-2 px-3 py-2 bg-emerald-50 border border-emerald-100 rounded-xl">
+        <div className="pw-document-count flex items-center gap-2 px-3 py-2 bg-emerald-50 border border-emerald-100 rounded-xl">
           <span className="w-5 h-5 rounded-full bg-emerald-500 text-white text-[10px] font-black flex items-center justify-center">
             {existingDocs.length}
           </span>
@@ -542,11 +549,11 @@ export function Step4Documents({ store, nextStep, prevStep }) {
                 key={catId}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="pw-section-panel space-y-4"
+                className="pw-section-panel space-y-4 pw-document-category"
               >
                 {/* Category header */}
                 <div className="flex items-center gap-3 pb-2 border-b border-slate-200">
-                  <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600">
+                  <div className="pw-document-category__icon w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600">
                     <FileText className="w-5 h-5" />
                   </div>
                   <div>
@@ -590,7 +597,7 @@ export function Step4Documents({ store, nextStep, prevStep }) {
       )}
 
       {/* Navigation */}
-      <div className="flex justify-between gap-3 pt-6 border-t border-slate-200 mt-8">
+      <div className="flex justify-between gap-3 pt-6 border-t border-slate-200 mt-8 pw-step-actions">
         <button
           type="button"
           onClick={prevStep}

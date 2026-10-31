@@ -36,6 +36,7 @@ function roleForUserType(role) {
 export const useAuthStore = create((set, get) => ({
   user: null,
   pendingLogin: null,
+  profileGateUnlocked: false,
   hydrated: false,
   hasOnboarded: false,
   async hydrate() {
@@ -60,9 +61,13 @@ export const useAuthStore = create((set, get) => ({
           await AsyncStorage.removeItem(K_USER);
         }
       }
-      set({ hasOnboarded: onb === "1", user });
+      set({ hasOnboarded: onb === "1", user, profileGateUnlocked: false });
     } catch {
-      set({ hasOnboarded: false, user: null });
+      set({
+        hasOnboarded: false,
+        user: null,
+        profileGateUnlocked: false,
+      });
     } finally {
       set({ hydrated: true });
     }
@@ -104,7 +109,7 @@ export const useAuthStore = create((set, get) => ({
       refreshToken: response?.refreshToken,
       refreshTokenExpiryTime: response?.refreshTokenExpiryTime,
     };
-    set({ pendingLogin });
+    set({ pendingLogin, profileGateUnlocked: false });
     return {
       challengeId: pendingLogin.id,
       mobile: pendingLogin.mobile,
@@ -145,7 +150,7 @@ export const useAuthStore = create((set, get) => ({
         refreshTokenExpiryTime:
           response?.refreshTokenExpiryTime ?? pendingLogin.refreshTokenExpiryTime,
       };
-    set({ user, pendingLogin: null });
+    set({ user, pendingLogin: null, profileGateUnlocked: false });
     setAuthTokens(user.authToken, user.refreshToken);
     try {
       await AsyncStorage.setItem(K_USER, JSON.stringify(user));
@@ -225,7 +230,7 @@ export const useAuthStore = create((set, get) => ({
   },
   async signOut() {
     clearAuthTokens();
-    set({ user: null, pendingLogin: null });
+    set({ user: null, pendingLogin: null, profileGateUnlocked: false });
     await AsyncStorage.removeItem(K_USER).catch(() => {});
   },
   async completeOnboarding() {
@@ -240,5 +245,8 @@ export const useAuthStore = create((set, get) => ({
       AsyncStorage.removeItem(K_USER).catch(() => {});
       clearAuthTokens();
     }
+  },
+  setProfileGateUnlocked(unlocked) {
+    set({ profileGateUnlocked: Boolean(unlocked) });
   },
 }));

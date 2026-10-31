@@ -3,7 +3,6 @@ import {
   ChevronLeft,
   GripVertical,
   Layers3,
-  EyeOff,
   Zap,
   ChevronDown,
   Loader,
@@ -57,10 +56,10 @@ const CheckValidityGet = async (userId) => {
 // ─── Color palette ─────────────────────────────────────────────────────────────
 const colorMap = {
   violet: {
-    border: "#c4b5fd",
-    bg: "#f5f3ff",
-    text: "#7c3aed",
-    glow: "rgba(124,58,237,0.4)",
+    border: "#c9d8e6",
+    bg: "#edf4fa",
+    text: "#285d83",
+    glow: "rgba(40,93,131,0.12)",
   },
 };
 const COLOR_KEYS = Object.keys(colorMap);
@@ -455,7 +454,6 @@ const Step5ServiceListing = ({ store, nextStep, prevStep, navbar = false }) => {
     if (!rawServices.length) return;
     const tree = mapFlatToTree(rawServices);
     setServices(tree);
-    console.log(rawServices,"rawServices");
 
     // Pre-select services that are already active from API
     const alreadyActive = rawServices
@@ -635,15 +633,15 @@ const Step5ServiceListing = ({ store, nextStep, prevStep, navbar = false }) => {
 
         <motion.div
           whileHover={{ scale: 1.005 }}
-          className={`group relative mb-3 overflow-hidden rounded-2xl border-2 transition-all duration-300 ${
+          className={`pw-service-item group relative mb-3 overflow-hidden rounded-2xl border-2 transition-all duration-300 ${
             isActive ? "bg-white" : "bg-slate-50/50"
           }`}
           style={{
-            borderColor: isActive ? colors.border : "#e5e7eb",
+            borderColor: isActive ? colors.border : "#e5ebf1",
             marginLeft: `${indent}px`,
             boxShadow: isActive
-              ? `0 0 30px ${colors.glow}, 0 10px 40px -12px rgba(0,0,0,0.15)`
-              : "0 4px 12px rgba(0,0,0,0.05)",
+              ? "0 6px 16px rgba(18,38,63,0.07)"
+              : "0 2px 7px rgba(18,38,63,0.035)",
           }}
         >
           <div className="relative p-4">
@@ -652,7 +650,10 @@ const Step5ServiceListing = ({ store, nextStep, prevStep, navbar = false }) => {
 
               {hasChildren && (
                 <button
+                  type="button"
                   onClick={() => toggleExpanded(item?.id)}
+                  aria-expanded={isExpanded}
+                  aria-label={`${isExpanded ? "Collapse" : "Expand"} ${item?.name}`}
                   className="mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border-2 transition-all"
                   style={{
                     borderColor: colors.border,
@@ -678,10 +679,11 @@ const Step5ServiceListing = ({ store, nextStep, prevStep, navbar = false }) => {
                   <div className="flex items-start gap-3">
                     {level === 0 && item?.icon && (
                       <div
-                        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-xl"
-                        style={{ backgroundColor: colors.bg }}
+                        className="pw-service-mark flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
+                        style={{ backgroundColor: colors.bg, color: colors.text }}
+                        aria-hidden="true"
                       >
-                        {item?.icon}
+                        <Layers3 className="h-5 w-5" />
                       </div>
                     )}
                     <div>
@@ -719,8 +721,11 @@ const Step5ServiceListing = ({ store, nextStep, prevStep, navbar = false }) => {
 
                   {/* Toggle button — disabled once active */}
                   <button
+                    type="button"
                     onClick={() => toggleActive(item)}
                     disabled={isTogglingNow || isActive}
+                    aria-pressed={isActive}
+                    aria-label={`${isActive ? "Service active" : "Activate service"}: ${item?.name}`}
                     className="flex items-center gap-1.5 rounded-full border-2 px-3 py-1.5 shrink-0 text-xs font-bold transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
                     style={{
                       borderColor: isActive ? colors.border : "#e5e7eb",
@@ -737,12 +742,11 @@ const Step5ServiceListing = ({ store, nextStep, prevStep, navbar = false }) => {
                       </>
                     ) : isActive ? (
                       <>
-                        <Zap className="h-3 w-3" /> Activated
+                        <CheckCircle2 className="h-3.5 w-3.5" /> Active
                       </>
                     ) : (
                       <>
-                        <EyeOff className="h-3 w-3 opacity-50" /> Click to
-                        Active
+                        <Plus className="h-3.5 w-3.5" /> Activate
                       </>
                     )}
                   </button>
@@ -755,8 +759,7 @@ const Step5ServiceListing = ({ store, nextStep, prevStep, navbar = false }) => {
             <div
               className="absolute bottom-0 left-0 right-0 h-[3px]"
               style={{
-                background: `linear-gradient(to right, ${colors.glow}, ${colors.text}, ${colors.glow})`,
-                boxShadow: `0 0 10px ${colors.glow}`,
+                background: "#e7b45b",
               }}
             />
           )}
@@ -778,13 +781,21 @@ const Step5ServiceListing = ({ store, nextStep, prevStep, navbar = false }) => {
     0,
   );
   const isLoading = servicesLoading || subscriptionsLoading;
-  console.log(latestSub, "latestSub.EnterDate");
 
   return (
-    <div className="space-y-6 profileWizardStep">
+    <div className="space-y-6 profileWizardStep pw-step--services">
+      <div className="pw-step-intro">
+        <span className="pw-step-intro__icon">
+          <Layers3 aria-hidden="true" />
+        </span>
+        <div>
+          <h3>Your services</h3>
+          <p>Choose the services your business offers to customers.</p>
+        </div>
+      </div>
       {/* Active plan banner */}
       {hasActivePlan ? (
-        <div className="flex items-center gap-3 p-3 bg-emerald-50 border border-emerald-200 rounded-xl">
+        <div className="pw-plan-status flex items-center gap-3 p-3 bg-emerald-50 border border-emerald-200 rounded-xl">
           <Crown className="w-4 h-4 text-emerald-600 shrink-0" />
           <div className="flex-1 min-w-0">
             <p className="text-xs font-bold text-emerald-700">
@@ -800,7 +811,7 @@ const Step5ServiceListing = ({ store, nextStep, prevStep, navbar = false }) => {
           </span>
         </div>
       ) : (
-        <div className="flex items-center justify-between gap-3 p-3 bg-amber-50 border border-amber-200 rounded-xl">
+        <div className="pw-plan-status pw-plan-status--inactive flex items-center justify-between gap-3 p-3 bg-amber-50 border border-amber-200 rounded-xl">
           <div className="flex items-center gap-2">
             <Crown className="w-4 h-4 text-amber-500 shrink-0" />
             <p className="text-xs font-semibold text-amber-700">
@@ -808,6 +819,7 @@ const Step5ServiceListing = ({ store, nextStep, prevStep, navbar = false }) => {
             </p>
           </div>
           <button
+            type="button"
             onClick={() => setShowPlans(true)}
             className="shrink-0 px-3 py-1.5 rounded-lg bg-amber-500 text-white text-[10px] font-bold hover:bg-amber-600 transition-colors"
           >
@@ -817,12 +829,12 @@ const Step5ServiceListing = ({ store, nextStep, prevStep, navbar = false }) => {
       )}
 
       {/* Stats */}
-      <div className="flex flex-wrap gap-3">
-        <div className="rounded-xl bg-emerald-50 px-4 py-2 border-2 border-emerald-200">
-          <div className="text-xs font-medium text-emerald-600">
+      <div className="pw-service-stats flex flex-wrap gap-3">
+        <div className="pw-service-stat rounded-xl bg-emerald-50 px-4 py-2 border-2 border-emerald-200">
+          <div className="pw-service-stat__label text-xs font-medium text-emerald-600">
             Active Services
           </div>
-          <div className="text-2xl font-black text-emerald-700">
+          <div className="pw-service-stat__value text-2xl font-black text-emerald-700">
             {activeIds?.length}
             {maxServicesAllowed > 0 ? (
               <span className="text-sm font-semibold text-emerald-500">
@@ -832,11 +844,11 @@ const Step5ServiceListing = ({ store, nextStep, prevStep, navbar = false }) => {
             ) : null}
           </div>
         </div>
-        <div className="rounded-xl bg-violet-50 px-4 py-2 border-2 border-violet-200">
-          <div className="text-xs font-medium text-violet-600">
+        <div className="pw-service-stat rounded-xl bg-violet-50 px-4 py-2 border-2 border-violet-200">
+          <div className="pw-service-stat__label text-xs font-medium text-violet-600">
             Total Services
           </div>
-          <div className="text-2xl font-black text-violet-700">
+          <div className="pw-service-stat__value text-2xl font-black text-violet-700">
             {totalServices}
           </div>
         </div>
@@ -855,7 +867,7 @@ const Step5ServiceListing = ({ store, nextStep, prevStep, navbar = false }) => {
           </p>
         </div>
       ) : (
-        <div className="pw-section-panel">
+        <div className="pw-section-panel pw-service-tree">
           <div className="space-y-4">
             {services.map((s) => renderServiceItem(s))}
           </div>
@@ -864,7 +876,7 @@ const Step5ServiceListing = ({ store, nextStep, prevStep, navbar = false }) => {
 
       {/* Navigation */}
       {!navbar && (
-        <div className="flex justify-between gap-3 pt-6 border-t border-slate-100">
+        <div className="flex justify-between gap-3 pt-6 border-t border-slate-100 pw-step-actions">
           <button
             type="button"
             onClick={prevStep}

@@ -2,6 +2,12 @@ export const Routes = {
   // Root
   Splash: "Splash",
   Onboarding: "Onboarding",
+  Guest: "Guest",
+  GuestTabs: "GuestTabs",
+  GuestHome: "GuestHome",
+  GuestCategories: "GuestCategories",
+  GuestCompanies: "GuestCompanies",
+  GuestAccount: "GuestAccount",
   AuthStack: "AuthStack",
   MainTabs: "MainTabs",
   // Auth
@@ -14,7 +20,7 @@ export const Routes = {
   // Tabs
   HomeTab: "HomeTab",
   MarketplaceTab: "MarketplaceTab",
-  LeadsTab: "LeadsTab",
+  ActiveServices: "ActiveServices",
   ChatTab: "ChatTab",
   ProfileTab: "ProfileTab",
   // Marketplace
@@ -94,5 +100,5 @@ export const Routes = {
   IndividualMyServicesScreen: "IndividualMyServicesScreen",
   CompanySubServices: "CompanySubServices",
   CompanyListScreen: "CompanyListScreen",
-  CompanyDetailScreen: "CompanyDetailScreen",
+  CompanyDetailScreen: "CompanyDetail",
 };

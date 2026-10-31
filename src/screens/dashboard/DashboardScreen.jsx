@@ -4,20 +4,16 @@ import React, {
   useEffect,
   useMemo,
   useRef,
-  useState,
 } from "react";
 import {
-  ActivityIndicator,
   Animated,
-  Image,
   Pressable,
   ScrollView,
   StyleSheet,
   Text,
   View,
 } from "react-native";
-import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
-import { LinearGradient } from "expo-linear-gradient";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { DrawerActions, useNavigation } from "@react-navigation/native";
 import { useQuery } from "@tanstack/react-query";
 import { Screen, Avatar, Badge } from "@/components";
@@ -27,6 +23,7 @@ import { useNotificationsStore } from "@/store/notificationsStore";
 import { useCategoryStore } from "@/store/categoryStore";
 import { Routes } from "@/constants/routes";
 import { spacing } from "@/constants/sizes";
+import { colors } from "@/constants/colors";
 import { buildTree, fetchMenu, getAncestorIds } from "@/utils/serviceData";
 import AdminDashboardScreen from "@/screens/admin/AdminDashboardScreen";
 import VendorDashboardScreen from "@/screens/vendors/VendorDashboardScreen";
@@ -37,20 +34,20 @@ import { CompanyPreview } from "@/screens/companies/CompanyListScreen";
 /* ------------------------------------------------------------------ */
 
 const T = {
-  brand: "#4F46E5",
-  indigoSoft: "#EEF2FF",
-  ink: "#0F172A",
+  brand: colors.primary,
+  indigoSoft: colors.surfaceAlt,
+  ink: colors.text,
   body: "#334155",
-  muted: "#64748B",
+  muted: colors.textMuted,
   faint: "#94A3B8",
-  line: "#E2E8F0",
-  surface: "#FFFFFF",
-  canvas: "#F8FAFC",
-  slateSoft: "#F1F5F9",
-  danger: "#EF4444",
+  line: colors.border,
+  surface: colors.surface,
+  canvas: colors.bg,
+  slateSoft: colors.surfaceAlt,
+  danger: colors.danger,
   amberSoft: "#FFFBEB",
   amberLine: "#FDE68A",
-  amberInk: "#B45309",
+  amberInk: colors.accentDark,
 };
 
 const SHADOW = {
@@ -63,7 +60,7 @@ const SHADOW = {
 
 // Rotating tones so neighbouring cards do not look identical.
 const TONES = [
-  { bg: "#EEF2FF", fg: "#4F46E5" },
+  { bg: colors.surfaceAlt, fg: colors.primary },
   { bg: "#ECFEFF", fg: "#0E7490" },
   { bg: "#FFF7ED", fg: "#C2410C" },
   { bg: "#F0FDF4", fg: "#15803D" },
@@ -87,63 +84,6 @@ const TRADE_ICONS = [
 const iconForService = (name = "") => {
   const hit = TRADE_ICONS.find(([re]) => re.test(name));
   return hit ? hit[1] : "briefcase-outline";
-};
-
-/* ------------------------------------------------------------------ */
-/* Service background images                                           */
-/* Matched by service name. Unmatched services rotate through the set. */
-/* ------------------------------------------------------------------ */
-
-const IMG = {
-  // consulting: require("../../assets/IMG/assets.jpg"),
-  // assets: require("../../assets/IMG/Consulting_service.jpeg"),
-  // lab: require("../../assets/IMG/Industrial_labservice.jpeg"),
-  // contractor:
-  //   "https://5.imimg.com/data5/SELLER/Default/2024/7/433106499/MX/HO/RU/57976404/civil-construction-contractor-service.jpg",
-  // tender:
-  //   "https://5.imimg.com/data5/SELLER/Default/2026/3/588860952/XX/AP/XV/257074973/civil-engineering-services-500x500.jpg",
-  // legal:
-  //   "https://5.imimg.com/data5/SELLER/Default/2021/10/JB/EA/LS/8271659/civil-engineering-consultant-service.jpg",
-  // procurement:
-  //   "https://images.pexels.com/photos/8532826/pexels-photo-8532826.jpeg",
-  // brand:
-  //   "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSxKIwcO2VCrmiZ-GbLOYc8OwDjYe_y5DEugA&s",
-  // marketing:
-  //   "https://media.geeksforgeeks.org/wp-content/uploads/20240222165724/marketing-management-copy.webp",
-  // audit:
-  //   "https://prosoftnet.com/cdn/shop/articles/6-ways-land-surveying-shapes-infrastructure-planning.jpg?v=1705445625",
-};
-
-const IMAGE_RULES = [
-  [/consult/i, IMG.consulting],
-  [/asset/i, IMG.assets],
-  [/lab|industrial/i, IMG.lab],
-  [/contract|construct|epc|civil/i, IMG.contractor],
-  [/tender/i, IMG.tender],
-  [/legal|law/i, IMG.legal],
-  [/audit/i, IMG.audit],
-  [/procure|material|supply/i, IMG.procurement],
-  [/brand/i, IMG.brand],
-  [/market|advert/i, IMG.marketing],
-];
-
-const FALLBACK_IMAGE_POOL = [
-  IMG.consulting,
-  IMG.assets,
-  IMG.lab,
-  IMG.contractor,
-  IMG.tender,
-  IMG.legal,
-  IMG.procurement,
-];
-
-// Accepts a bundled asset (number) or a remote URL (string).
-const imageSourceFor = (name = "", index = 0) => {
-  const hit = IMAGE_RULES.find(([re]) => re.test(name));
-  const src = hit
-    ? hit[1]
-    : FALLBACK_IMAGE_POOL[index % FALLBACK_IMAGE_POOL.length];
-  return typeof src === "string" ? { uri: src } : src;
 };
 
 /* ------------------------------------------------------------------ */
@@ -214,15 +154,10 @@ function SkeletonTile() {
 /* ------------------------------------------------------------------ */
 
 const ServiceCard = memo(function ServiceCard({ node, index, onOpen }) {
-  const [imgFailed, setImgFailed] = useState(false);
   const tone = TONES[index % TONES.length];
   const children = node.children ?? [];
   const shown = children.slice(0, 2);
   const extra = children.length - shown.length;
-  const source = useMemo(
-    () => imageSourceFor(node.ServiceName, index),
-    [node.ServiceName, index],
-  );
 
   return (
     <PressScale
@@ -231,25 +166,6 @@ const ServiceCard = memo(function ServiceCard({ node, index, onOpen }) {
       contentStyle={styles.svcCard}
       accessibilityLabel={`Browse ${node.ServiceName}`}
     >
-      {/* Background image: low opacity, faded into the card by a gradient. */}
-      {!imgFailed && (
-        <Image
-          source={source}
-          style={styles.svcImage}
-          resizeMode="cover"
-          onError={() => setImgFailed(true)}
-          accessibilityIgnoresInvertColors
-        />
-      )}
-    <LinearGradient
-  pointerEvents="none"
-  colors={["rgba(255,255,255,0.1)", "rgba(255,255,255,0.7)", "#FFFFFF"]}
-  locations={[0, 0.5, 0.85]}
-  style={StyleSheet.absoluteFillObject}
-/>
-      <View pointerEvents="none" style={styles.svcGlowTop} />
-      <View pointerEvents="none" style={styles.svcGlowBottom} />
-
       <View style={styles.svcTop}>
         <View style={[styles.svcIcon, { backgroundColor: tone.bg }]}>
           <MaterialCommunityIcons
@@ -259,7 +175,7 @@ const ServiceCard = memo(function ServiceCard({ node, index, onOpen }) {
           />
         </View>
         <View style={styles.arrowDot}>
-          <Ionicons name="arrow-forward" size={13} color={T.brand} />
+          <MaterialCommunityIcons name="arrow-right" size={16} color={T.brand} />
         </View>
       </View>
 
@@ -289,7 +205,10 @@ const ServiceCard = memo(function ServiceCard({ node, index, onOpen }) {
           {extra > 0 && <Text style={styles.moreText}>+{extra} more</Text>}
         </View>
       ) : (
-        <Text style={styles.svcHint}>Explore contractors</Text>
+        <View style={styles.svcFooter}>
+          <Text style={styles.svcHint}>Browse category</Text>
+          <MaterialCommunityIcons name="arrow-right" size={15} color={T.brand} />
+        </View>
       )}
     </PressScale>
   );
@@ -301,7 +220,9 @@ function SectionHeader({ title, count }) {
       <Text style={styles.sectionTitle}>{title}</Text>
       {typeof count === "number" && count > 0 && (
         <View style={styles.countPill}>
-          <Text style={styles.countText}>{count}</Text>
+          <Text style={styles.countText}>
+            {count} {count === 1 ? "category" : "categories"}
+          </Text>
         </View>
       )}
     </View>
@@ -391,14 +312,14 @@ export default function DashboardScreen() {
       return (
         <View style={styles.stateBox}>
           <View style={styles.stateIcon}>
-            <Ionicons name="cloud-offline-outline" size={22} color={T.faint} />
+            <MaterialCommunityIcons name="cloud-off-outline" size={22} color={T.faint} />
           </View>
           <Text style={styles.stateText}>Services could not be loaded.</Text>
           <PressScale
             onPress={() => servicesQuery.refetch()}
             contentStyle={styles.retryBtn}
           >
-            <Ionicons name="refresh-outline" size={14} color={T.brand} />
+            <MaterialCommunityIcons name="refresh" size={15} color={T.brand} />
             <Text style={styles.retryText}>Try again</Text>
           </PressScale>
         </View>
@@ -409,7 +330,7 @@ export default function DashboardScreen() {
       return (
         <View style={styles.stateBox}>
           <View style={styles.stateIcon}>
-            <Ionicons name="layers-outline" size={22} color={T.faint} />
+            <MaterialCommunityIcons name="layers-outline" size={22} color={T.faint} />
           </View>
           <Text style={styles.stateText}>No services available.</Text>
         </View>
@@ -440,7 +361,7 @@ export default function DashboardScreen() {
           contentStyle={styles.iconBtn}
           accessibilityLabel="Open navigation menu"
         >
-          <Ionicons name="menu-outline" size={22} color={T.ink} />
+          <MaterialCommunityIcons name="menu" size={23} color={T.ink} />
         </PressScale>
 
         <View style={styles.greet}>
@@ -463,7 +384,7 @@ export default function DashboardScreen() {
             unread > 0 ? `Notifications, ${unread} unread` : "Notifications"
           }
         >
-          <Ionicons name="notifications-outline" size={21} color={T.ink} />
+          <MaterialCommunityIcons name="bell-outline" size={21} color={T.ink} />
           {unread > 0 && <View style={styles.badgeDot} />}
         </PressScale>
 
@@ -489,7 +410,7 @@ export default function DashboardScreen() {
             contentStyle={styles.searchBar}
             accessibilityLabel="Search services"
           >
-            <Ionicons name="search-outline" size={18} color={T.muted} />
+            <MaterialCommunityIcons name="magnify" size={21} color={T.muted} />
             <Text style={styles.searchText} numberOfLines={1}>
               Search architects, contractors, materials…
             </Text>
@@ -504,7 +425,7 @@ export default function DashboardScreen() {
 
             <View style={styles.creditTop}>
               <View style={styles.creditIcon}>
-                <Ionicons name="wallet-outline" size={17} color="#fff" />
+                <MaterialCommunityIcons name="wallet-outline" size={18} color="#fff" />
               </View>
               <Text style={styles.creditLabel}>Available credits</Text>
             </View>
@@ -521,7 +442,7 @@ export default function DashboardScreen() {
                 contentStyle={styles.creditCta}
                 accessibilityLabel="Top up credits"
               >
-                <Ionicons name="add" size={16} color={T.brand} />
+                <MaterialCommunityIcons name="plus" size={17} color={T.brand} />
                 <Text style={styles.creditCtaText}>Top up</Text>
               </PressScale>
             </View>
@@ -547,7 +468,7 @@ export default function DashboardScreen() {
         <FadeIn delay={260}>
           <View style={styles.banner}>
             <View style={styles.bannerIcon}>
-              <Ionicons name="rocket-outline" size={20} color={T.amberInk} />
+              <MaterialCommunityIcons name="rocket-launch-outline" size={21} color={T.amberInk} />
             </View>
             <View style={{ flex: 1, minWidth: 0 }}>
               <Badge label="For vendors" tone="accent" />
@@ -565,7 +486,7 @@ export default function DashboardScreen() {
               accessibilityLabel="Explore plans"
             >
               <Text style={styles.bannerCtaText}>Plans</Text>
-              <Ionicons name="chevron-forward" size={13} color="#fff" />
+              <MaterialCommunityIcons name="chevron-right" size={16} color="#fff" />
             </PressScale>
           </View>
         </FadeIn>
@@ -711,7 +632,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
-    height: 40,
+    minHeight: 44,
     paddingHorizontal: 14,
     borderRadius: 13,
     backgroundColor: "#FFFFFF",
@@ -750,38 +671,15 @@ const styles = StyleSheet.create({
   },
   svcWrap: { width: "48%", marginBottom: 12 },
   svcCard: {
-  padding: 14,
-  minHeight: 172,
-  borderRadius: 18,
-  backgroundColor: T.surface,
-  gap: 10,
-  overflow: "hidden",
-  position: "relative",
-  ...SHADOW,
-},
-svcImage: {
-  ...StyleSheet.absoluteFillObject,
-  width: undefined,
-  height: undefined,
-  opacity: 0.35,
-},
-  svcGlowTop: {
-    position: "absolute",
-    width: 100,
-    height: 100,
-    borderRadius: 160,
-    top: -30,
-    left: -20,
-    backgroundColor: "rgba(79,70,229,0.14)",
-  },
-  svcGlowBottom: {
-    position: "absolute",
-    width: 138,
-    height: 138,
-    borderRadius: 160,
-    bottom: -66,
-    right: -6,
-    backgroundColor: "rgba(14,116,144,0.12)",
+    padding: 14,
+    minHeight: 172,
+    borderRadius: 18,
+    backgroundColor: T.surface,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: T.line,
+    gap: 10,
+    overflow: "hidden",
+    ...SHADOW,
   },
   svcTop: {
     flexDirection: "row",
@@ -820,12 +718,13 @@ svcImage: {
   },
   chipText: { color: T.body, fontSize: 11, fontWeight: "600" },
   moreText: { color: T.brand, fontSize: 11, fontWeight: "700", marginTop: 2 },
-  svcHint: {
-    color: T.muted,
-    fontSize: 11,
-    fontWeight: "600",
+  svcFooter: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     marginTop: "auto",
   },
+  svcHint: { color: T.brand, fontSize: 11, fontWeight: "700" },
   skelTile: {
     height: 172,
     borderRadius: 18,
@@ -847,7 +746,7 @@ svcImage: {
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
-    height: 38,
+    minHeight: 44,
     paddingHorizontal: 14,
     borderRadius: 12,
     backgroundColor: T.indigoSoft,
@@ -879,7 +778,7 @@ svcImage: {
     flexDirection: "row",
     alignItems: "center",
     gap: 3,
-    height: 38,
+    minHeight: 44,
     paddingHorizontal: 12,
     borderRadius: 12,
     backgroundColor: T.brand,

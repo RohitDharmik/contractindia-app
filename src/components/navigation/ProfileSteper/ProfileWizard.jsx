@@ -61,17 +61,14 @@ const STEPS = [
 ];
 const UserRegistrationUserIdGetApi = async (userId) => {
   const response = await UserRegistrationUserIdGet(userId);
-  console.log(response, "response");
   return response?.data ?? [];
 };
 const userBankDetailbyParamsApi = async (userId) => {
   const response = await userBankDetailbyParams(`userId=${userId}`);
-  console.log(response, "response");
   return response?.data ?? [];
 };
 const userBankInformationbyParamsApi = async (userId) => {
   const response = await userBasicInformationbyParam(`userId=${userId}`);
-  console.log(response, "response");
   return response?.data ?? [];
 };
 export default function ProfileWizard() {
@@ -103,17 +100,13 @@ export default function ProfileWizard() {
   };
 
   const handleSkip = () => {
-    navigation("/commercial/dashboard");
-    if (progress >= 45) {
-      store.setIsSkipped(true);
-      message.success(
-        "You have skipped the profile wizard. Navigations unlocked!",
-      );
-    } else {
-      message.error(
-        "Please complete at least 80% of your profile before skipping.",
-      );
+    if (progress < 45) {
+      message.error("Please complete at least 45% of your profile before skipping.");
+      return;
     }
+    store.setIsSkipped(true);
+    message.success("You have skipped the profile wizard. Navigations unlocked!");
+    navigation("/commercial/dashboard");
   };
   const getloginResponce = useUserStore((state) => state?.loginResponce);
 
@@ -160,7 +153,6 @@ export default function ProfileWizard() {
   //bank details
   useEffect(() => {
     if (bankDetailData.length > 0) {
-      console.log(bankDetailData[0], "bankDetailData");
       store.setBankingDetails({
         bankName: bankDetailData[0]?.BankName,
         accountNumber: bankDetailData[0]?.AccountNo,
@@ -173,7 +165,6 @@ export default function ProfileWizard() {
   useEffect(() => {
     if (bankInformationData.length > 0) {
       const info = bankInformationData[0];
-      console.log(info, "bankInformationData");
 
       // set company type if not already chosen
       if (!store.companyType) {
@@ -269,13 +260,12 @@ export default function ProfileWizard() {
                 <span className="pw-ring-value">
                   {progress}%
                 </span>
-                <span className="pw-ring-label">
-                  Done
-                </span>
+                <span className="pw-ring-label">complete</span>
               </div>
             </div>
 
             <div className="pw-overview-copy">
+              <p className="pw-kicker">Commercial account setup</p>
               <div className="flex flex-wrap items-center justify-center md:justify-start gap-2">
                 <h2 className="pw-welcome">
                   Welcome,{" "}
@@ -298,6 +288,10 @@ export default function ProfileWizard() {
                       : "Strong & Verified"}
                 </span>
               </div>
+              <p className="pw-summary">
+                Complete your business details to build trust and unlock your
+                commercial workspace.
+              </p>
             </div>
 
             {progress >= 45 && (

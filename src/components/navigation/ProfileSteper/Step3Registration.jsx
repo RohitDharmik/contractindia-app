@@ -1,8 +1,14 @@
 import { Controller } from "react-hook-form";
 import { useForm } from "react-hook-form";
-import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { AlertCircle, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  AlertCircle,
+  BadgeCheck,
+  ChevronLeft,
+  ChevronRight,
+  Info,
+  ShieldCheck,
+} from "lucide-react";
 import Switch from "antd/lib/switch";
 import { useMutation } from "@tanstack/react-query";
 import { useUserStore } from "../../../../store/store";
@@ -12,9 +18,6 @@ import { userBasicInformationSave, } from "../../../../services/api";
 const Step3Registration = ({ store, nextStep, prevStep }) => {
   const { loginResponce } = useUserStore();
 
-  const [validationStatus, setValidationStatus] = useState({});
-
-  // Validation patterns
   const patterns = {
     gstin: /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}[Z]{1}[0-9A-Z]{1}$/,
     pan: /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/,
@@ -48,13 +51,18 @@ const Step3Registration = ({ store, nextStep, prevStep }) => {
   const { mutate: UpdateBasicInfo, isPending: isSaving } = useMutation({
     mutationFn: userBasicInformationSave,
     onSuccess: (response) => {
-      console.log(response, "response");
-
       if (response?.status) {
         toast.success(
           response?.message || "Basic Information Updated successfully!",
         );
-        store.setRegistrationDetails(watchStep3());
+        const registration = watchStep3();
+        store.setRegistrationDetails({
+          ...registration,
+          gstNo: registration.gstNo?.trim().toUpperCase() || "",
+          panNo: registration.panNo?.trim().toUpperCase() || "",
+          cinNo: registration.cinNo?.trim().toUpperCase() || "",
+          aadharNo: registration.aadharNo?.trim() || "",
+        });
         nextStep();
       } else {
         toast.error(response?.message || "Failed to Update basic information");
@@ -68,7 +76,16 @@ const Step3Registration = ({ store, nextStep, prevStep }) => {
     },
   });
   const onUpdateStep3 = async (data) => {
-    console.log(store, "store");
+    const identifiers = {
+      gstNo: data.gstNo?.trim().toUpperCase() || "",
+      panNo: data.panNo?.trim().toUpperCase() || "",
+      cinNo: data.cinNo?.trim().toUpperCase() || "",
+      aadharNo: data.aadharNo?.trim() || "",
+    };
+    if (!Object.values(identifiers).some(Boolean)) {
+      toast.error("Add at least one business identification number.");
+      return;
+    }
 
     const payload = {
       userId: loginResponce?.userId || 0,
@@ -80,50 +97,34 @@ const Step3Registration = ({ store, nextStep, prevStep }) => {
       contactNo: store?.basicInfo?.mobile || "",
       address: store?.basicInfo?.address || "",
       pinCode: store?.basicInfo?.pinCode || "",
-      aadharNo: data?.aadharNo || "",
-      gstNo: data?.gstNo || "",
-      panNo: data?.panNo || "",
+      aadharNo: identifiers.aadharNo,
+      gstNo: identifiers.gstNo,
+      panNo: identifiers.panNo,
       esiNo: data?.esiNo || "",
-      cinNo: data?.cinNo || "",
+      cinNo: identifiers.cinNo,
       isMSME: data?.udyogAadhaarToggle ? 1 : 0,
       udyogRegistrationNo: data?.msmeNo || "",
       pfNo: data?.pfNo || "",
       licenseNo: data?.licenseNo,
       licenseExpiryDate: data?.licenseExpiryDate,
     };
-    console.log(payload, "payload");
-
     UpdateBasicInfo(payload);
   };
 
-  const validateField = (fieldName, value) => {
-    if (!value) return null;
-
-    const pattern = patterns[fieldName];
-    if (pattern && !pattern.test(value)) {
-      return `Invalid ${fieldName.toUpperCase()} format`;
-    }
-    return null;
-  };
-
-  const handleFieldBlur = (fieldName, value) => {
-    const error = validateField(fieldName, value);
-    setValidationStatus((prev) => ({
-      ...prev,
-      [fieldName]: error,
-    }));
-  };
-
   return (
-    <form onSubmit={handleSubmitStep3(onUpdateStep3)} className="space-y-6 profileWizardStep">
+    <form onSubmit={handleSubmitStep3(onUpdateStep3)} className="space-y-6 profileWizardStep pw-step--registration">
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="pw-section-panel space-y-4"
+        className="pw-section-panel space-y-4 pw-registration-section"
       >
-        <h4 className="text-xs uppercase font-extrabold tracking-widest text-blue-700 mb-4">
-          Statutory registration numbers
+        <h4 className="pw-section-heading">
+          <BadgeCheck aria-hidden="true" />
+          <span>
+            <strong>Business registration</strong>
+            <small>Tax and identity numbers for your organisation.</small>
+          </span>
         </h4>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -131,7 +132,7 @@ const Step3Registration = ({ store, nextStep, prevStep }) => {
           <div className="flex flex-col gap-1.5">
             <label className="text-[10px] font-bold uppercase tracking-wider text-slate-600 flex items-center gap-2">
               GST Number
-              {validationStatus.gstNo && (
+              {errorsStep3.gstNo && (
                 <AlertCircle className="w-3 h-3 text-red-500" />
               )}
             </label>
@@ -139,19 +140,20 @@ const Step3Registration = ({ store, nextStep, prevStep }) => {
               type="text"
               placeholder="e.g. 07AAAAA1111A1Z1"
               maxLength="15"
-              className={`bg-white border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 text-slate-800 placeholder-slate-400 shadow-sm transition-all ${validationStatus.gstNo
+              className={`bg-white border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 text-slate-800 placeholder-slate-400 shadow-sm transition-all ${errorsStep3.gstNo
                   ? "border-red-300 focus:border-red-400 focus:ring-red-100"
                   : "border-slate-200 focus:border-blue-400 focus:ring-blue-100"
                 }`}
-              {...registerStep3("gstNo")}
-              onBlur={(e) =>
-                handleFieldBlur("gstNo", e.target.value.toUpperCase())
-              }
+              {...registerStep3("gstNo", {
+                validate: (value) =>
+                  !value || patterns.gstin.test(value.trim().toUpperCase()) ||
+                  "Invalid GSTIN format",
+              })}
             />
-            {validationStatus.gstNo && (
+            {errorsStep3.gstNo && (
               <span className="text-red-500 text-[10px] flex items-center gap-1">
                 <AlertCircle className="w-3 h-3" />
-                {validationStatus.gstNo}
+                {errorsStep3.gstNo.message}
               </span>
             )}
             {errorsStep3.gstNo && (
@@ -165,7 +167,7 @@ const Step3Registration = ({ store, nextStep, prevStep }) => {
           <div className="flex flex-col gap-1.5">
             <label className="text-[10px] font-bold uppercase tracking-wider text-slate-600 flex items-center gap-2">
               PAN Number
-              {validationStatus.pan && (
+              {errorsStep3.panNo && (
                 <AlertCircle className="w-3 h-3 text-red-500" />
               )}
             </label>
@@ -173,19 +175,20 @@ const Step3Registration = ({ store, nextStep, prevStep }) => {
               type="text"
               placeholder="e.g. ABCDE1234F"
               maxLength="10"
-              className={`bg-white border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 text-slate-800 placeholder-slate-400 shadow-sm transition-all ${validationStatus.pan
+              className={`bg-white border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 text-slate-800 placeholder-slate-400 shadow-sm transition-all ${errorsStep3.panNo
                   ? "border-red-300 focus:border-red-400 focus:ring-red-100"
                   : "border-slate-200 focus:border-blue-400 focus:ring-blue-100"
                 }`}
-              {...registerStep3("panNo")}
-              onBlur={(e) =>
-                handleFieldBlur("pan", e.target.value.toUpperCase())
-              }
+              {...registerStep3("panNo", {
+                validate: (value) =>
+                  !value || patterns.pan.test(value.trim().toUpperCase()) ||
+                  "Invalid PAN format",
+              })}
             />
-            {validationStatus.pan && (
+            {errorsStep3.panNo && (
               <span className="text-red-500 text-[10px] flex items-center gap-1">
                 <AlertCircle className="w-3 h-3" />
-                {validationStatus.pan}
+                {errorsStep3.panNo.message}
               </span>
             )}
           </div>
@@ -194,26 +197,27 @@ const Step3Registration = ({ store, nextStep, prevStep }) => {
           <div className="flex flex-col gap-1.5">
             <label className="text-[10px] font-bold uppercase tracking-wider text-slate-600 flex items-center gap-2">
               CIN Number (Corporate)
-              {validationStatus.cin && (
+              {errorsStep3.cinNo && (
                 <AlertCircle className="w-3 h-3 text-red-500" />
               )}
             </label>
             <input
               type="text"
               placeholder="e.g. L27020MH1919PLC000540"
-              className={`bg-white border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 text-slate-800 placeholder-slate-400 shadow-sm transition-all ${validationStatus.cin
+              className={`bg-white border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 text-slate-800 placeholder-slate-400 shadow-sm transition-all ${errorsStep3.cinNo
                   ? "border-red-300 focus:border-red-400 focus:ring-red-100"
                   : "border-slate-200 focus:border-blue-400 focus:ring-blue-100"
                 }`}
-              {...registerStep3("cinNo")}
-              onBlur={(e) =>
-                handleFieldBlur("cin", e.target.value.toUpperCase())
-              }
+              {...registerStep3("cinNo", {
+                validate: (value) =>
+                  !value || patterns.cin.test(value.trim().toUpperCase()) ||
+                  "Invalid CIN format",
+              })}
             />
-            {validationStatus.cin && (
+            {errorsStep3.cinNo && (
               <span className="text-red-500 text-[10px] flex items-center gap-1">
                 <AlertCircle className="w-3 h-3" />
-                {validationStatus.cin}
+                {errorsStep3.cinNo.message}
               </span>
             )}
           </div>
@@ -222,7 +226,7 @@ const Step3Registration = ({ store, nextStep, prevStep }) => {
           <div className="flex flex-col gap-1.5">
             <label className="text-[10px] font-bold uppercase tracking-wider text-slate-600 flex items-center gap-2">
               Aadhaar Number
-              {validationStatus.aadhaar && (
+              {errorsStep3.aadharNo && (
                 <AlertCircle className="w-3 h-3 text-red-500" />
               )}
             </label>
@@ -230,26 +234,32 @@ const Step3Registration = ({ store, nextStep, prevStep }) => {
               type="text"
               placeholder="e.g. 123456789012"
               maxLength="12"
-              className={`bg-white border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 text-slate-800 placeholder-slate-400 shadow-sm transition-all ${validationStatus.aadhaar
+              className={`bg-white border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 text-slate-800 placeholder-slate-400 shadow-sm transition-all ${errorsStep3.aadharNo
                   ? "border-red-300 focus:border-red-400 focus:ring-red-100"
                   : "border-slate-200 focus:border-blue-400 focus:ring-blue-100"
                 }`}
-              {...registerStep3("aadharNo")}
-              onBlur={(e) => handleFieldBlur("aadhaar", e.target.value)}
+              {...registerStep3("aadharNo", {
+                validate: (value) =>
+                  !value || patterns.aadhaar.test(value.trim()) ||
+                  "Aadhaar must be 12 digits",
+              })}
             />
-            {validationStatus.aadhaar && (
+            {errorsStep3.aadharNo && (
               <span className="text-red-500 text-[10px] flex items-center gap-1">
                 <AlertCircle className="w-3 h-3" />
-                {validationStatus.aadhaar}
+                {errorsStep3.aadharNo.message}
               </span>
             )}
           </div>
         </div>
 
         {/* Info Box */}
-        <div className="mt-4 p-3 bg-blue-100/50 border border-blue-200 rounded-lg text-[10px] text-blue-800">
-          ℹ️ At least one identification number (GST/PAN/CIN/Aadhaar) is
-          required
+        <div className="pw-step-note">
+          <Info aria-hidden="true" />
+          <span>
+            At least one identification number (GST, PAN, CIN, or Aadhaar) is
+            required.
+          </span>
         </div>
       </motion.div>
 
@@ -257,10 +267,14 @@ const Step3Registration = ({ store, nextStep, prevStep }) => {
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
-        className="pw-section-panel space-y-4"
+        className="pw-section-panel space-y-4 pw-compliance-section"
       >
-        <h4 className="text-xs uppercase font-extrabold tracking-widest text-purple-700 mb-4">
-          Employee & labor compliance
+        <h4 className="pw-section-heading">
+          <ShieldCheck aria-hidden="true" />
+          <span>
+            <strong>Additional compliance</strong>
+            <small>Include employee, licence, and MSME details where applicable.</small>
+          </span>
         </h4>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -317,7 +331,7 @@ const Step3Registration = ({ store, nextStep, prevStep }) => {
         </div>
 
         {/* MSME Toggle */}
-        <div className="mt-6 p-4 bg-white border border-slate-200 rounded-xl">
+        <div className="mt-6 p-4 bg-white border border-slate-200 rounded-xl pw-msme-panel">
           <div className="flex items-center justify-between">
             <div className="flex flex-col gap-1">
               <span className="text-sm font-bold text-slate-800">
@@ -362,8 +376,19 @@ const Step3Registration = ({ store, nextStep, prevStep }) => {
                     className="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-100/50 text-slate-800 placeholder-slate-400 shadow-sm"
                     {...registerStep3("msmeNo")}
                   />
-                  <span className="text-[9px] text-slate-500">
-                    ℹ️ Visit https://udyamregistration.gov.in to register
+                  <span className="pw-inline-note">
+                    <Info aria-hidden="true" />
+                    <span>
+                      Visit{" "}
+                      <a
+                        href="https://udyamregistration.gov.in"
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        udyamregistration.gov.in
+                      </a>{" "}
+                      to register.
+                    </span>
                   </span>
                 </div>
               </motion.div>
@@ -373,7 +398,7 @@ const Step3Registration = ({ store, nextStep, prevStep }) => {
       </motion.div>
 
       {/* Form Actions */}
-      <div className="flex justify-between gap-3 pt-6 border-t border-slate-100 mt-8">
+      <div className="flex justify-between gap-3 pt-6 border-t border-slate-100 mt-8 pw-step-actions">
         <button
           type="button"
           onClick={prevStep}
