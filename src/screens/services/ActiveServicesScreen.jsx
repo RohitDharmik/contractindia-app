@@ -76,7 +76,11 @@ function ActiveServiceCard({ service }) {
       </Text>
       {!!company && (
         <View style={styles.detailRow}>
-          <Ionicons name="business-outline" size={15} color={colors.textMuted} />
+          <Ionicons
+            name="business-outline"
+            size={15}
+            color={colors.textMuted}
+          />
           <Text style={styles.detailText} numberOfLines={1}>
             {company}
           </Text>
@@ -145,11 +149,16 @@ export default function ActiveServicesScreen() {
             )}
           </Pressable>
         }
+        showBack
       />
       <FlatList
         data={services}
         keyExtractor={(item, index) =>
-          String(item?.UserServiceID ?? item?.userServiceID ?? `${serviceName(item)}-${index}`)
+          String(
+            item?.UserServiceID ??
+              item?.userServiceID ??
+              `${serviceName(item)}-${index}`,
+          )
         }
         renderItem={({ item }) => <ActiveServiceCard service={item} />}
         contentContainerStyle={styles.listContent}

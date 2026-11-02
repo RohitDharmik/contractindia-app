@@ -76,11 +76,15 @@ import {
   globalStackScreenOptions,
   modalStackScreenOptions,
 } from "./stackOptions";
+import ServicesScreen from "../screens/vendors/ServicesScreen";
+import ActiveServicesScreen from "../screens/services/ActiveServicesScreen";
 const Stack = createNativeStackNavigator();
 
 export default function AppStack() {
   const user = useAuthStore((state) => state.user);
-  const profileGateUnlocked = useAuthStore((state) => state.profileGateUnlocked);
+  const profileGateUnlocked = useAuthStore(
+    (state) => state.profileGateUnlocked,
+  );
   const requiresProfileSetup =
     Number(user?.userType) === 2 && !profileGateUnlocked;
 
@@ -107,207 +111,230 @@ export default function AppStack() {
         </>
       ) : (
         <>
-      <Stack.Screen name={Routes.MainTabs} component={AppDrawer} />
+          <Stack.Screen name={Routes.MainTabs} component={AppDrawer} />
 
-      {/* Marketplace */}
-      <Stack.Screen name={Routes.Categories} component={CategoriesScreen} />
-      <Stack.Screen name={Routes.ServiceList} component={ServiceListScreen} />
-      <Stack.Screen
-        name={Routes.ServiceDetail}
-        component={ServiceDetailScreen}
-      />
-      <Stack.Screen name={Routes.Search} component={SearchScreen} />
-      <Stack.Screen
-        name={Routes.Filters}
-        component={FiltersScreen}
-        options={modalStackScreenOptions}
-      />
-      <Stack.Screen name={Routes.Compare} component={CompareScreen} />
-      <Stack.Screen name={Routes.Favorites} component={FavoritesScreen} />
-      <Stack.Screen
-        name={Routes.Inquiry}
-        component={InquiryScreen}
-        options={modalStackScreenOptions}
-      />
-      <Stack.Screen
-        name={Routes.BookConsultation}
-        component={BookConsultationScreen}
-        options={modalStackScreenOptions}
-      />
-      <Stack.Screen name={Routes.AIAssistant} component={AIAssistantScreen} />
+          {/* Marketplace */}
+          <Stack.Screen name={Routes.Categories} component={CategoriesScreen} />
+          <Stack.Screen
+            name={Routes.ServiceList}
+            component={ServiceListScreen}
+          />
+          <Stack.Screen
+            name={Routes.ServiceDetail}
+            component={ServiceDetailScreen}
+          />
+          <Stack.Screen name={Routes.Search} component={SearchScreen} />
+          <Stack.Screen
+            name={Routes.Filters}
+            component={FiltersScreen}
+            options={modalStackScreenOptions}
+          />
+          <Stack.Screen name={Routes.Compare} component={CompareScreen} />
+          <Stack.Screen name={Routes.Favorites} component={FavoritesScreen} />
+          <Stack.Screen
+            name={Routes.Inquiry}
+            component={InquiryScreen}
+            options={modalStackScreenOptions}
+          />
+          <Stack.Screen
+            name={Routes.BookConsultation}
+            component={BookConsultationScreen}
+            options={modalStackScreenOptions}
+          />
+          <Stack.Screen
+            name={Routes.AIAssistant}
+            component={AIAssistantScreen}
+          />
 
-      {/* Vendors */}
-      <Stack.Screen name={Routes.VendorList} component={VendorListScreen} />
-      <Stack.Screen
-        name={Routes.VendorProfile}
-        component={VendorProfileScreen}
-      />
-      <Stack.Screen
-        name={Routes.CompanyProfile}
-        component={CompanyProfileScreen}
-      />
-      <Stack.Screen
-        name={Routes.VendorDashboard}
-        component={VendorDashboardScreen}
-      />
-      <Stack.Screen name="CompanyList" component={CompanyListScreen} />
-      <Stack.Screen
-        name={Routes.CompanyDetailScreen}
-        component={CompanyDetailScreen}
-      />
-      <Stack.Screen
-        name={Routes.VendorServices}
-        component={AccountRecordsScreen}
-        initialParams={{ type: "services" }}
-      />
-      <Stack.Screen
-        name={Routes.VendorProfileWizard}
-        component={CompanyProfileWizardScreen}
-      />
-      <Stack.Screen
-        name={Routes.ClientHistory}
-        component={ClientHistoryScreen}
-      />
-      <Stack.Screen name={Routes.Invoices} component={InvoicesScreen} />
-      <Stack.Screen
-        name={Routes.IndividualServices}
-        component={AccountRecordsScreen}
-        initialParams={{ type: "services" }}
-      />
-      <Stack.Screen
-        name={Routes.SubscriptionHistory}
-        component={AccountRecordsScreen}
-        initialParams={{ type: "subscriptions" }}
-      />
-      <Stack.Screen
-        name={Routes.PlansAndSubscriptionsScreen}
-        component={PlansAndSubscriptionsScreen}
-        initialParams={{ type: "PlansAndSubscriptionsScreen" }}
-      />
-      <Stack.Screen
-        name={Routes.IndividualMyServicesScreen}
-        component={IndividualMyServicesScreen}
-        initialParams={{ type: "IndividualMyServicesScreen" }}
-      />
-      <Stack.Screen
-        name={Routes.CompanySubServices}
-        component={CompanySubServices}
-        initialParams={{ type: "CompanySubServices" }}
-      />
+          {/* Vendors */}
+          <Stack.Screen name={Routes.VendorList} component={VendorListScreen} />
+          <Stack.Screen name={Routes.ServicesScreen} component={ServicesScreen} />
+          <Stack.Screen name={Routes.ActiveServices} component={ActiveServicesScreen} />
+          <Stack.Screen
+            name={Routes.VendorProfile}
+            component={VendorProfileScreen}
+          />
+          <Stack.Screen
+            name={Routes.CompanyProfile}
+            component={CompanyProfileScreen}
+          />
+          <Stack.Screen
+            name={Routes.VendorDashboard}
+            component={VendorDashboardScreen}
+          />
+          <Stack.Screen name="CompanyList" component={CompanyListScreen} />
+          <Stack.Screen
+            name={Routes.CompanyDetailScreen}
+            component={CompanyDetailScreen}
+          />
+          <Stack.Screen
+            name={Routes.VendorServices}
+            component={AccountRecordsScreen}
+            initialParams={{ type: "services" }}
+          />
+          <Stack.Screen
+            name={Routes.VendorProfileWizard}
+            component={CompanyProfileWizardScreen}
+          />
+          <Stack.Screen
+            name={Routes.ClientHistory}
+            component={ClientHistoryScreen}
+          />
+          <Stack.Screen name={Routes.Invoices} component={InvoicesScreen} />
+          <Stack.Screen
+            name={Routes.IndividualServices}
+            component={AccountRecordsScreen}
+            initialParams={{ type: "services" }}
+          />
+          <Stack.Screen
+            name={Routes.SubscriptionHistory}
+            component={AccountRecordsScreen}
+            initialParams={{ type: "subscriptions" }}
+          />
+          <Stack.Screen
+            name={Routes.PlansAndSubscriptionsScreen}
+            component={PlansAndSubscriptionsScreen}
+            initialParams={{ type: "PlansAndSubscriptionsScreen" }}
+          />
+          <Stack.Screen
+            name={Routes.IndividualMyServicesScreen}
+            component={IndividualMyServicesScreen}
+            initialParams={{ type: "IndividualMyServicesScreen" }}
+          />
+          <Stack.Screen
+            name={Routes.CompanySubServices}
+            component={CompanySubServices}
+            initialParams={{ type: "CompanySubServices" }}
+          />
 
-      {/* Leads & Chat */}
-      <Stack.Screen name={Routes.LeadInbox} component={LeadInboxScreen} />
-      <Stack.Screen name={Routes.LeadDetail} component={LeadDetailScreen} />
-      <Stack.Screen name={Routes.ChatList} component={ChatListScreen} />
-      <Stack.Screen name={Routes.ChatRoom} component={ChatRoomScreen} />
-      <Stack.Screen
-        name={Routes.Notifications}
-        component={NotificationsScreen}
-      />
+          {/* Leads & Chat */}
+          <Stack.Screen name={Routes.LeadInbox} component={LeadInboxScreen} />
+          <Stack.Screen name={Routes.LeadDetail} component={LeadDetailScreen} />
+          <Stack.Screen name={Routes.ChatList} component={ChatListScreen} />
+          <Stack.Screen name={Routes.ChatRoom} component={ChatRoomScreen} />
+          <Stack.Screen
+            name={Routes.Notifications}
+            component={NotificationsScreen}
+          />
 
-      {/* Billing */}
-      <Stack.Screen
-        name={Routes.BusinessPlansScreen}
-        component={BusinessPlansScreen}
-      />
-      <Stack.Screen name={Routes.Plans} component={PlansScreen} />
-      <Stack.Screen name={Routes.Credits} component={CreditsScreen} />
-      <Stack.Screen
-        name={Routes.PurchaseHistory}
-        component={PurchaseHistoryScreen}
-      />
-      <Stack.Screen
-        name={Routes.Checkout}
-        component={CheckoutScreen}
-        options={modalStackScreenOptions}
-      />
+          {/* Billing */}
+          <Stack.Screen
+            name={Routes.BusinessPlansScreen}
+            component={BusinessPlansScreen}
+          />
+          <Stack.Screen name={Routes.Plans} component={PlansScreen} />
+          <Stack.Screen name={Routes.Credits} component={CreditsScreen} />
+          <Stack.Screen
+            name={Routes.PurchaseHistory}
+            component={PurchaseHistoryScreen}
+          />
+          <Stack.Screen
+            name={Routes.Checkout}
+            component={CheckoutScreen}
+            options={modalStackScreenOptions}
+          />
 
-      {/* Analytics */}
-      <Stack.Screen name={Routes.Analytics} component={AnalyticsScreen} />
+          {/* Analytics */}
+          <Stack.Screen name={Routes.Analytics} component={AnalyticsScreen} />
 
-      {/* Support */}
-      <Stack.Screen
-        name={Routes.SupportTickets}
-        component={SupportTicketsScreen}
-      />
-      <Stack.Screen name={Routes.TicketDetail} component={TicketDetailScreen} />
-      <Stack.Screen name={Routes.FAQ} component={FAQScreen} />
-      <Stack.Screen
-        name={Routes.KnowledgeBase}
-        component={KnowledgeBaseScreen}
-      />
-      <Stack.Screen name={Routes.LiveChat} component={LiveChatScreen} />
+          {/* Support */}
+          <Stack.Screen
+            name={Routes.SupportTickets}
+            component={SupportTicketsScreen}
+          />
+          <Stack.Screen
+            name={Routes.TicketDetail}
+            component={TicketDetailScreen}
+          />
+          <Stack.Screen name={Routes.FAQ} component={FAQScreen} />
+          <Stack.Screen
+            name={Routes.KnowledgeBase}
+            component={KnowledgeBaseScreen}
+          />
+          <Stack.Screen name={Routes.LiveChat} component={LiveChatScreen} />
 
-      {/* Profile */}
-      <Stack.Screen name={Routes.Profile} component={ProfileScreen} />
-      <Stack.Screen name={Routes.EditProfile} component={EditProfileScreen} />
-      <Stack.Screen name={Routes.KYC} component={KYCScreen} />
-      <Stack.Screen name={Routes.Settings} component={SettingsScreen} />
-      <Stack.Screen
-        name={Routes.NotificationSettings}
-        component={NotificationSettingsScreen}
-      />
-      <Stack.Screen
-        name={Routes.PrivacySettings}
-        component={PrivacySettingsScreen}
-      />
-      <Stack.Screen
-        name={Routes.ChangePassword}
-        component={ChangePasswordScreen}
-      />
-      <Stack.Screen
-        name={Routes.AdminUserVerification}
-        component={UserVerificationScreen}
-      />
+          {/* Profile */}
+          <Stack.Screen name={Routes.Profile} component={ProfileScreen} />
+          <Stack.Screen
+            name={Routes.EditProfile}
+            component={EditProfileScreen}
+          />
+          <Stack.Screen name={Routes.KYC} component={KYCScreen} />
+          <Stack.Screen name={Routes.Settings} component={SettingsScreen} />
+          <Stack.Screen
+            name={Routes.NotificationSettings}
+            component={NotificationSettingsScreen}
+          />
+          <Stack.Screen
+            name={Routes.PrivacySettings}
+            component={PrivacySettingsScreen}
+          />
+          <Stack.Screen
+            name={Routes.ChangePassword}
+            component={ChangePasswordScreen}
+          />
+          <Stack.Screen
+            name={Routes.AdminUserVerification}
+            component={UserVerificationScreen}
+          />
 
-      <Stack.Screen
-        name={Routes.AdminDashboard}
-        component={AdminDashboardScreen}
-      />
-      <Stack.Screen
-        name={Routes.AdminUserAction}
-        component={UserReviewScreen}
-      />
-      <Stack.Screen
-        name={Routes.ServiceManagement}
-        component={ServiceManagement}
-      />
-      <Stack.Screen name={Routes.AdminSecurity} component={SecurityScreen} />
-      <Stack.Screen
-        name={Routes.AdminDocumentSubcategories}
-        component={DocumentSubcategoriesScreen}
-      />
-      <Stack.Screen
-        name={Routes.AdminVendorApprovals}
-        component={VendorApprovalsScreen}
-      />
-      <Stack.Screen name={Routes.AdminUsers} component={UserManagementScreen} />
-      <Stack.Screen
-        name={Routes.AdminListings}
-        component={ListingApprovalsScreen}
-      />
-      <Stack.Screen
-        name={Routes.AdminCategories}
-        component={CategoryManagementScreen}
-      />
-      <Stack.Screen
-        name={Routes.AdminPlans}
-        component={PlansManagementScreen}
-      />
-      <Stack.Screen name={Routes.AdminPayments} component={PaymentsScreen} />
-      <Stack.Screen name={Routes.AdminReports} component={ReportsScreen} />
-      <Stack.Screen
-        name={Routes.AdminFormBuilder}
-        component={FormBuilderScreen}
-      />
-      <Stack.Screen
-        name={Routes.AdminAnnouncements}
-        component={AnnouncementsScreen}
-      />
-      <Stack.Screen
-        name={Routes.AdminVendorApprovalDetail}
-        component={VendorApprovalDetailScreen}
-      />
+          <Stack.Screen
+            name={Routes.AdminDashboard}
+            component={AdminDashboardScreen}
+          />
+          <Stack.Screen
+            name={Routes.AdminUserAction}
+            component={UserReviewScreen}
+          />
+          <Stack.Screen
+            name={Routes.ServiceManagement}
+            component={ServiceManagement}
+          />
+          <Stack.Screen
+            name={Routes.AdminSecurity}
+            component={SecurityScreen}
+          />
+          <Stack.Screen
+            name={Routes.AdminDocumentSubcategories}
+            component={DocumentSubcategoriesScreen}
+          />
+          <Stack.Screen
+            name={Routes.AdminVendorApprovals}
+            component={VendorApprovalsScreen}
+          />
+          <Stack.Screen
+            name={Routes.AdminUsers}
+            component={UserManagementScreen}
+          />
+          <Stack.Screen
+            name={Routes.AdminListings}
+            component={ListingApprovalsScreen}
+          />
+          <Stack.Screen
+            name={Routes.AdminCategories}
+            component={CategoryManagementScreen}
+          />
+          <Stack.Screen
+            name={Routes.AdminPlans}
+            component={PlansManagementScreen}
+          />
+          <Stack.Screen
+            name={Routes.AdminPayments}
+            component={PaymentsScreen}
+          />
+          <Stack.Screen name={Routes.AdminReports} component={ReportsScreen} />
+          <Stack.Screen
+            name={Routes.AdminFormBuilder}
+            component={FormBuilderScreen}
+          />
+          <Stack.Screen
+            name={Routes.AdminAnnouncements}
+            component={AnnouncementsScreen}
+          />
+          <Stack.Screen
+            name={Routes.AdminVendorApprovalDetail}
+            component={VendorApprovalDetailScreen}
+          />
         </>
       )}
     </Stack.Navigator>

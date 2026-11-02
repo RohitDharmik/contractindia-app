@@ -37,6 +37,7 @@ export const Routes = {
   CompanyProfile: "CompanyProfile",
   VendorDashboard: "VendorDashboard",
   VendorServices: "VendorServices",
+  ServicesScreen: "ServicesScreen",
   VendorProfileWizard: "VendorProfileWizard",
   ClientHistory: "ClientHistory",
   Invoices: "Invoices",

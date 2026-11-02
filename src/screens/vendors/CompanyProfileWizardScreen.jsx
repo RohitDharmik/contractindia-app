@@ -1332,6 +1332,7 @@ export default function CompanyProfileWizardScreen() {
       const isActive =
         Number(firstValue(service, "IsActive", "isActive")) === 1;
       const busy = serviceBusyId === id;
+      const isNested = depth > 0;
       const serviceName =
         firstValue(service, "ServiceName", "serviceName", "name") ||
         "Business service";
@@ -1346,95 +1347,113 @@ export default function CompanyProfileWizardScreen() {
         <React.Fragment key={id}>
           <View
             style={[
-              styles.serviceRow,
-              depth > 0 && styles.serviceNestedRow,
+              styles.svcCard,
+              isNested && styles.svcCardNested,
+              isActive && styles.svcCardActive,
             ]}
           >
-            <View
-              style={[
-                styles.serviceIcon,
-                isActive && styles.serviceIconActive,
-                depth > 0 && styles.serviceNestedIcon,
-              ]}
-            >
-              <Ionicons
-                name={isActive ? "checkmark" : depth > 0 ? "construct-outline" : "briefcase-outline"}
-                size={17}
-                color={isActive ? colors.success : colors.primary}
-              />
-            </View>
-            <View style={styles.serviceCopy}>
-              <Text style={styles.serviceName} numberOfLines={2}>
-                {serviceName}
-              </Text>
-              {!!description && (
-                <Text style={styles.serviceDetail} numberOfLines={2}>
-                  {description}
-                </Text>
-              )}
-            </View>
-            {isActive ? (
-              <View style={styles.activeBadge}>
+            <View style={styles.svcCardTop}>
+              <View
+                style={[
+                  styles.svcIcon,
+                  isNested && styles.svcIconNested,
+                  isActive && styles.svcIconActive,
+                ]}
+              >
                 <Ionicons
-                  name="checkmark-circle"
-                  size={14}
-                  color={colors.success}
+                  name={
+                    isActive
+                      ? "checkmark"
+                      : isNested
+                        ? "construct-outline"
+                        : "briefcase-outline"
+                  }
+                  size={isNested ? 15 : 17}
+                  color={isActive ? "#15803D" : colors.primary}
                 />
-                <Text style={styles.activeBadgeText}>Active</Text>
               </View>
-            ) : (
-              <Pressable
-                onPress={() => activateService(service)}
-                disabled={!!serviceBusyId}
-                style={({ pressed }) => [
-                  styles.activateButton,
-                  pressed && styles.pressed,
-                  !!serviceBusyId && styles.disabled,
-                ]}
-                accessibilityRole="button"
-                accessibilityLabel={`Activate ${serviceName}`}
-                accessibilityState={{ busy, disabled: !!serviceBusyId }}
-              >
-                {busy ? (
-                  <ActivityIndicator size="small" color={colors.primary} />
-                ) : (
-                  <Ionicons name="add" size={17} color={colors.primary} />
-                )}
-                <Text style={styles.activateText}>
-                  {busy ? "Adding" : "Activate"}
+              <View style={styles.svcCopy}>
+                <Text style={styles.svcName} numberOfLines={2}>
+                  {serviceName}
                 </Text>
-              </Pressable>
-            )}
-            {hasChildren && (
-              <Pressable
-                onPress={() => toggleServiceExpanded(id)}
-                style={({ pressed }) => [
-                  styles.serviceExpand,
-                  pressed && styles.pressed,
-                ]}
-                accessibilityRole="button"
-                accessibilityLabel={`${isExpanded ? "Collapse" : "Expand"} ${serviceName} sub-services`}
-                accessibilityState={{ expanded: isExpanded }}
-                hitSlop={4}
-              >
-                <Ionicons
-                  name={isExpanded ? "chevron-up" : "chevron-down"}
-                  size={17}
-                  color={colors.textMuted}
-                />
-              </Pressable>
-            )}
-          </View>
-          {hasChildren && isExpanded && (
-            <View style={styles.serviceChildren}>
-              {children.map((child) =>
-                renderServiceNode(child, depth + 1),
+                {!!description && (
+                  <Text style={styles.svcDescription} numberOfLines={2}>
+                    {description}
+                  </Text>
+                )}
+              </View>
+            </View>
+
+            <View style={styles.svcFooter}>
+              {hasChildren ? (
+                <Pressable
+                  onPress={() => toggleServiceExpanded(id)}
+                  style={({ pressed }) => [
+                    styles.svcToggle,
+                    pressed && styles.pressed,
+                  ]}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${isExpanded ? "Collapse" : "Expand"} ${serviceName} sub-services`}
+                  accessibilityState={{ expanded: isExpanded }}
+                  hitSlop={4}
+                >
+                  <Text style={styles.svcToggleText}>
+                    {children.length} sub-service{children.length === 1 ? "" : "s"}
+                  </Text>
+                  <Ionicons
+                    name={isExpanded ? "chevron-up" : "chevron-down"}
+                    size={14}
+                    color={colors.primary}
+                  />
+                </Pressable>
+              ) : (
+                <View />
               )}
+
+              {isActive ? (
+                <View style={styles.svcChip}>
+                  <View style={styles.svcChipDot} />
+                  <Text style={styles.svcChipText}>Active</Text>
+                </View>
+              ) : (
+                <Pressable
+                  onPress={() => activateService(service)}
+                  disabled={!!serviceBusyId}
+                  style={({ pressed }) => [
+                    styles.svcActivate,
+                    pressed && styles.pressed,
+                    !!serviceBusyId && styles.disabled,
+                  ]}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Activate ${serviceName}`}
+                  accessibilityState={{ busy, disabled: !!serviceBusyId }}
+                >
+                  {busy ? (
+                    <ActivityIndicator size="small" color="#fff" />
+                  ) : (
+                    <Ionicons name="add" size={15} color="#fff" />
+                  )}
+                  <Text style={styles.svcActivateText}>
+                    {busy ? "Adding" : "Activate"}
+                  </Text>
+                </Pressable>
+              )}
+            </View>
+          </View>
+
+          {hasChildren && isExpanded && (
+            <View style={styles.svcChildren}>
+              {children.map((child) => renderServiceNode(child, depth + 1))}
             </View>
           )}
         </React.Fragment>
       );
     };
+
+    const usagePercent =
+      maxServices > 0
+        ? Math.min(100, Math.round((activeServices.length / maxServices) * 100))
+        : 0;
 
     return (
       <>
@@ -1443,6 +1462,7 @@ export default function CompanyProfileWizardScreen() {
           title="Services you provide"
           detail="Activate the services you want customers to find on your profile."
         />
+
         {subscriptionsQuery.isLoading || servicesQuery.isLoading ? (
           <LoadingState label="Loading available services…" />
         ) : subscriptionsQuery.isError || servicesQuery.isError ? (
@@ -1455,82 +1475,104 @@ export default function CompanyProfileWizardScreen() {
           />
         ) : (
           <>
+            {/* Plan hero */}
             <View
               style={[
-                styles.planBanner,
-                !hasActivePlan && styles.planBannerWarning,
+                styles.svcPlan,
+                !hasActivePlan && styles.svcPlanWarning,
               ]}
             >
-              <View style={styles.planIcon}>
-                <Ionicons
-                  name={
-                    hasActivePlan
-                      ? "shield-checkmark-outline"
-                      : "card-outline"
-                  }
-                  size={18}
-                  color={hasActivePlan ? colors.success : colors.warning}
-                />
+              <View style={styles.svcPlanTop}>
+                <View
+                  style={[
+                    styles.svcPlanIcon,
+                    !hasActivePlan && styles.svcPlanIconWarning,
+                  ]}
+                >
+                  <Ionicons
+                    name={hasActivePlan ? "shield-checkmark" : "card-outline"}
+                    size={18}
+                    color={hasActivePlan ? "#15803D" : "#B45309"}
+                  />
+                </View>
+                <View style={styles.svcPlanCopy}>
+                  <Text style={styles.svcPlanEyebrow}>
+                    {hasActivePlan ? "ACTIVE PLAN" : "PLAN REQUIRED"}
+                  </Text>
+                  <Text style={styles.svcPlanTitle} numberOfLines={1}>
+                    {hasActivePlan
+                      ? firstValue(activeSubscription, "PlanName", "planName") || "Business"
+                      : "Choose a plan to activate services"}
+                  </Text>
+                </View>
+                {!hasActivePlan ? (
+                  <Pressable
+                    onPress={() =>
+                      navigation.navigate(Routes.PlansAndSubscriptionsScreen)
+                    }
+                    style={({ pressed }) => [
+                      styles.svcPlanAction,
+                      pressed && styles.pressed,
+                    ]}
+                    accessibilityRole="button"
+                    accessibilityLabel="View subscription plans"
+                  >
+                    <Text style={styles.svcPlanActionText}>View plans</Text>
+                    <Ionicons name="arrow-forward" size={13} color="#fff" />
+                  </Pressable>
+                ) : null}
               </View>
-              <View style={styles.planCopy}>
-                <Text style={styles.planTitle}>
+
+              {hasActivePlan && maxServices > 0 ? (
+                <View style={styles.svcMeterWrap}>
+                  <View style={styles.svcMeterLabels}>
+                    <Text style={styles.svcMeterText}>
+                      {activeServices.length} of {maxServices} services active
+                    </Text>
+                    <Text style={styles.svcMeterPercent}>{usagePercent}%</Text>
+                  </View>
+                  <View style={styles.svcMeterTrack}>
+                    <View
+                      style={[styles.svcMeterFill, { width: `${usagePercent}%` }]}
+                    />
+                  </View>
+                </View>
+              ) : (
+                <Text style={styles.svcPlanHint}>
                   {hasActivePlan
-                    ? `Active plan · ${firstValue(activeSubscription, "PlanName", "planName") || "Business"}`
-                    : "A plan is required to activate services"}
-                </Text>
-                <Text style={styles.planDetail}>
-                  {hasActivePlan
-                    ? `${activeServices.length}${maxServices ? ` of ${maxServices}` : ""} services active`
+                    ? `${activeServices.length} services active`
                     : "Browse available plans to activate service listings."}
                 </Text>
-              </View>
-              {!hasActivePlan ? (
-                <Pressable
-                  onPress={() =>
-                    navigation.navigate(Routes.PlansAndSubscriptionsScreen)
-                  }
-                  style={({ pressed }) => [
-                    styles.planAction,
-                    pressed && styles.pressed,
-                  ]}
-                  accessibilityRole="button"
-                  accessibilityLabel="View subscription plans"
-                >
-                  <Text style={styles.planActionText}>View plans</Text>
-                  <Ionicons
-                    name="arrow-forward"
-                    size={14}
-                    color={colors.primary}
-                  />
-                </Pressable>
-              ) : null}
+              )}
             </View>
-            <View style={styles.serviceStats}>
-              <View style={styles.serviceStat}>
-                <Text style={styles.serviceStatValue}>
+
+            {/* Stats */}
+            <View style={styles.svcStats}>
+              <View style={[styles.svcStat, styles.svcStatPrimary]}>
+                <Text style={styles.svcStatValuePrimary}>
                   {activeServices.length}
                 </Text>
-                <Text style={styles.serviceStatLabel}>Active</Text>
+                <Text style={styles.svcStatLabelPrimary}>Active</Text>
               </View>
-              <View style={styles.serviceStat}>
-                <Text style={styles.serviceStatValue}>
-                  {serviceItems.length}
-                </Text>
-                <Text style={styles.serviceStatLabel}>Available</Text>
+              <View style={styles.svcStat}>
+                <Text style={styles.svcStatValue}>{serviceItems.length}</Text>
+                <Text style={styles.svcStatLabel}>Available</Text>
               </View>
             </View>
+
+            {/* Service list */}
             {serviceTree.length === 0 ? (
               <EmptyState label="No services are available for this account." />
             ) : (
-              <SectionCard
-                title="Available services"
-                icon="briefcase-outline"
-              >
-                <Text style={styles.serviceTreeHint}>
-                  Tap the chevron to browse sub-services.
-                </Text>
+              <>
+                <View style={styles.svcListHeader}>
+                  <Text style={styles.svcListTitle}>Available services</Text>
+                  <Text style={styles.svcListHint}>
+                    Expand a service to see sub-services
+                  </Text>
+                </View>
                 {serviceTree.map((node) => renderServiceNode(node))}
-              </SectionCard>
+              </>
             )}
           </>
         )}
@@ -2255,121 +2297,280 @@ const styles = StyleSheet.create({
     fontSize: 11,
     textAlign: "center",
   },
-  planBanner: {
+
+  /* ---------- Services step ---------- */
+
+  svcPlan: {
+    padding: spacing.md,
+    borderRadius: 18,
+    backgroundColor: colors.primary,
+    marginBottom: spacing.md,
+    overflow: "hidden",
+  },
+  svcPlanWarning: {
+    backgroundColor: "#1E293B",
+  },
+  svcPlanTop: {
     flexDirection: "row",
     alignItems: "center",
     gap: spacing.sm,
-    marginBottom: spacing.md,
-    padding: spacing.md,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: "#DCE9E0",
-    backgroundColor: "#F5F9F6",
   },
-  planBannerWarning: { borderColor: "#EEE5D2", backgroundColor: "#FCF9F2" },
-  planIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 11,
+  svcPlanIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 13,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#EAF3EC",
+    backgroundColor: "rgba(255,255,255,0.95)",
   },
-  planCopy: { flex: 1, minWidth: 0 },
-  planTitle: { color: colors.text, fontSize: 11, fontWeight: "750" },
-  planDetail: { marginTop: 3, color: colors.textMuted, fontSize: 10 },
-  planAction: {
-    minHeight: 40,
+  svcPlanIconWarning: {
+    backgroundColor: "#FEF3C7",
+  },
+  svcPlanCopy: { flex: 1, minWidth: 0 },
+  svcPlanEyebrow: {
+    color: "rgba(255,255,255,0.7)",
+    fontSize: 9,
+    fontWeight: "800",
+    letterSpacing: 1.1,
+  },
+  svcPlanTitle: {
+    marginTop: 3,
+    color: "#FFFFFF",
+    fontSize: 15,
+    fontWeight: "750",
+  },
+  svcPlanAction: {
+    minHeight: 36,
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
     paddingHorizontal: spacing.sm,
-    borderRadius: 10,
-    backgroundColor: "#EDF4FA",
+    borderRadius: 11,
+    backgroundColor: "rgba(255,255,255,0.18)",
   },
-  planActionText: { color: colors.primary, fontSize: 10, fontWeight: "750" },
-  serviceStats: { flexDirection: "row", gap: spacing.sm, marginBottom: spacing.md },
-  serviceStat: {
+  svcPlanActionText: {
+    color: "#FFFFFF",
+    fontSize: 11,
+    fontWeight: "750",
+  },
+  svcPlanHint: {
+    marginTop: spacing.sm,
+    color: "rgba(255,255,255,0.75)",
+    fontSize: 11,
+    lineHeight: 16,
+  },
+  svcMeterWrap: { marginTop: spacing.md, gap: 8 },
+  svcMeterLabels: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  svcMeterText: {
+    color: "rgba(255,255,255,0.85)",
+    fontSize: 11,
+    fontWeight: "600",
+  },
+  svcMeterPercent: {
+    color: "#FFFFFF",
+    fontSize: 11,
+    fontWeight: "800",
+  },
+  svcMeterTrack: {
+    height: 6,
+    borderRadius: 4,
+    overflow: "hidden",
+    backgroundColor: "rgba(255,255,255,0.2)",
+  },
+  svcMeterFill: {
+    height: "100%",
+    borderRadius: 4,
+    backgroundColor: colors.accent,
+  },
+
+  svcStats: {
+    flexDirection: "row",
+    gap: spacing.sm,
+    marginBottom: spacing.md,
+  },
+  svcStat: {
     flex: 1,
     padding: spacing.md,
-    borderRadius: 13,
+    borderRadius: 16,
+    backgroundColor: "#FFFFFF",
     borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: "#fff",
+    borderColor: "#E7EDF3",
   },
-  serviceStatValue: { color: colors.primary, fontSize: 20, fontWeight: "800" },
-  serviceStatLabel: { marginTop: 2, color: colors.textMuted, fontSize: 10 },
-  serviceRow: {
-    minHeight: 68,
+  svcStatPrimary: {
+    backgroundColor: "#EDF4FA",
+    borderColor: "#D6E4EE",
+  },
+  svcStatValue: {
+    color: colors.text,
+    fontSize: 22,
+    fontWeight: "800",
+    letterSpacing: -0.4,
+  },
+  svcStatValuePrimary: {
+    color: colors.primary,
+    fontSize: 22,
+    fontWeight: "800",
+    letterSpacing: -0.4,
+  },
+  svcStatLabel: {
+    marginTop: 2,
+    color: colors.textMuted,
+    fontSize: 11,
+    fontWeight: "600",
+  },
+  svcStatLabelPrimary: {
+    marginTop: 2,
+    color: colors.primary,
+    fontSize: 11,
+    fontWeight: "700",
+  },
+
+  svcListHeader: {
+    marginBottom: spacing.sm,
+    gap: 2,
+  },
+  svcListTitle: {
+    color: colors.text,
+    fontSize: 13,
+    fontWeight: "750",
+  },
+  svcListHint: {
+    color: colors.textMuted,
+    fontSize: 10,
+  },
+
+  svcCard: {
+    marginBottom: spacing.sm,
+    padding: spacing.md,
+    borderRadius: 16,
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1,
+    borderColor: "#E7EDF3",
+    shadowColor: "#123B62",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 1,
+  },
+  svcCardNested: {
+    marginBottom: spacing.xs,
+    padding: spacing.sm,
+    borderRadius: 14,
+    backgroundColor: "#FAFBFC",
+    shadowOpacity: 0,
+    elevation: 0,
+  },
+  svcCardActive: {
+    borderColor: "#CFE5D5",
+  },
+  svcCardTop: {
     flexDirection: "row",
     alignItems: "center",
     gap: spacing.sm,
-    paddingVertical: spacing.sm,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.border,
   },
-  serviceNestedRow: { minHeight: 62 },
-  serviceChildren: {
-    marginLeft: spacing.xs,
-    paddingLeft: spacing.sm,
-    borderLeftWidth: 1,
-    borderLeftColor: "#DCE6EF",
+  svcIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 13,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#EDF4FA",
   },
-  serviceNestedIcon: {
+  svcIconNested: {
     width: 32,
     height: 32,
     borderRadius: 10,
   },
-  serviceIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 11,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#EDF4FA",
+  svcIconActive: {
+    backgroundColor: "#E7F2EA",
   },
-  serviceIconActive: { backgroundColor: "#EAF3EC" },
-  serviceCopy: { flex: 1, minWidth: 0 },
-  serviceName: { color: colors.text, fontSize: 12, fontWeight: "700" },
-  serviceDetail: { marginTop: 3, color: colors.textMuted, fontSize: 10, lineHeight: 14 },
-  serviceTreeHint: {
-    marginBottom: spacing.xs,
+  svcCopy: { flex: 1, minWidth: 0 },
+  svcName: {
+    color: colors.text,
+    fontSize: 13,
+    fontWeight: "750",
+    lineHeight: 18,
+  },
+  svcDescription: {
+    marginTop: 3,
     color: colors.textMuted,
-    fontSize: 10,
+    fontSize: 11,
     lineHeight: 15,
   },
-  serviceExpand: {
-    width: 44,
-    height: 44,
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: 10,
-    backgroundColor: "#F4F7FA",
-  },
-  activeBadge: {
-    minHeight: 34,
+  svcFooter: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "space-between",
+    minHeight: 40,
+    marginTop: spacing.sm,
+    paddingTop: spacing.sm,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: colors.border,
+  },
+  svcToggle: {
+    minHeight: 36,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingHorizontal: spacing.sm,
+    borderRadius: 10,
+    backgroundColor: "#EDF4FA",
+  },
+  svcToggleText: {
+    color: colors.primary,
+    fontSize: 11,
+    fontWeight: "700",
+  },
+  svcChip: {
+    minHeight: 32,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingHorizontal: spacing.sm,
+    borderRadius: 10,
+    backgroundColor: "#E7F2EA",
+  },
+  svcChipDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: "#15803D",
+  },
+  svcChipText: {
+    color: "#15803D",
+    fontSize: 11,
+    fontWeight: "750",
+  },
+  svcActivate: {
+    minWidth: 104,
+    minHeight: 36,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     gap: 4,
-    paddingHorizontal: spacing.sm,
-    borderRadius: 10,
-    backgroundColor: "#EFF7F1",
+    paddingHorizontal: spacing.md,
+    borderRadius: 11,
+    backgroundColor: colors.primary,
   },
-  activeBadgeText: { color: "#43744F", fontSize: 10, fontWeight: "700" },
-  activateButton: {
-    minWidth: 82,
-    minHeight: 44,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 3,
-    paddingHorizontal: spacing.sm,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: "#D9E5EE",
-    backgroundColor: "#fff",
+  svcActivateText: {
+    color: "#FFFFFF",
+    fontSize: 11,
+    fontWeight: "750",
   },
-  activateText: { color: colors.primary, fontSize: 10, fontWeight: "700" },
+  svcChildren: {
+    marginLeft: spacing.md,
+    paddingLeft: spacing.sm,
+    marginBottom: spacing.xs,
+    borderLeftWidth: 2,
+    borderLeftColor: "#DCE6EF",
+  },
+
+  /* ---------- Banking & shared ---------- */
+
   actions: {
     flexDirection: "row",
     alignItems: "center",

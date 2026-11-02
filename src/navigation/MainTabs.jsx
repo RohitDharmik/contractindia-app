@@ -1,5 +1,12 @@
 import React, { useEffect, useRef } from "react";
-import { Animated, Platform, Pressable, StyleSheet, Text, View } from "react-native";
+import {
+  Animated,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -12,6 +19,7 @@ import PlansAndSubscriptionsScreen from "../screens/plans/PlansAndSubscriptionsS
 import IndividualMyServicesScreen from "../screens/Individual/IndividualMyServices";
 import ActiveServicesScreen from "@/screens/services/ActiveServicesScreen";
 import CompanyListScreen from "../screens/companies/CompanyListScreen";
+import ServicesScreen from "../screens/vendors/ServicesScreen";
 
 const Tab = createBottomTabNavigator();
 
@@ -30,9 +38,9 @@ const C = {
   danger: "#EF4444",
 };
 
-const TAB_H = 64;     // height of the pill itself
+const TAB_H = 64; // height of the pill itself
 const FAB_SIZE = 58;
-const FAB_LIFT = 18;  // how far the FAB rises above the pill
+const FAB_LIFT = 18; // how far the FAB rises above the pill
 const MIN_BOTTOM = 10;
 
 /* ------------------------------------------------------------------ */
@@ -41,10 +49,22 @@ const MIN_BOTTOM = 10;
 
 const ICON_MAP = {
   [Routes.HomeTab]: { active: "home", inactive: "home-outline" },
-  [Routes.ActiveServices]: { active: "briefcase", inactive: "briefcase-outline" },
-  [Routes.IndividualMyServicesScreen]: { active: "briefcase", inactive: "briefcase-outline" },
-  [Routes.CompanyListScreen]: { active: "business", inactive: "business-outline" },
-  [Routes.ProfileTab]: { active: "person-circle", inactive: "person-circle-outline" },
+  [Routes.ActiveServices]: {
+    active: "briefcase",
+    inactive: "briefcase-outline",
+  },
+  [Routes.IndividualMyServicesScreen]: {
+    active: "briefcase",
+    inactive: "briefcase-outline",
+  },
+  [Routes.CompanyListScreen]: {
+    active: "business",
+    inactive: "business-outline",
+  },
+  [Routes.ProfileTab]: {
+    active: "person-circle",
+    inactive: "person-circle-outline",
+  },
 };
 
 /* ------------------------------------------------------------------ */
@@ -121,7 +141,10 @@ function TabButton({ label, routeName, isFocused, badge, onPress }) {
     }).start();
   }, [isFocused, scale]);
 
-  const icons = ICON_MAP[routeName] ?? { active: "ellipse", inactive: "ellipse-outline" };
+  const icons = ICON_MAP[routeName] ?? {
+    active: "ellipse",
+    inactive: "ellipse-outline",
+  };
 
   return (
     <Pressable
@@ -158,9 +181,17 @@ function FabButton({ label, isFocused, badge, onPress }) {
   const scale = useRef(new Animated.Value(1)).current;
 
   const pressIn = () =>
-    Animated.spring(scale, { toValue: 0.92, useNativeDriver: true, speed: 50 }).start();
+    Animated.spring(scale, {
+      toValue: 0.92,
+      useNativeDriver: true,
+      speed: 50,
+    }).start();
   const pressOut = () =>
-    Animated.spring(scale, { toValue: 1, useNativeDriver: true, speed: 50 }).start();
+    Animated.spring(scale, {
+      toValue: 1,
+      useNativeDriver: true,
+      speed: 50,
+    }).start();
 
   return (
     <View style={styles.fabSlot}>
@@ -186,7 +217,10 @@ function FabButton({ label, isFocused, badge, onPress }) {
           <Badge count={badge} />
         </Animated.View>
       </Pressable>
-      <Text style={[styles.fabLabel, isFocused && styles.tabLabelActive]} numberOfLines={1}>
+      <Text
+        style={[styles.fabLabel, isFocused && styles.tabLabelActive]}
+        numberOfLines={1}
+      >
         {label}
       </Text>
     </View>
@@ -211,7 +245,8 @@ function Badge({ count }) {
 export default function MainTabs() {
   const role = useAuthStore((s) => s.user?.userType ?? s.user?.role);
   const unread = useNotificationsStore(
-    (s) => s.items.filter((item) => item.type === "message" && !item.read).length,
+    (s) =>
+      s.items.filter((item) => item.type === "message" && !item.read).length,
   );
 
   const isAdmin = role == "0" || role == "admin";
@@ -222,7 +257,11 @@ export default function MainTabs() {
       sceneContainerStyle={styles.scene}
       screenOptions={{ headerShown: false }}
     >
-      <Tab.Screen name={Routes.HomeTab} component={DashboardScreen} options={{ title: "Home" }} />
+      <Tab.Screen
+        name={Routes.HomeTab}
+        component={DashboardScreen}
+        options={{ title: "Home" }}
+      />
 
       {!isAdmin && (
         <>
@@ -234,9 +273,9 @@ export default function MainTabs() {
             />
           ) : (
             <Tab.Screen
-              name={Routes.ActiveServices}
-              component={ActiveServicesScreen}
-              options={{ title: "Active" }}
+              name={Routes.ServicesScreen}
+              component={ServicesScreen}
+              options={{ title: "Services" }}
             />
           )}
 
@@ -258,7 +297,11 @@ export default function MainTabs() {
         </>
       )}
 
-      <Tab.Screen name={Routes.ProfileTab} component={ProfileScreen} options={{ title: "Me" }} />
+      <Tab.Screen
+        name={Routes.ProfileTab}
+        component={ProfileScreen}
+        options={{ title: "Me" }}
+      />
     </Tab.Navigator>
   );
 }
